@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { Search, Settings, User, LogOut, Bell, ChevronDown } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n-store'
 
 const SEARCH_SUGGESTIONS = [
   { type: 'track', label: 'Blinding Lights', sub: 'The Weeknd' },
@@ -14,6 +15,7 @@ const SEARCH_SUGGESTIONS = [
 ]
 
 export default function Header() {
+  const { t, language } = useTranslation()
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -59,23 +61,31 @@ export default function Header() {
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center gap-2 shrink-0"
+        className="flex items-center gap-3 shrink-0"
         aria-label="VibeWave Home"
       >
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          className="w-9 h-9 rounded-lg flex items-center justify-center transition-vw"
           style={{ backgroundColor: '#9B4DE0' }}
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
           </svg>
         </div>
-        <span
-          className="font-display font-700 text-[18px] tracking-tight"
-          style={{ color: 'rgba(255,255,255,0.95)', fontWeight: 700 }}
-        >
-          VibeWave
-        </span>
+        <div className="flex flex-col -space-y-0.5">
+          <span
+            className="font-display font-700 text-[18px] tracking-tight"
+            style={{ color: 'rgba(255,255,255,0.95)', fontWeight: 700 }}
+          >
+            VibeWave
+          </span>
+          <span 
+            className="text-[10px] font-medium" 
+            style={{ color: 'rgba(255,255,255,0.45)' }}
+          >
+            {t.musicThatWorks}
+          </span>
+        </div>
       </Link>
 
       {/* Search */}
@@ -92,7 +102,7 @@ export default function Header() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Search songs, artists, playlists..."
+              placeholder={t.searchPlaceholder}
               className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg outline-none transition-vw"
               style={{
                 backgroundColor: '#2A1F3D',
@@ -107,7 +117,7 @@ export default function Header() {
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
               }}
-              aria-label="Search VibeWave"
+              aria-label={t.search}
               aria-expanded={showSuggestions}
               aria-haspopup="listbox"
             />
@@ -131,7 +141,7 @@ export default function Header() {
                   className="px-4 pb-1 text-[11px] font-semibold tracking-widest uppercase"
                   style={{ color: 'rgba(255,255,255,0.35)' }}
                 >
-                  Suggestions
+                  {t.suggestions}
                 </div>
                 {filtered.map((item, i) => (
                   <button
@@ -163,7 +173,7 @@ export default function Header() {
               </>
             ) : (
               <div className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                No results for &ldquo;{query}&rdquo;
+                {t.noResults} &ldquo;{query}&rdquo;
               </div>
             )}
           </div>
@@ -174,7 +184,7 @@ export default function Header() {
       <div ref={profileRef} className="relative flex items-center gap-3">
         <button
           className="relative p-2 rounded-lg transition-vw hover:bg-white/5"
-          aria-label="Notifications"
+          aria-label={t.notifications}
         >
           <Bell size={18} style={{ color: 'rgba(255,255,255,0.65)' }} />
           <span
@@ -191,15 +201,12 @@ export default function Header() {
           aria-expanded={showProfile}
           aria-haspopup="true"
         >
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #9B4DE0, #7b3db0)',
-              border: '2px solid rgba(255,255,255,0.1)',
-            }}
-          >
-            <span style={{ color: 'rgba(255,255,255,0.95)' }}>AJ</span>
-          </div>
+          <img
+            src="/UserAvatar.jpg"
+            alt="Alex Johnson"
+            className="w-8 h-8 rounded-full object-cover"
+            style={{ border: '2px solid rgba(255,255,255,0.1)' }}
+          />
           <ChevronDown
             size={14}
             style={{
@@ -225,8 +232,8 @@ export default function Header() {
               <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>alex@example.com</div>
             </div>
             {[
-              { icon: User, label: 'Profile', href: '/profile' },
-              { icon: Settings, label: 'Settings', href: '/profile#settings' },
+              { icon: User, label: t.profile, href: '/profile' },
+              { icon: Settings, label: t.settings, href: '/profile#settings' },
             ].map(({ icon: Icon, label, href }) => (
               <Link
                 key={label}
@@ -247,7 +254,7 @@ export default function Header() {
                 className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/5"
               >
                 <LogOut size={15} style={{ color: 'rgba(255,255,255,0.45)' }} />
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>Sign Out</span>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{t.signOut}</span>
               </Link>
             </div>
           </div>

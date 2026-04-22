@@ -9,6 +9,8 @@ export interface Track {
   album: string
   albumArt: string
   duration: number // seconds
+  url: string
+  lyrics?: string
 }
 
 interface PlayerState {
@@ -29,48 +31,45 @@ interface PlayerState {
   toggleLike: () => void
   nextTrack: () => void
   prevTrack: () => void
+  setQueue: (queue: Track[]) => void
 }
 
 export const SAMPLE_TRACKS: Track[] = [
   {
-    id: '1',
-    title: 'Blinding Lights',
-    artist: 'The Weeknd',
-    album: 'After Hours',
-    albumArt: '/album-art/blinding-lights.jpg',
-    duration: 200,
+    id: 'st1',
+    title: 'Chúng Ta Của Tương Lai',
+    artist: 'Sơn Tùng M-TP',
+    album: 'Chúng Ta Của Tương Lai - Single',
+    albumArt: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/6e/8b/6e/6e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg',
+    duration: 250,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
   },
   {
-    id: '2',
-    title: 'Levitating',
-    artist: 'Dua Lipa',
-    album: 'Future Nostalgia',
-    albumArt: '/album-art/levitating.jpg',
-    duration: 203,
+    id: 'dv1',
+    title: 'Nấu Ăn Cho Em',
+    artist: 'Đen Vâu',
+    album: 'Nấu Ăn Cho Em - Single',
+    albumArt: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/0e/8b/6e/0e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg',
+    duration: 240,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
   },
   {
-    id: '3',
-    title: 'Peaches',
-    artist: 'Justin Bieber ft. Daniel Caesar',
-    album: 'Justice',
-    albumArt: '/album-art/peaches.jpg',
-    duration: 198,
+    id: 'htl1',
+    title: 'See Tình',
+    artist: 'Hoàng Thùy Linh',
+    album: 'LINK',
+    albumArt: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/1e/8b/6e/1e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg',
+    duration: 185,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
   },
   {
-    id: '4',
-    title: 'Stay',
-    artist: 'The Kid LAROI & Justin Bieber',
-    album: 'F*CK LOVE 3',
-    albumArt: '/album-art/stay.jpg',
-    duration: 141,
-  },
-  {
-    id: '5',
-    title: 'Good 4 U',
-    artist: 'Olivia Rodrigo',
-    album: 'SOUR',
-    albumArt: '/album-art/good4u.jpg',
-    duration: 178,
+    id: 'v1',
+    title: 'Lạ Lùng',
+    artist: 'Vũ.',
+    album: 'Lạ Lùng - Single',
+    albumArt: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2e/8b/6e/2e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg',
+    duration: 260,
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
   },
 ]
 
@@ -91,6 +90,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   toggleMute: () => set((s) => ({ isMuted: !s.isMuted })),
   toggleFullPlayer: () => set((s) => ({ isFullPlayer: !s.isFullPlayer })),
   toggleLike: () => set((s) => ({ isLiked: !s.isLiked })),
+  setQueue: (queue) => set({ queue }),
 
   nextTrack: () => {
     const { queue, currentTrack } = get()

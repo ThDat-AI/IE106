@@ -81,13 +81,17 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
 
       {/* Track art */}
       <div
-        className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-base font-bold"
+        className="w-10 h-10 rounded-lg shrink-0 overflow-hidden flex items-center justify-center text-base font-bold"
         style={{
-          background: `linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)`,
+          background: track.albumArt ? 'none' : `linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)`,
           color: 'rgba(255,255,255,0.6)',
         }}
       >
-        {track.title.charAt(0)}
+        {track.albumArt ? (
+          <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover" />
+        ) : (
+          track.title.charAt(0)
+        )}
       </div>
 
       {/* Title + artist */}

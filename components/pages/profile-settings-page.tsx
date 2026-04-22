@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Camera, Check, ChevronRight, Volume2, Type, LayoutGrid, Globe, PanelLeft, Palette, Moon } from 'lucide-react'
+import { useI18nStore, useTranslation, Language } from '@/lib/i18n-store'
 
 const TABS = ['Profile', 'Playback', 'Appearance', 'Notifications', 'Privacy'] as const
 type Tab = typeof TABS[number]
@@ -105,7 +106,13 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 export default function ProfileSettingsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('Profile')
+  const { t, language: currentLang } = useTranslation()
+  const setGlobalLanguage = useI18nStore((state) => state.setLanguage)
+
+  const TABS = [t.profile, t.playback, t.appearance, t.notifications, t.privacy] as const
+  type Tab = typeof TABS[number]
+
+  const [activeTab, setActiveTab] = useState<Tab>(t.profile)
 
   // Profile
   const [name, setName] = useState('Alex Johnson')
@@ -117,7 +124,6 @@ export default function ProfileSettingsPage() {
   const [motion, setMotion] = useState('On')
   const [fontSize, setFontSize] = useState('M')
   const [density, setDensity] = useState('Comfortable')
-  const [language, setLanguage] = useState('System')
   const [sidebar, setSidebar] = useState('Auto')
   const [accent, setAccent] = useState('#9B4DE0')
 
@@ -136,6 +142,18 @@ export default function ProfileSettingsPage() {
   // Privacy
   const [publicProfile, setPublicProfile] = useState(true)
   const [shareActivity, setShareActivity] = useState(false)
+
+  // Sync tab when language changes
+  useEffect(() => {
+    setActiveTab((prev) => {
+      if (prev === 'Profile' || prev === 'Hồ sơ') return t.profile
+      if (prev === 'Playback' || prev === 'Phát nhạc') return t.playback
+      if (prev === 'Appearance' || prev === 'Giao diện') return t.appearance
+      if (prev === 'Notifications' || prev === 'Thông báo') return t.notifications
+      if (prev === 'Privacy' || prev === 'Quyền riêng tư') return t.privacy
+      return t.profile
+    })
+  }, [t])
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
@@ -163,10 +181,10 @@ export default function ProfileSettingsPage() {
           className="font-display font-bold leading-display mb-2"
           style={{ fontSize: 40, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.8px', lineHeight: 1.05 }}
         >
-          Profile &amp; Settings
+          {t.profileAndSettings}
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, lineHeight: 1.5 }}>
-          Manage your account and personalize VibeWave.
+          {t.manageAccount}
         </p>
       </div>
 
@@ -197,23 +215,19 @@ export default function ProfileSettingsPage() {
       >
 
         {/* ─── PROFILE TAB ─────────────────────────────── */}
-        {activeTab === 'Profile' && (
+        {activeTab === t.profile && (
           <form onSubmit={handleSaveProfile}>
-            <SectionTitle>Your Profile</SectionTitle>
+            <SectionTitle>{t.yourProfile}</SectionTitle>
 
             {/* Avatar */}
             <div className="flex items-center gap-6 mb-8">
               <div className="relative">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
-                  style={{
-                    background: 'linear-gradient(135deg, #9B4DE0, #7b3db0)',
-                    border: '2px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.95)',
-                  }}
-                >
-                  AJ
-                </div>
+                <img
+                  src="/UserAvatar.jpg"
+                  alt="Alex Johnson"
+                  className="w-20 h-20 rounded-full object-cover"
+                  style={{ border: '2px solid rgba(255,255,255,0.1)' }}
+                />
                 <button
                   type="button"
                   className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center transition-vw hover:opacity-80"
@@ -224,8 +238,8 @@ export default function ProfileSettingsPage() {
                 </button>
               </div>
               <div>
-                <div className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>Profile Photo</div>
-                <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>JPG, PNG or GIF. Max 5MB.</div>
+                <div className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{t.profilePhoto}</div>
+                <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.photoDesc}</div>
               </div>
             </div>
 
@@ -233,7 +247,7 @@ export default function ProfileSettingsPage() {
             <div className="space-y-5">
               <div>
                 <label htmlFor="display-name" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  Display Name
+                  {t.displayName}
                 </label>
                 <input
                   id="display-name"
@@ -247,7 +261,7 @@ export default function ProfileSettingsPage() {
               </div>
               <div>
                 <label htmlFor="profile-email" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  Email Address
+                  {t.emailAddress}
                 </label>
                 <input
                   id="profile-email"
@@ -261,7 +275,7 @@ export default function ProfileSettingsPage() {
               </div>
               <div>
                 <label htmlFor="bio" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  Bio
+                  {t.bio}
                 </label>
                 <textarea
                   id="bio"
@@ -281,14 +295,14 @@ export default function ProfileSettingsPage() {
                 className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
                 style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
               >
-                {profileSaved ? <><Check size={14} /> Saved</> : 'Save Changes'}
+                {profileSaved ? <><Check size={14} /> {t.saved}</> : t.saveChanges}
               </button>
               <button
                 type="button"
                 className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-80"
                 style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)' }}
               >
-                Cancel
+                {t.cancel}
               </button>
             </div>
 
@@ -297,12 +311,12 @@ export default function ProfileSettingsPage() {
               className="mt-10 pt-8"
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <h4 className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Danger Zone</h4>
+              <h4 className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.dangerZone}</h4>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>Delete Account</div>
+                  <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{t.deleteAccount}</div>
                   <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                    Permanently remove your account and all data. This cannot be undone.
+                    {t.deleteAccountDesc}
                   </div>
                 </div>
                 <button
@@ -310,7 +324,7 @@ export default function ProfileSettingsPage() {
                   className="px-4 py-2 rounded-lg text-sm font-medium transition-vw hover:opacity-85"
                   style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}
                 >
-                  Delete Account
+                  {t.deleteAccount}
                 </button>
               </div>
             </div>
@@ -318,20 +332,20 @@ export default function ProfileSettingsPage() {
         )}
 
         {/* ─── PLAYBACK TAB ─────────────────────────────── */}
-        {activeTab === 'Playback' && (
+        {activeTab === t.playback && (
           <div>
-            <SectionTitle>Playback Settings</SectionTitle>
+            <SectionTitle>{t.playbackSettings}</SectionTitle>
             <div>
-              <SettingRow icon={Volume2} label="Audio Quality" description="Higher quality uses more data">
+              <SettingRow icon={Volume2} label={t.audioQuality} description={t.audioQualityDesc}>
                 <SelectChips options={['Normal', 'High', 'Very High']} value={audioQuality} onChange={setAudioQuality} />
               </SettingRow>
-              <SettingRow icon={ChevronRight} label="Crossfade" description="Fade between tracks">
+              <SettingRow icon={ChevronRight} label={t.crossfade} description={t.crossfadeDesc}>
                 <SelectChips options={['Off', '2s', '5s', '10s']} value={crossfade} onChange={setCrossfade} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="Normalize Volume" description="Keep volume consistent across tracks">
+              <SettingRow icon={Volume2} label={t.normalizeVolume} description={t.normalizeVolumeDesc}>
                 <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume((v) => !v)} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="Offline Sync" description="Auto-download your playlists for offline use">
+              <SettingRow icon={Volume2} label={t.offlineSync} description={t.offlineSyncDesc}>
                 <Toggle checked={offlineSync} onChange={() => setOfflineSync((v) => !v)} />
               </SettingRow>
             </div>
@@ -339,26 +353,41 @@ export default function ProfileSettingsPage() {
         )}
 
         {/* ─── APPEARANCE TAB ─────────────────────────────── */}
-        {activeTab === 'Appearance' && (
+        {activeTab === t.appearance && (
           <div>
-            <SectionTitle>Appearance</SectionTitle>
+            <SectionTitle>{t.appearance}</SectionTitle>
             <div>
-              <SettingRow icon={Volume2} label="Motion" description="Control animation playback">
+              <SettingRow icon={Volume2} label={t.motion} description={t.motionDesc}>
                 <SelectChips options={['On', 'Reduced', 'Off']} value={motion} onChange={setMotion} />
               </SettingRow>
-              <SettingRow icon={Type} label="Font Size" description="Adjust reading size throughout the app">
+              <SettingRow icon={Type} label={t.fontSize} description={t.fontSizeDesc}>
                 <SelectChips options={['S', 'M', 'L']} value={fontSize} onChange={setFontSize} />
               </SettingRow>
-              <SettingRow icon={LayoutGrid} label="UI Density" description="How compact the interface appears">
+              <SettingRow icon={LayoutGrid} label={t.uiDensity} description={t.uiDensityDesc}>
                 <SelectChips options={['Comfortable', 'Compact']} value={density} onChange={setDensity} />
               </SettingRow>
-              <SettingRow icon={Globe} label="Language" description="App display language">
-                <SelectChips options={['System', 'English', 'Spanish', 'French']} value={language} onChange={setLanguage} />
+              <SettingRow icon={Globe} label={t.language} description={t.languageDesc}>
+                <div className="flex items-center gap-1.5">
+                  {(['en', 'vi'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => setGlobalLanguage(lang)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150"
+                      style={{
+                        backgroundColor: currentLang === lang ? '#9B4DE0' : 'rgba(255,255,255,0.07)',
+                        color: currentLang === lang ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.55)',
+                        border: currentLang === lang ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      {lang === 'en' ? 'English' : 'Tiếng Việt'}
+                    </button>
+                  ))}
+                </div>
               </SettingRow>
-              <SettingRow icon={PanelLeft} label="Sidebar" description="Default sidebar state">
+              <SettingRow icon={PanelLeft} label={t.sidebar} description={t.sidebarDesc}>
                 <SelectChips options={['Expanded', 'Collapsed', 'Auto']} value={sidebar} onChange={setSidebar} />
               </SettingRow>
-              <SettingRow icon={Palette} label="Accent Color" description="Single accent used throughout VibeWave">
+              <SettingRow icon={Palette} label={t.accentColor} description={t.accentColorDesc}>
                 <div className="flex items-center gap-2">
                   {ACCENT_OPTIONS.map((opt) => (
                     <button
@@ -381,9 +410,9 @@ export default function ProfileSettingsPage() {
                   ))}
                 </div>
               </SettingRow>
-              <SettingRow icon={Moon} label="Theme" description="VibeWave is always dark — by design">
+              <SettingRow icon={Moon} label={t.theme} description={t.themeDesc}>
                 <span className="text-xs px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)' }}>
-                  Dark only
+                  {t.darkOnly}
                 </span>
               </SettingRow>
             </div>
@@ -391,20 +420,20 @@ export default function ProfileSettingsPage() {
         )}
 
         {/* ─── NOTIFICATIONS TAB ─────────────────────────────── */}
-        {activeTab === 'Notifications' && (
+        {activeTab === t.notifications && (
           <div>
-            <SectionTitle>Notification Preferences</SectionTitle>
+            <SectionTitle>{t.notificationPreferences}</SectionTitle>
             <div>
-              <SettingRow icon={Volume2} label="New Releases" description="When artists you follow drop new music">
+              <SettingRow icon={Volume2} label={t.newReleases} description={t.newReleasesDesc}>
                 <Toggle checked={notifNewReleases} onChange={() => setNotifNewReleases((v) => !v)} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="AI Recommendations" description="Weekly Vibe report and personalized picks">
+              <SettingRow icon={Volume2} label={t.aiRecommendations} description={t.aiRecommendationsDesc}>
                 <Toggle checked={notifRecommendations} onChange={() => setNotifRecommendations((v) => !v)} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="Social Activity" description="When friends like or share tracks">
+              <SettingRow icon={Volume2} label={t.socialActivity} description={t.socialActivityDesc}>
                 <Toggle checked={notifActivity} onChange={() => setNotifActivity((v) => !v)} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="Marketing Emails" description="Promotions and news from VibeWave">
+              <SettingRow icon={Volume2} label={t.marketingEmails} description={t.marketingEmailsDesc}>
                 <Toggle checked={notifMarketing} onChange={() => setNotifMarketing((v) => !v)} />
               </SettingRow>
             </div>
@@ -412,25 +441,25 @@ export default function ProfileSettingsPage() {
         )}
 
         {/* ─── PRIVACY TAB ─────────────────────────────── */}
-        {activeTab === 'Privacy' && (
+        {activeTab === t.privacy && (
           <div>
-            <SectionTitle>Privacy</SectionTitle>
+            <SectionTitle>{t.privacy}</SectionTitle>
             <div>
-              <SettingRow icon={Volume2} label="Public Profile" description="Anyone can see your profile and playlists">
+              <SettingRow icon={Volume2} label={t.publicProfile} description={t.publicProfileDesc}>
                 <Toggle checked={publicProfile} onChange={() => setPublicProfile((v) => !v)} />
               </SettingRow>
-              <SettingRow icon={Volume2} label="Share Listening Activity" description="Show what you are playing to friends">
+              <SettingRow icon={Volume2} label={t.shareActivity} description={t.shareActivityDesc}>
                 <Toggle checked={shareActivity} onChange={() => setShareActivity((v) => !v)} />
               </SettingRow>
             </div>
 
             <div className="mt-8 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
               <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Data & Downloads
+                {t.dataAndDownloads}
               </p>
               {[
-                { label: 'Download your data', desc: 'Get a copy of your VibeWave data' },
-                { label: 'Request data deletion', desc: 'Ask us to erase your personal data' },
+                { label: t.downloadData, desc: t.downloadDataDesc },
+                { label: t.requestDeletion, desc: t.requestDeletionDesc },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -445,7 +474,7 @@ export default function ProfileSettingsPage() {
                     className="flex items-center gap-1 text-sm transition-vw hover:opacity-80"
                     style={{ color: '#9B4DE0' }}
                   >
-                    Request <ChevronRight size={14} />
+                    {t.request} <ChevronRight size={14} />
                   </button>
                 </div>
               ))}

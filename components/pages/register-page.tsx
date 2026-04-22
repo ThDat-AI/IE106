@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n-store'
 
 const PERKS = [
   'AI-powered personalized mixes daily',
@@ -12,6 +13,7 @@ const PERKS = [
 ]
 
 export default function RegisterPage() {
+  const { t, language } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [errors, setErrors] = useState<Partial<typeof form>>({})
@@ -59,13 +61,18 @@ export default function RegisterPage() {
         style={{ backgroundColor: '#1F162E', borderRight: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(ellipse 70% 60% at 70% 30%, rgba(155,77,224,0.5), transparent 70%)', pointerEvents: 'none' }} aria-hidden="true" />
-        <div className="relative flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+        <div className="relative flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
           </div>
-          <span className="font-display font-bold text-lg" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+          <div className="flex flex-col -space-y-0.5">
+            <span className="font-display font-bold text-lg leading-tight" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+            <span className="text-[10px] font-medium leading-tight" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {t.musicThatWorks}
+            </span>
+          </div>
         </div>
         <div className="relative">
           <p className="font-display font-bold mb-8" style={{ fontSize: 36, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.8px', lineHeight: 1.1 }}>

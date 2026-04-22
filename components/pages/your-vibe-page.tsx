@@ -1,42 +1,63 @@
 "use client"
 
-import { Sparkles, RefreshCw, Play, ChevronRight } from 'lucide-react'
+import { Sparkles, RefreshCw, Play, ChevronRight, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
-import { SAMPLE_TRACKS } from '@/lib/player-store'
+import { SAMPLE_TRACKS, type Track } from '@/lib/player-store'
+import { searchMusic, searchArtistImage } from '@/lib/music-api'
+import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
 
-const MOODS = [
-  { label: 'Focus', color: '#9B4DE0', active: true },
-  { label: 'Energize', color: '#6b3ab5', active: false },
-  { label: 'Relax', color: '#4a2a7a', active: false },
-  { label: 'Sleep', color: '#3d1f5c', active: false },
-  { label: 'Party', color: '#7a3dc8', active: false },
-]
-
-const AI_MIXES = [
-  { id: 'am1', title: 'Your Daily Mix 1', subtitle: 'The Weeknd · Drake · Nav', href: '/playlist/daily-mix-1' },
-  { id: 'am2', title: 'Focus Flow', subtitle: 'Hans Zimmer · Ludovico · Max Richter', href: '/playlist/focus-flow' },
-  { id: 'am3', title: 'Late Night Feels', subtitle: 'Frank Ocean · SZA · Daniel Caesar', href: '/playlist/late-night-feels' },
-  { id: 'am4', title: 'Workout Boost', subtitle: 'Eminem · Kanye · Jay-Z', href: '/playlist/workout-boost' },
-  { id: 'am5', title: 'Sunday Morning', subtitle: 'John Mayer · Jack Johnson · Ben Harper', href: '/playlist/sunday-morning' },
-]
-
-const RECENTLY_DISCOVERED = [
-  { id: 'rd1', title: 'Midnight Rain', subtitle: 'Taylor Swift', href: '/track/midnight-rain' },
-  { id: 'rd2', title: 'Creepin\'', subtitle: 'Metro Boomin & The Weeknd', href: '/track/creepin' },
-  { id: 'rd3', title: 'Lift Me Up', subtitle: 'Rihanna', href: '/track/lift-me-up' },
-  { id: 'rd4', title: 'Sun to Me', subtitle: 'Zach Bryan', href: '/track/sun-to-me' },
-]
-
-const TOP_ARTISTS = [
-  { id: 'ta1', title: 'The Weeknd', subtitle: '47 plays this month', href: '/artist/the-weeknd' },
-  { id: 'ta2', title: 'Dua Lipa', subtitle: '38 plays this month', href: '/artist/dua-lipa' },
-  { id: 'ta3', title: 'Drake', subtitle: '31 plays this month', href: '/artist/drake' },
-  { id: 'ta4', title: 'Olivia Rodrigo', subtitle: '28 plays this month', href: '/artist/olivia-rodrigo' },
-]
-
 export default function YourVibePage() {
+  const { t } = useTranslation()
+  const [mixes, setMixes] = useState<Track[]>([])
+  const [discovered, setDiscovered] = useState<Track[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const MOODS = [
+    { label: 'Focus', color: '#9B4DE0', active: true },
+    { label: 'Energize', color: '#6b3ab5', active: false },
+    { label: 'Relax', color: '#4a2a7a', active: false },
+    { label: 'Sleep', color: '#3d1f5c', active: false },
+    { label: 'Party', color: '#7a3dc8', active: false },
+  ]
+
+  const INITIAL_ARTISTS = [
+    { id: 'ta1', title: 'Sơn Tùng M-TP', subtitle: `47 ${t.playsThisMonth}`, href: '/artist/son-tung-mtp', image: '' },
+    { id: 'ta2', title: 'Hoàng Thùy Linh', subtitle: `38 ${t.playsThisMonth}`, href: '/artist/hoang-thuy-linh', image: '' },
+    { id: 'ta3', title: 'Đen Vâu', subtitle: `31 ${t.playsThisMonth}`, href: '/artist/den', image: '' },
+    { id: 'ta4', title: 'GREY D', subtitle: `28 ${t.playsThisMonth}`, href: '/artist/grey-d', image: '' },
+  ]
+
+  const [topArtists, setTopArtists] = useState(INITIAL_ARTISTS)
+
+  async function fetchData() {
+    setIsLoading(true)
+    try {
+      const [mixData, discoveredData, ...artistImages] = await Promise.all([
+        searchMusic('V-Pop Hits', 5),
+        searchMusic('Nhạc trẻ mới nhất', 4),
+        ...INITIAL_ARTISTS.map(a => searchArtistImage(a.title))
+      ])
+      
+      setMixes(mixData)
+      setDiscovered(discoveredData)
+      setTopArtists(INITIAL_ARTISTS.map((a, i) => ({
+        ...a,
+        image: artistImages[i]
+      })))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
   return (
     <div className="space-y-16">
 
@@ -50,31 +71,33 @@ export default function YourVibePage() {
                 className="text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md"
                 style={{ backgroundColor: 'rgba(155,77,224,0.15)', color: '#9B4DE0' }}
               >
-                AI Powered
+                {t.aiPowered}
               </span>
             </div>
             <h1
               className="font-display font-bold leading-display mb-4"
               style={{ fontSize: 56, color: 'rgba(255,255,255,0.95)', letterSpacing: '-1.2px', lineHeight: 0.96 }}
             >
-              Your Vibe
+              {t.yourVibe}
             </h1>
             <p className="text-base max-w-lg" style={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
-              Personalized music experiences crafted by AI — based on your listening habits, time of day, and mood.
+              {t.yourVibeSub}
             </p>
           </div>
           <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
+            onClick={fetchData}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-vw hover:opacity-80 disabled:opacity-50"
             style={{ backgroundColor: 'rgba(155,77,224,0.12)', color: '#9B4DE0', border: '1px solid rgba(155,77,224,0.25)' }}
           >
-            <RefreshCw size={14} />
-            Refresh
+            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            {t.refresh}
           </button>
         </div>
 
         {/* Mood selector */}
         <div className="flex items-center gap-3 mt-8">
-          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Mood:</span>
+          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.mood}:</span>
           {MOODS.map((mood) => (
             <button
               key={mood.label}
@@ -106,21 +129,31 @@ export default function YourVibePage() {
             aria-hidden="true"
           />
           <div className="relative flex items-center gap-8">
-            <div
-              className="w-32 h-32 rounded-2xl shrink-0 flex items-center justify-center text-4xl font-display font-bold"
-              style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)' }}
-            >
-              D
+            <div className="shrink-0">
+              {mixes[0] ? (
+                <img 
+                  src={mixes[0].albumArt} 
+                  alt="Daily Mix" 
+                  className="w-32 h-32 rounded-2xl object-cover shadow-2xl shadow-purple-500/20"
+                />
+              ) : (
+                <div
+                  className="w-32 h-32 rounded-2xl flex items-center justify-center text-4xl font-display font-bold"
+                  style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)' }}
+                >
+                  D
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9B4DE0' }}>
-                Your Top Pick Today
+                {t.topPickToday}
               </span>
               <h2 className="font-display font-bold mt-1 mb-2" style={{ fontSize: 32, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-                Daily Mix 1
+                V-Pop Daily Mix
               </h2>
               <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                The Weeknd, Drake, Nav, 21 Savage &amp; more · 25 songs
+                {mixes[0]?.artist || '...'} &amp; các nghệ sĩ V-Pop hàng đầu · {isLoading ? '...' : '25'} bài hát
               </p>
               <div className="flex items-center gap-3">
                 <button
@@ -128,14 +161,14 @@ export default function YourVibePage() {
                   style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
                 >
                   <Play size={15} fill="white" />
-                  Play Now
+                  {t.listenNow}
                 </button>
                 <Link
                   href="/playlist/daily-mix-1"
                   className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
                   style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  View Playlist <ChevronRight size={14} />
+                  {t.viewPlaylist} <ChevronRight size={14} />
                 </Link>
               </div>
             </div>
@@ -147,13 +180,26 @@ export default function YourVibePage() {
       <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display font-semibold" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-            Your AI Mixes
+            {t.collectionsForYou}
           </h2>
         </div>
         <div className="grid grid-cols-5 gap-4">
-          {AI_MIXES.map((item) => (
-            <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} href={item.href} type="playlist" />
-          ))}
+          {isLoading ? (
+            Array(5).fill(0).map((_, i) => (
+              <div key={i} className="aspect-square rounded-2xl bg-white/5 animate-pulse" />
+            ))
+          ) : (
+            mixes.map((track) => (
+              <MusicCard 
+                key={track.id} 
+                id={track.id} 
+                title={track.title} 
+                subtitle={track.artist} 
+                track={track}
+                type="track" 
+              />
+            ))
+          )}
         </div>
       </section>
 
@@ -161,21 +207,34 @@ export default function YourVibePage() {
       <div className="grid grid-cols-2 gap-8">
         <section>
           <h2 className="font-display font-semibold mb-6" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-            Recently Discovered
+            {t.recentlyDiscovered}
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            {RECENTLY_DISCOVERED.map((item) => (
-              <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} href={item.href} type="track" />
-            ))}
+            {isLoading ? (
+              Array(4).fill(0).map((_, i) => (
+                <div key={i} className="h-24 rounded-2xl bg-white/5 animate-pulse" />
+              ))
+            ) : (
+              discovered.map((track) => (
+                <MusicCard 
+                  key={track.id} 
+                  id={track.id} 
+                  title={track.title} 
+                  subtitle={track.artist} 
+                  track={track}
+                  type="track" 
+                />
+              ))
+            )}
           </div>
         </section>
 
         <section>
           <h2 className="font-display font-semibold mb-6" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-            Your Top Artists
+            {t.topArtists}
           </h2>
           <div className="space-y-3">
-            {TOP_ARTISTS.map((artist, i) => (
+            {topArtists.map((artist, i) => (
               <Link
                 key={artist.id}
                 href={artist.href}
@@ -186,10 +245,14 @@ export default function YourVibePage() {
                   {i + 1}
                 </span>
                 <div
-                  className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold"
+                  className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold overflow-hidden"
                   style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)', border: '2px solid rgba(255,255,255,0.1)' }}
                 >
-                  {artist.title.charAt(0)}
+                  {artist.image ? (
+                    <img src={artist.image} alt={artist.title} className="w-full h-full object-cover" />
+                  ) : (
+                    artist.title.charAt(0)
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{artist.title}</p>
@@ -205,14 +268,14 @@ export default function YourVibePage() {
       {/* Listening stats */}
       <section>
         <h2 className="font-display font-semibold mb-6" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-          This Month
+          {t.monthlyStats}
         </h2>
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Hours Listened', value: '48h', sub: '+12% vs last month' },
-            { label: 'Songs Played', value: '312', sub: '62 unique artists' },
-            { label: 'Liked Songs', value: '243', sub: '18 added this month' },
-            { label: 'Playlists', value: '7', sub: '2 created recently' },
+            { label: t.hoursListened, value: '48h', sub: `+12% ${t.thanLastMonth}` },
+            { label: t.tracksPlayed, value: '312', sub: `${t.fromDifferentArtists.replace('artists', '62 nghệ sĩ')}` },
+            { label: t.favoriteTracks, value: '243', sub: `${t.addedThisMonth.replace('month', '18 bài mới tháng này')}` },
+            { label: t.playlistsCreated, value: '7', sub: `2 ${t.newlyCreated}` },
           ].map((stat) => (
             <div
               key={stat.label}

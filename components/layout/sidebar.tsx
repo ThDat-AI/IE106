@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslation } from '@/lib/i18n-store'
 import {
   Home,
   Sparkles,
@@ -15,35 +16,36 @@ import {
   Clock,
 } from 'lucide-react'
 
-const NAV_ITEMS = [
-  { icon: Home, label: 'Home', href: '/' },
-  { icon: Sparkles, label: 'Your Vibe', href: '/your-vibe' },
-  { icon: Library, label: 'Library', href: '/library' },
-  { icon: BarChart2, label: 'Charts', href: '/charts' },
-]
-
-const LIBRARY_ITEMS = [
-  { icon: Heart, label: 'Liked Songs', href: '/library/liked', count: '243' },
-  { icon: Clock, label: 'Recently Played', href: '/library/recent', count: null },
-]
-
-const PLAYLISTS = [
-  { label: 'Deep Focus', href: '/playlist/deep-focus' },
-  { label: 'Late Night Drive', href: '/playlist/late-night-drive' },
-  { label: 'Morning Energy', href: '/playlist/morning-energy' },
-  { label: 'Chill Vibes', href: '/playlist/chill-vibes' },
-  { label: 'Workout Beats', href: '/playlist/workout-beats' },
-]
-
 interface SidebarProps {
   collapsed?: boolean
   onToggle?: (collapsed: boolean) => void
 }
 
 export default function Sidebar({ collapsed: externalCollapsed, onToggle }: SidebarProps) {
+  const { t } = useTranslation()
   const pathname = usePathname()
   const [internalCollapsed, setInternalCollapsed] = useState(false)
   const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed
+
+  const NAV_ITEMS = [
+    { icon: Home, label: t.home, href: '/' },
+    { icon: Sparkles, label: t.yourVibe, href: '/your-vibe' },
+    { icon: Library, label: t.library, href: '/library' },
+    { icon: BarChart2, label: t.charts, href: '/charts' },
+  ]
+
+  const LIBRARY_ITEMS = [
+    { icon: Heart, label: t.likedSongs, href: '/library/liked', count: '243' },
+    { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
+  ]
+
+  const PLAYLISTS = [
+    { label: 'Deep Focus', href: '/playlist/deep-focus' },
+    { label: 'Late Night Drive', href: '/playlist/late-night-drive' },
+    { label: 'Morning Energy', href: '/playlist/morning-energy' },
+    { label: 'Chill Vibes', href: '/playlist/chill-vibes' },
+    { label: 'Workout Beats', href: '/playlist/workout-beats' },
+  ]
 
   function toggle() {
     const next = !collapsed
@@ -123,7 +125,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <nav aria-label="Library" className="px-2">
             <div className="px-3 pb-2 flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Library
+                {t.library}
               </span>
               <button
                 className="w-5 h-5 rounded-md flex items-center justify-center transition-vw hover:bg-white/10"
@@ -168,7 +170,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <div className="px-2 flex-1 overflow-y-auto">
             <div className="px-3 pb-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Playlists
+                {t.playlists}
               </span>
             </div>
             {PLAYLISTS.map(({ label, href }) => {

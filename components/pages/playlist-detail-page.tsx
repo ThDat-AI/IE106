@@ -6,12 +6,7 @@ import MusicCard from '@/components/music/music-card'
 import { SAMPLE_TRACKS } from '@/lib/player-store'
 import { usePlayerStore } from '@/lib/player-store'
 
-const PLAYLIST_TRACKS = [
-  ...SAMPLE_TRACKS,
-  { id: '6', title: 'As It Was', artist: 'Harry Wilde', album: 'Harry\'s House', duration: 167 },
-  { id: '7', title: 'Anti-Hero', artist: 'Taylor Swift', album: 'Midnights', duration: 200 },
-  { id: '8', title: 'Flowers', artist: 'Miley Cyrus', album: 'Endless Summer Vacation', duration: 197 },
-]
+const PLAYLIST_TRACKS = SAMPLE_TRACKS.slice(0, 8)
 
 const RELATED = [
   { id: 'r1', title: 'Chill Vibes', subtitle: '61 songs · VibeWave', href: '/playlist/chill-vibes' },

@@ -15,6 +15,7 @@ interface MusicCardProps {
   colorAccent?: string
   className?: string
   track?: Track
+  image?: string
 }
 
 const GRADIENT_PAIRS = [
@@ -35,6 +36,7 @@ export default function MusicCard({
   colorAccent,
   className,
   track,
+  image,
 }: MusicCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
@@ -63,6 +65,8 @@ export default function MusicCard({
     setIsLiked(!isLiked)
   }
 
+  const displayImage = track?.albumArt || image
+
   const card = (
     <div
       className={cn('relative rounded-2xl overflow-hidden cursor-pointer group', className)}
@@ -81,12 +85,20 @@ export default function MusicCard({
       <div
         className="relative aspect-square w-full flex items-center justify-center text-4xl font-display font-bold overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+          background: displayImage ? 'none' : `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
         }}
       >
-        <span style={{ color: 'rgba(255,255,255,0.6)' }}>
-          {title.charAt(0).toUpperCase()}
-        </span>
+        {displayImage ? (
+          <img
+            src={displayImage}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {title.charAt(0).toUpperCase()}
+          </span>
+        )}
 
         {/* Play overlay */}
         <div

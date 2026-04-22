@@ -3,15 +3,12 @@
 import { Play, Shuffle, Heart, MoreHorizontal, Clock, ExternalLink } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
-import { SAMPLE_TRACKS, usePlayerStore } from '@/lib/player-store'
+import { SAMPLE_TRACKS, usePlayerStore, type Track } from '@/lib/player-store'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { searchMusic } from '@/lib/music-api'
 
-const ALBUM_TRACKS = [
-  ...SAMPLE_TRACKS,
-  { id: '6', title: 'Escape from LA', artist: 'The Weeknd', album: 'After Hours', duration: 383 },
-  { id: '7', title: 'Heartless', artist: 'The Weeknd', album: 'After Hours', duration: 215 },
-  { id: '8', title: 'Faith', artist: 'The Weeknd', album: 'After Hours', duration: 401 },
-]
+const ALBUM_TRACKS = SAMPLE_TRACKS.slice(0, 8)
 
 const MORE_FROM_ARTIST = [
   { id: 'm1', title: 'Starboy', subtitle: '2016 · The Weeknd', href: '/album/starboy' },
@@ -27,6 +24,18 @@ function slugToTitle(slug: string) {
 export default function AlbumDetailPage({ slug }: { slug: string }) {
   const title = slugToTitle(slug)
   const { setTrack } = usePlayerStore()
+  const [tracks, setTracks] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadAlbumData() {
+      setIsLoading(true)
+      const data = await searchMusic(title, 12)
+      setTracks(data)
+      setIsLoading(false)
+    }
+    loadAlbumData()
+  }, [title])
 
   return (
     <div className="space-y-12">
@@ -34,14 +43,24 @@ export default function AlbumDetailPage({ slug }: { slug: string }) {
       {/* Hero */}
       <div className="flex items-end gap-8">
         <div
-          className="w-52 h-52 rounded-2xl shrink-0 flex items-center justify-center text-6xl font-display font-bold"
+          className="w-52 h-52 rounded-2xl shrink-0 overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
-            color: 'rgba(255,255,255,0.7)',
             boxShadow: '0 24px 64px rgba(155,77,224,0.2)',
           }}
         >
-          {title.charAt(0)}
+          {tracks[0]?.albumArt ? (
+            <img src={tracks[0].albumArt} alt={title} className="w-full h-full object-cover" />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center font-display font-bold text-6xl"
+              style={{
+                background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
+                color: 'rgba(255,255,255,0.7)',
+              }}
+            >
+              {title.charAt(0)}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 pb-2">
@@ -101,7 +120,7 @@ export default function AlbumDetailPage({ slug }: { slug: string }) {
           </span>
         </div>
         <div className="py-2">
-          {ALBUM_TRACKS.map((track, i) => (
+          {tracks.map((track, i) => (
             <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} />
           ))}
         </div>

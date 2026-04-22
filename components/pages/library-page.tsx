@@ -3,51 +3,53 @@
 import { useState } from 'react'
 import { Plus, Grid3X3, List, Search } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
+import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
 
 type Tab = 'playlists' | 'albums' | 'artists' | 'liked'
 type View = 'grid' | 'list'
 
-const PLAYLISTS = [
-  { id: 'p1', title: 'Deep Focus', subtitle: '42 songs · 2h 48m', href: '/playlist/deep-focus' },
-  { id: 'p2', title: 'Late Night Drive', subtitle: '28 songs · 1h 52m', href: '/playlist/late-night-drive' },
-  { id: 'p3', title: 'Morning Energy', subtitle: '35 songs · 2h 10m', href: '/playlist/morning-energy' },
-  { id: 'p4', title: 'Chill Vibes', subtitle: '61 songs · 4h 2m', href: '/playlist/chill-vibes' },
-  { id: 'p5', title: 'Workout Beats', subtitle: '55 songs · 3h 20m', href: '/playlist/workout-beats' },
-  { id: 'p6', title: 'Sunday Mornings', subtitle: '19 songs · 1h 14m', href: '/playlist/sunday-mornings' },
-  { id: 'p7', title: 'Study Session', subtitle: '47 songs · 3h 05m', href: '/playlist/study-session' },
-  { id: 'p8', title: 'Road Trip', subtitle: '38 songs · 2h 31m', href: '/playlist/road-trip' },
-]
-
-const ALBUMS = [
-  { id: 'a1', title: 'After Hours', subtitle: 'The Weeknd · 2020', href: '/album/after-hours' },
-  { id: 'a2', title: 'Future Nostalgia', subtitle: 'Dua Lipa · 2020', href: '/album/future-nostalgia' },
-  { id: 'a3', title: 'SOUR', subtitle: 'Olivia Rodrigo · 2021', href: '/album/sour' },
-  { id: 'a4', title: 'Justice', subtitle: 'Justin Bieber · 2021', href: '/album/justice' },
-  { id: 'a5', title: 'Certified Lover Boy', subtitle: 'Drake · 2021', href: '/album/clb' },
-  { id: 'a6', title: 'Planet Her', subtitle: 'Doja Cat · 2021', href: '/album/planet-her' },
-]
-
-const ARTISTS = [
-  { id: 'ar1', title: 'The Weeknd', subtitle: '47 songs saved', href: '/artist/the-weeknd' },
-  { id: 'ar2', title: 'Dua Lipa', subtitle: '23 songs saved', href: '/artist/dua-lipa' },
-  { id: 'ar3', title: 'Drake', subtitle: '31 songs saved', href: '/artist/drake' },
-  { id: 'ar4', title: 'Olivia Rodrigo', subtitle: '18 songs saved', href: '/artist/olivia-rodrigo' },
-  { id: 'ar5', title: 'Taylor Swift', subtitle: '44 songs saved', href: '/artist/taylor-swift' },
-  { id: 'ar6', title: 'Post Malone', subtitle: '27 songs saved', href: '/artist/post-malone' },
-]
-
-const TABS: { id: Tab; label: string; count: number }[] = [
-  { id: 'playlists', label: 'Playlists', count: 8 },
-  { id: 'albums', label: 'Albums', count: 6 },
-  { id: 'artists', label: 'Artists', count: 6 },
-  { id: 'liked', label: 'Liked Songs', count: 243 },
-]
-
 export default function LibraryPage() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('playlists')
   const [view, setView] = useState<View>('grid')
   const [searchQ, setSearchQ] = useState('')
+
+  const PLAYLISTS = [
+    { id: 'p1', title: 'Deep Focus', subtitle: `42 ${t.songsLabel} · 2h 48m`, href: '/playlist/deep-focus' },
+    { id: 'p2', title: 'Late Night Drive', subtitle: `28 ${t.songsLabel} · 1h 52m`, href: '/playlist/late-night-drive' },
+    { id: 'p3', title: 'Morning Energy', subtitle: `35 ${t.songsLabel} · 2h 10m`, href: '/playlist/morning-energy' },
+    { id: 'p4', title: 'Chill Vibes', subtitle: `61 ${t.songsLabel} · 4h 2m`, href: '/playlist/chill-vibes' },
+    { id: 'p5', title: 'Workout Beats', subtitle: `55 ${t.songsLabel} · 3h 20m`, href: '/playlist/workout-beats' },
+    { id: 'p6', title: 'Sunday Mornings', subtitle: `19 ${t.songsLabel} · 1h 14m`, href: '/playlist/sunday-mornings' },
+    { id: 'p7', title: 'Study Session', subtitle: `47 ${t.songsLabel} · 3h 05m`, href: '/playlist/study-session' },
+    { id: 'p8', title: 'Road Trip', subtitle: `38 ${t.songsLabel} · 2h 31m`, href: '/playlist/road-trip' },
+  ]
+
+  const ALBUMS = [
+    { id: 'a1', title: 'After Hours', subtitle: 'The Weeknd · 2020', href: '/album/after-hours' },
+    { id: 'a2', title: 'Future Nostalgia', subtitle: 'Dua Lipa · 2020', href: '/album/future-nostalgia' },
+    { id: 'a3', title: 'SOUR', subtitle: 'Olivia Rodrigo · 2021', href: '/album/sour' },
+    { id: 'a4', title: 'Justice', subtitle: 'Justin Bieber · 2021', href: '/album/justice' },
+    { id: 'a5', title: 'Certified Lover Boy', subtitle: 'Drake · 2021', href: '/album/clb' },
+    { id: 'a6', title: 'Planet Her', subtitle: 'Doja Cat · 2021', href: '/album/planet-her' },
+  ]
+
+  const ARTISTS = [
+    { id: 'ar1', title: 'The Weeknd', subtitle: `47 ${t.songsSaved}`, href: '/artist/the-weeknd' },
+    { id: 'ar2', title: 'Dua Lipa', subtitle: `23 ${t.songsSaved}`, href: '/artist/dua-lipa' },
+    { id: 'ar3', title: 'Drake', subtitle: `31 ${t.songsSaved}`, href: '/artist/drake' },
+    { id: 'ar4', title: 'Olivia Rodrigo', subtitle: `18 ${t.songsSaved}`, href: '/artist/olivia-rodrigo' },
+    { id: 'ar5', title: 'Taylor Swift', subtitle: `44 ${t.songsSaved}`, href: '/artist/taylor-swift' },
+    { id: 'ar6', title: 'Post Malone', subtitle: `27 ${t.songsSaved}`, href: '/artist/post-malone' },
+  ]
+
+  const TABS: { id: Tab; label: string; count: number }[] = [
+    { id: 'playlists', label: t.playlists, count: 8 },
+    { id: 'albums', label: t.albums, count: 6 },
+    { id: 'artists', label: t.artists, count: 6 },
+    { id: 'liked', label: t.likedSongs, count: 243 },
+  ]
 
   const items = activeTab === 'playlists' ? PLAYLISTS
     : activeTab === 'albums' ? ALBUMS
@@ -68,10 +70,10 @@ export default function LibraryPage() {
             className="font-display font-bold leading-display"
             style={{ fontSize: 56, color: 'rgba(255,255,255,0.95)', letterSpacing: '-1.2px', lineHeight: 0.96 }}
           >
-            Your Library
+            {t.library}
           </h1>
           <p className="mt-4 text-base" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
-            Everything you&apos;ve saved and created.
+            {t.librarySub}
           </p>
         </div>
         <button
@@ -79,7 +81,7 @@ export default function LibraryPage() {
           style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
         >
           <Plus size={15} />
-          New Playlist
+          {t.newPlaylist}
         </button>
       </div>
 
@@ -116,7 +118,7 @@ export default function LibraryPage() {
               type="text"
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              placeholder="Filter..."
+              placeholder={t.filter}
               className="pl-8 pr-3 py-2 rounded-lg text-sm outline-none transition-vw"
               style={{
                 backgroundColor: '#1F162E',
@@ -165,16 +167,16 @@ export default function LibraryPage() {
               ♥
             </div>
             <div>
-              <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Playlist</p>
-              <h2 className="font-display font-bold mb-2" style={{ fontSize: 36, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>Liked Songs</h2>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>243 songs · About 16 hours</p>
+              <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.playlist}</p>
+              <h2 className="font-display font-bold mb-2" style={{ fontSize: 36, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>{t.likedSongs}</h2>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>243 {t.songsLabel} · {t.aboutLabel} 16 {t.hoursLabel}</p>
               <div className="flex items-center gap-3 mt-4">
                 <Link
                   href="/library/liked"
                   className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85"
                   style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
                 >
-                  View All
+                  {t.viewAll}
                 </Link>
               </div>
             </div>
@@ -192,7 +194,7 @@ export default function LibraryPage() {
               ))}
               {filtered.length === 0 && (
                 <div className="col-span-full py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  <p className="text-sm">No results for &ldquo;{searchQ}&rdquo;</p>
+                  <p className="text-sm">{t.noResults} &ldquo;{searchQ}&rdquo;</p>
                 </div>
               )}
             </div>
@@ -219,7 +221,7 @@ export default function LibraryPage() {
               ))}
               {filtered.length === 0 && (
                 <div className="py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  <p className="text-sm">No results for &ldquo;{searchQ}&rdquo;</p>
+                  <p className="text-sm">{t.noResults} &ldquo;{searchQ}&rdquo;</p>
                 </div>
               )}
             </div>

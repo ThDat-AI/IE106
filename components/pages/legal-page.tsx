@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '@/lib/i18n-store'
 
 interface Section {
   id: string
@@ -15,6 +16,7 @@ interface LegalPageProps {
 }
 
 export default function LegalPage({ title, lastUpdated, sections }: LegalPageProps) {
+  const { t } = useTranslation()
   const [activeSection, setActiveSection] = useState(sections[0]?.id ?? '')
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -52,7 +54,7 @@ export default function LegalPage({ title, lastUpdated, sections }: LegalPagePro
           {title}
         </h1>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>
-          Last updated: {lastUpdated}
+          {t.lastUpdatedLabel}: {lastUpdated}
         </p>
       </div>
 
@@ -65,7 +67,7 @@ export default function LegalPage({ title, lastUpdated, sections }: LegalPagePro
               className="text-[11px] font-semibold uppercase tracking-widest mb-4"
               style={{ color: 'rgba(255,255,255,0.25)' }}
             >
-              Contents
+              {t.contentsLabel}
             </p>
             <div className="space-y-1">
               {sections.map((s) => (

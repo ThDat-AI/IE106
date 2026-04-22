@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n-store'
 
 export default function LoginPage() {
+  const { t, language } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,10 +15,10 @@ export default function LoginPage() {
 
   function validate() {
     const e: typeof errors = {}
-    if (!email) e.email = 'Email is required'
-    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Enter a valid email address'
-    if (!password) e.password = 'Password is required'
-    else if (password.length < 6) e.password = 'Password must be at least 6 characters'
+    if (!email) e.email = t.emailRequired
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = t.validEmail
+    if (!password) e.password = t.passwordRequired
+    else if (password.length < 6) e.password = t.passwordMin
     return e
   }
 
@@ -57,13 +59,18 @@ export default function LoginPage() {
           aria-hidden="true"
         />
         {/* Logo */}
-        <div className="relative flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <div className="relative flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
               <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
             </svg>
           </div>
-          <span className="font-display font-bold text-lg" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+          <div className="flex flex-col -space-y-0.5">
+            <span className="font-display font-bold text-lg leading-tight" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+            <span className="text-[10px] font-medium leading-tight" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {t.musicThatWorks}
+            </span>
+          </div>
         </div>
 
         {/* Quote */}
@@ -72,11 +79,15 @@ export default function LoginPage() {
             className="font-display font-bold leading-display mb-6"
             style={{ fontSize: 40, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.8px', lineHeight: 1.1 }}
           >
-            Music that works
-            <br />with you.
+            {t.musicThatWorks.split('.').map((part, i) => (
+              <span key={i}>
+                {part}
+                {i === 0 && <br />}
+              </span>
+            ))}
           </p>
           <p className="text-base" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
-            AI-powered personalization. Instant playback. Zero distraction.
+            {t.loginHeroSub}
           </p>
         </div>
       </div>
@@ -85,27 +96,32 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-md mx-auto w-full">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-10 lg:hidden">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <div className="flex items-center gap-3 mb-10 lg:hidden">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9B4DE0' }}>
+              <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
               </svg>
             </div>
-            <span className="font-display font-bold text-lg" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+            <div className="flex flex-col -space-y-0.5">
+              <span className="font-display font-bold text-lg leading-tight" style={{ color: 'rgba(255,255,255,0.95)' }}>VibeWave</span>
+              <span className="text-[10px] font-medium leading-tight" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {t.musicThatWorks}
+              </span>
+            </div>
           </div>
 
           <h1 className="font-display font-bold mb-2" style={{ fontSize: 32, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-            Welcome back
+            {t.welcomeBack}
           </h1>
           <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Sign in to continue listening.
+            {t.signInSub}
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Email
+                {t.email}
               </label>
               <input
                 id="email"
@@ -129,10 +145,10 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="password" className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  Password
+                  {t.password}
                 </label>
                 <Link href="#" className="text-xs transition-vw hover:opacity-80" style={{ color: '#9B4DE0' }}>
-                  Forgot password?
+                  {t.forgotPassword}
                 </Link>
               </div>
               <div className="relative">
@@ -142,7 +158,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t.enterPassword}
                   style={{ ...inputStyle(!!errors.password), paddingRight: 44 }}
                   onFocus={(e) => { if (!errors.password) e.currentTarget.style.borderColor = '#9B4DE0' }}
                   onBlur={(e) => { if (!errors.password) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
@@ -178,15 +194,15 @@ export default function LoginPage() {
               {loading ? (
                 <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
               ) : (
-                <>Sign In <ArrowRight size={15} /></>
+                <>{t.signIn} <ArrowRight size={15} /></>
               )}
             </button>
           </form>
 
           <p className="text-sm text-center mt-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Don&apos;t have an account?{' '}
+            {t.noAccount}{' '}
             <Link href="/register" className="font-medium transition-vw hover:opacity-80" style={{ color: '#9B4DE0' }}>
-              Create one
+              {t.createOne}
             </Link>
           </p>
         </div>

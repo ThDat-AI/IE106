@@ -3,7 +3,9 @@
 import { Play, Heart, UserPlus, MoreHorizontal } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
-import { SAMPLE_TRACKS, usePlayerStore } from '@/lib/player-store'
+import { SAMPLE_TRACKS, usePlayerStore, type Track } from '@/lib/player-store'
+import { useState, useEffect } from 'react'
+import { searchMusic } from '@/lib/music-api'
 
 const ARTIST_ALBUMS = [
   { id: 'aa1', title: 'After Hours', subtitle: '2020 · 14 songs', href: '/album/after-hours' },
@@ -20,12 +22,25 @@ const RELATED_ARTISTS = [
 ]
 
 function slugToName(slug: string) {
+  if (!slug) return ''
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
 export default function ArtistPage({ slug }: { slug: string }) {
   const name = slugToName(slug)
   const { setTrack } = usePlayerStore()
+  const [tracks, setTracks] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadArtistData() {
+      setIsLoading(true)
+      const data = await searchMusic(name, 10)
+      setTracks(data)
+      setIsLoading(false)
+    }
+    loadArtistData()
+  }, [name])
 
   return (
     <div className="space-y-12">
@@ -49,15 +64,25 @@ export default function ArtistPage({ slug }: { slug: string }) {
 
         <div className="relative flex items-end h-full p-8 gap-6">
           <div
-            className="w-28 h-28 rounded-full shrink-0 flex items-center justify-center font-display font-bold text-4xl"
+            className="w-28 h-28 rounded-full shrink-0 overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
-              color: 'rgba(255,255,255,0.75)',
               border: '3px solid rgba(255,255,255,0.15)',
               boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
             }}
           >
-            {name.charAt(0)}
+            {tracks[0]?.albumArt ? (
+              <img src={tracks[0].albumArt} alt={name} className="w-full h-full object-cover" />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center font-display font-bold text-4xl"
+                style={{
+                  background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
+                  color: 'rgba(255,255,255,0.75)',
+                }}
+              >
+                {name.charAt(0)}
+              </div>
+            )}
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>Verified Artist</p>
@@ -103,7 +128,7 @@ export default function ArtistPage({ slug }: { slug: string }) {
         </h2>
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="py-2">
-            {SAMPLE_TRACKS.map((track, i) => (
+            {tracks.map((track, i) => (
               <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
             ))}
           </div>

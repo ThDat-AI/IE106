@@ -1,10 +1,11 @@
 "use client"
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
-import { SAMPLE_TRACKS } from '@/lib/player-store'
+import { SAMPLE_TRACKS, usePlayerStore, type Track } from '@/lib/player-store'
+import { searchMusic } from '@/lib/music-api'
 
 const GENRES = [
   { label: 'Pop', color: '#9B4DE0' },
@@ -27,6 +28,32 @@ const TOP_RESULTS = [
 ]
 
 function SearchResults({ query }: { query: string }) {
+  const [results, setResults] = useState<Track[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const { setTrack } = usePlayerStore()
+
+  useEffect(() => {
+    if (!query) {
+      setResults([])
+      return
+    }
+
+    async function doSearch() {
+      setIsLoading(true)
+      try {
+        const data = await searchMusic(query, 20)
+        setResults(data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    const timer = setTimeout(doSearch, 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
   const hasQuery = query.length > 0
 
   if (!hasQuery) {
@@ -57,77 +84,84 @@ function SearchResults({ query }: { query: string }) {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="aspect-square rounded-2xl animate-pulse" style={{ backgroundColor: '#1F162E' }} />
+        ))}
+      </div>
+    )
+  }
+
+  const topResult = results[0]
+  const otherSongs = results.slice(1, 5)
+
   return (
     <div className="space-y-12">
-      {/* Top result + songs side by side */}
-      <div className="grid grid-cols-5 gap-6">
-        {/* Top result */}
-        <div className="col-span-2">
-          <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-            Top Result
-          </h2>
-          <div
-            className="p-6 rounded-2xl transition-vw hover:bg-white/[0.02] cursor-pointer group relative"
-            style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <div
-              className="w-20 h-20 rounded-2xl mb-4 flex items-center justify-center font-display font-bold text-3xl"
-              style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)' }}
-            >
-              {query.charAt(0).toUpperCase()}
+      {topResult ? (
+        <>
+          <div className="grid grid-cols-5 gap-6">
+            {/* Top result */}
+            <div className="col-span-2">
+              <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+                Top Result
+              </h2>
+              <div
+                onClick={() => setTrack(topResult)}
+                className="p-6 rounded-2xl transition-vw hover:bg-white/[0.02] cursor-pointer group relative"
+                style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <img
+                  src={topResult.albumArt}
+                  alt={topResult.title}
+                  className="w-24 h-24 rounded-2xl mb-4 object-cover shadow-2xl"
+                />
+                <h3 className="font-display font-bold mb-1" style={{ fontSize: 24, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+                  {topResult.title}
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Song · {topResult.artist}</p>
+                <button
+                  className="w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-vw absolute bottom-6 right-6"
+                  style={{ backgroundColor: '#9B4DE0', boxShadow: '0 4px 16px rgba(155,77,224,0.4)' }}
+                  aria-label={`Play ${topResult.title}`}
+                >
+                  <Play size={18} fill="white" className="text-white ml-0.5" />
+                </button>
+              </div>
             </div>
-            <h3 className="font-display font-bold mb-1" style={{ fontSize: 24, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-              {query}
-            </h3>
-            <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Song · The Weeknd</p>
-            <button
-              className="w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-vw absolute bottom-6 right-6"
-              style={{ backgroundColor: '#9B4DE0', boxShadow: '0 4px 16px rgba(155,77,224,0.4)' }}
-              aria-label={`Play ${query}`}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="white" style={{ marginLeft: 2 }}>
-                <path d="M3 2.5l10 5.5-10 5.5V2.5z"/>
-              </svg>
-            </button>
+
+            {/* Songs */}
+            <div className="col-span-3">
+              <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+                Songs
+              </h2>
+              <div className="space-y-1">
+                {otherSongs.map((track, i) => (
+                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Songs */}
-        <div className="col-span-3">
-          <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-            Songs
-          </h2>
-          <div className="space-y-1">
-            {SAMPLE_TRACKS.slice(0, 4).map((track, i) => (
-              <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} />
-            ))}
+          {/* Grid of other results */}
+          <div>
+            <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+              More Results
+            </h2>
+            <div className="grid grid-cols-4 gap-4">
+              {results.slice(5).map((r) => (
+                <MusicCard key={r.id} id={r.id} title={r.title} subtitle={r.artist} track={r} type="track" />
+              ))}
+            </div>
           </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <p className="text-xl font-medium" style={{ color: 'rgba(255,255,255,0.95)' }}>No results found for "{query}"</p>
+          <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Try searching for something else.</p>
         </div>
-      </div>
-
-      {/* Artists */}
-      <div>
-        <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-          Artists
-        </h2>
-        <div className="grid grid-cols-4 gap-4">
-          {TOP_RESULTS.filter(r => r.type === 'artist').concat(TOP_RESULTS.slice(0, 3)).slice(0, 4).map((r) => (
-            <MusicCard key={r.id} id={r.id} title={r.title} subtitle={r.subtitle} href={r.href} type={r.type} />
-          ))}
-        </div>
-      </div>
-
-      {/* Albums & Playlists */}
-      <div>
-        <h2 className="font-display font-semibold mb-4" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-          Albums &amp; Playlists
-        </h2>
-        <div className="grid grid-cols-4 gap-4">
-          {TOP_RESULTS.map((r) => (
-            <MusicCard key={r.id + '-2'} id={r.id + '2'} title={r.title} subtitle={r.subtitle} href={r.href} type={r.type} />
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   )
 }

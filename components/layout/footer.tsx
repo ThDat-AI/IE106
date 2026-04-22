@@ -1,26 +1,30 @@
 import Link from 'next/link'
-
-const FOOTER_LINKS = {
-  Product: [
-    { label: 'Home', href: '/' },
-    { label: 'Your Vibe', href: '/your-vibe' },
-    { label: 'Library', href: '/library' },
-    { label: 'Charts', href: '/charts' },
-  ],
-  Support: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'FAQ', href: '/faq' },
-  ],
-  Legal: [
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Copyright / DMCA', href: '/copyright' },
-    { label: 'Community Guidelines', href: '/community-guidelines' },
-  ],
-}
+import { useI18nStore, useTranslation, Language } from '@/lib/i18n-store'
 
 export default function Footer() {
+  const { t, language } = useTranslation()
+  const setLanguage = useI18nStore((state) => state.setLanguage)
+
+  const FOOTER_LINKS = {
+    [t.product]: [
+      { label: t.home, href: '/' },
+      { label: t.yourVibe, href: '/your-vibe' },
+      { label: t.library, href: '/library' },
+      { label: t.charts, href: '/charts' },
+    ],
+    [t.support]: [
+      { label: t.aboutUs, href: '/about' },
+      { label: t.contactUs, href: '/contact' },
+      { label: t.faq, href: '/faq' },
+    ],
+    [t.legal]: [
+      { label: t.termsOfService, href: '/terms' },
+      { label: t.privacyPolicy, href: '/privacy' },
+      { label: t.copyright, href: '/copyright' },
+      { label: t.communityGuidelines, href: '/community-guidelines' },
+    ],
+  }
+
   return (
     <footer
       className="w-full mt-auto"
@@ -47,7 +51,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Music that works with you
+              {t.musicThatWorks}
             </p>
           </div>
 
@@ -83,19 +87,19 @@ export default function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            &copy; {new Date().getFullYear()} VibeWave. All rights reserved.
+            &copy; {new Date().getFullYear()} VibeWave. {t.allRightsReserved}
           </p>
 
           <div className="flex items-center gap-4">
             <select
-              className="bg-transparent text-xs border-none outline-none cursor-pointer"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="bg-[#1F162E] text-xs border-none outline-none cursor-pointer"
               style={{ color: 'rgba(255,255,255,0.35)' }}
               aria-label="Language selector"
             >
               <option value="en">English</option>
               <option value="vi">Tiếng Việt</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
             </select>
           </div>
         </div>
