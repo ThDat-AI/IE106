@@ -1,0 +1,199 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* VibeWave Dark Design System */
+  --vw-bg: #170F23;
+  --vw-surface: #1F162E;
+  --vw-elevated: #2A1F3D;
+  --vw-divider: #3A2D52;
+  --vw-purple: #9B4DE0;
+  --vw-purple-glow: rgba(155, 77, 224, 0.15);
+  --vw-purple-dim: rgba(155, 77, 224, 0.08);
+  --vw-text-primary: rgba(255, 255, 255, 0.95);
+  --vw-text-secondary: rgba(255, 255, 255, 0.65);
+  --vw-text-muted: rgba(255, 255, 255, 0.35);
+  --vw-border: rgba(255, 255, 255, 0.08);
+  --vw-border-warm: #3A2D52;
+
+  /* Map to Tailwind semantic tokens */
+  --background: #170F23;
+  --foreground: rgba(255, 255, 255, 0.95);
+  --card: #1F162E;
+  --card-foreground: rgba(255, 255, 255, 0.95);
+  --popover: #2A1F3D;
+  --popover-foreground: rgba(255, 255, 255, 0.95);
+  --primary: #9B4DE0;
+  --primary-foreground: rgba(255, 255, 255, 0.95);
+  --secondary: #2A1F3D;
+  --secondary-foreground: rgba(255, 255, 255, 0.65);
+  --muted: #1F162E;
+  --muted-foreground: rgba(255, 255, 255, 0.35);
+  --accent: rgba(155, 77, 224, 0.08);
+  --accent-foreground: rgba(255, 255, 255, 0.95);
+  --destructive: #ef4444;
+  --destructive-foreground: rgba(255, 255, 255, 0.95);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #2A1F3D;
+  --ring: rgba(155, 77, 224, 0.6);
+  --radius: 0.5rem;
+  --sidebar: #1F162E;
+  --sidebar-foreground: rgba(255, 255, 255, 0.95);
+  --sidebar-primary: #9B4DE0;
+  --sidebar-primary-foreground: rgba(255, 255, 255, 0.95);
+  --sidebar-accent: rgba(155, 77, 224, 0.08);
+  --sidebar-accent-foreground: rgba(255, 255, 255, 0.95);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(155, 77, 224, 0.6);
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-montserrat), 'Montserrat', system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: 8px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 16px;
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* VibeWave custom colors */
+  --color-vw-bg: var(--vw-bg);
+  --color-vw-surface: var(--vw-surface);
+  --color-vw-elevated: var(--vw-elevated);
+  --color-vw-divider: var(--vw-divider);
+  --color-vw-purple: var(--vw-purple);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html {
+    background-color: #170F23;
+  }
+  body {
+    background-color: #170F23;
+    color: rgba(255, 255, 255, 0.95);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(155, 77, 224, 0.3);
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(155, 77, 224, 0.5);
+  }
+}
+
+/* VibeWave utility classes */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .text-primary-text {
+    color: rgba(255, 255, 255, 0.95);
+  }
+  .text-secondary-text {
+    color: rgba(255, 255, 255, 0.65);
+  }
+  .text-muted-text {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .bg-vw-bg { background-color: #170F23; }
+  .bg-vw-surface { background-color: #1F162E; }
+  .bg-vw-elevated { background-color: #2A1F3D; }
+  .bg-vw-purple { background-color: #9B4DE0; }
+  .bg-vw-purple-glow { background-color: rgba(155, 77, 224, 0.15); }
+  .bg-vw-purple-dim { background-color: rgba(155, 77, 224, 0.08); }
+
+  .border-vw { border-color: rgba(255, 255, 255, 0.08); }
+  .border-vw-warm { border-color: #3A2D52; }
+  .border-vw-purple { border-color: #9B4DE0; }
+
+  .text-vw-purple { color: #9B4DE0; }
+
+  .ring-vw-purple { --tw-ring-color: rgba(155, 77, 224, 0.6); }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .card-hover:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(155, 77, 224, 0.15);
+    border-color: rgba(155, 77, 224, 0.3);
+  }
+  .card-hover:active {
+    transform: scale(0.97);
+    background-color: rgba(155, 77, 224, 0.08);
+  }
+
+  /* Button active state */
+  .btn-active:active {
+    transform: scale(0.97);
+  }
+
+  /* Sidebar active item */
+  .sidebar-active {
+    background-color: rgba(155, 77, 224, 0.08);
+    border-left: 3px solid #9B4DE0;
+    padding-left: calc(1rem - 3px);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    background: linear-gradient(to right, #9B4DE0, #b96ff0);
+  }
+
+  /* Smooth transitions */
+  .transition-vw {
+    transition: all 0.15s ease;
+  }
+
+  /* Display text tight */
+  .leading-display {
+    line-height: 0.96;
+  }
+}
