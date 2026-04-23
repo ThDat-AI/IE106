@@ -1,6 +1,7 @@
 import AppShell from '@/components/layout/app-shell'
 import LibraryPage from '@/components/pages/library-page'
 import { searchSpotifyAlbums, searchSpotifyTracks } from '@/lib/spotify'
+import { Suspense } from 'react'
 
 export const metadata = { title: 'Library — VibeWave' }
 
@@ -34,9 +35,13 @@ export default async function Page() {
     type: 'track'
   }))
 
+  const recentlyPlayedTracks = [...likedTracks].reverse().slice(0, 15)
+
   return (
     <AppShell>
-      <LibraryPage initialAlbums={albums} initialLikedSongs={likedTracks} />
+      <Suspense fallback={<div className="p-8 text-white/50">Loading library...</div>}>
+        <LibraryPage initialAlbums={albums} initialLikedSongs={likedTracks} initialRecentlyPlayedSongs={recentlyPlayedTracks} />
+      </Suspense>
     </AppShell>
   )
 }

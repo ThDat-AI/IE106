@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Grid3X3, List, Search, Clock } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
-type Tab = 'playlists' | 'albums' | 'liked'
+type Tab = 'playlists' | 'albums' | 'liked' | 'recent'
 type View = 'grid' | 'list'
 
 interface LibraryItem {
@@ -20,9 +21,26 @@ interface LibraryItem {
   type: string
 }
 
-export default function LibraryPage({ initialAlbums = [], initialLikedSongs = [] }: { initialAlbums?: LibraryItem[], initialLikedSongs?: Track[] }) {
+export default function LibraryPage({ 
+  initialAlbums = [], 
+  initialLikedSongs = [],
+  initialRecentlyPlayedSongs = []
+}: { 
+  initialAlbums?: LibraryItem[], 
+  initialLikedSongs?: Track[],
+  initialRecentlyPlayedSongs?: Track[]
+}) {
   const { t } = useTranslation()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<Tab>('albums')
+  
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as Tab | null
+    if (tabParam && ['albums', 'playlists', 'liked', 'recent'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [searchParams])
+
   const [searchQ, setSearchQ] = useState('')
 
   const PLAYLISTS = [
@@ -41,9 +59,21 @@ export default function LibraryPage({ initialAlbums = [], initialLikedSongs = []
     { id: 'albums', label: t.albums, count: initialAlbums.length },
     { id: 'playlists', label: t.playlists, count: 8 },
     { id: 'liked', label: t.likedSongs, count: initialLikedSongs.length > 0 ? initialLikedSongs.length : 243 },
+    { id: 'recent', label: t.recentlyPlayed, count: initialRecentlyPlayedSongs.length > 0 ? initialRecentlyPlayedSongs.length : 50 },
   ]
 
-  const items = activeTab === 'playlists' ? PLAYLISTS : activeTab === 'albums' ? initialAlbums : initialLikedSongs.map(t => ({
+  const items = activeTab === 'playlists' ? PLAYLISTS 
+    : activeTab === 'albums' ? initialAlbums 
+    : activeTab === 'recent' ? initialRecentlyPlayedSongs.map(t => ({
+      id: t.id,
+      title: t.title,
+      subtitle: t.artist,
+      image: t.albumArt,
+      href: `/track/${t.id}`,
+      type: 'track',
+      originalTrack: t
+    }))
+    : initialLikedSongs.map(t => ({
     id: t.id,
     title: t.title,
     subtitle: t.artist,
@@ -73,7 +103,7 @@ export default function LibraryPage({ initialAlbums = [], initialLikedSongs = []
             {t.historySub}
           </p>
         </div>
-        {activeTab !== 'liked' && (
+        {(activeTab !== 'liked' && activeTab !== 'recent') && (
           <button
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
             style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
@@ -133,7 +163,7 @@ export default function LibraryPage({ initialAlbums = [], initialLikedSongs = []
       </div>
 
       {/* Items view */}
-      {activeTab !== 'liked' ? (
+      {(activeTab !== 'liked' && activeTab !== 'recent') ? (
         <div className="grid grid-cols-4 gap-4 lg:grid-cols-5 xl:grid-cols-6 mt-6">
           {filtered.map((item) => (
             <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} image={(item as any).image} href={item.href} type={(item as any).type || (activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist')} />

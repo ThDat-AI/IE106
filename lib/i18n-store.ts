@@ -227,7 +227,7 @@ export const translations = {
     history: 'Lịch sử',
     charts: 'Bảng xếp hạng',
     likedSongs: 'Bài hát đã thích',
-    recentlyPlayed: 'Đã phát gần đây',
+    recentlyPlayed: 'Nghe Gần Đây',
     playlists: 'Danh sách phát',
     albums: 'Album',
     aboutUs: 'Về chúng tôi',

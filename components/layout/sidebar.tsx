@@ -35,8 +35,8 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   ]
 
   const LIBRARY_ITEMS = [
-    { icon: Heart, label: t.likedSongs, href: '/library/liked', count: '243' },
-    { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
+    { icon: Heart, label: t.likedSongs, href: '/library?tab=liked', count: '243' },
+    { icon: Clock, label: t.recentlyPlayed, href: '/library?tab=recent', count: null },
   ]
 
   const PLAYLISTS = [
