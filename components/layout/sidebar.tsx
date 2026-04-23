@@ -30,7 +30,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   const NAV_ITEMS = [
     { icon: Home, label: t.home, href: '/' },
     { icon: Sparkles, label: t.yourVibe, href: '/your-vibe' },
-    { icon: Library, label: t.library, href: '/library' },
+    { icon: Library, label: t.history, href: '/library' },
     { icon: BarChart2, label: t.charts, href: '/charts' },
   ]
 
@@ -125,14 +125,8 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <nav aria-label="Library" className="px-2">
             <div className="px-3 pb-2 flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                {t.library}
+                {t.history}
               </span>
-              <button
-                className="w-5 h-5 rounded-md flex items-center justify-center transition-vw hover:bg-white/10"
-                aria-label="Create new playlist"
-              >
-                <Plus size={13} style={{ color: 'rgba(255,255,255,0.45)' }} />
-              </button>
             </div>
             {LIBRARY_ITEMS.map(({ icon: Icon, label, href, count }) => {
               const active = isActive(href)
@@ -168,10 +162,16 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
 
           {/* Playlists */}
           <div className="px-2 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2">
+            <div className="px-3 pb-2 flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 {t.playlists}
               </span>
+              <button
+                className="w-5 h-5 rounded-md flex items-center justify-center transition-vw hover:bg-white/10"
+                aria-label="Create new playlist"
+              >
+                <Plus size={13} style={{ color: 'rgba(255,255,255,0.45)' }} />
+              </button>
             </div>
             {PLAYLISTS.map(({ label, href }) => {
               const active = isActive(href)

@@ -70,10 +70,10 @@ export default function LibraryPage() {
             className="font-display font-bold leading-display"
             style={{ fontSize: 56, color: 'rgba(255,255,255,0.95)', letterSpacing: '-1.2px', lineHeight: 0.96 }}
           >
-            {t.library}
+            {t.history}
           </h1>
           <p className="mt-4 text-base" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
-            {t.librarySub}
+            {t.historySub}
           </p>
         </div>
         <button
