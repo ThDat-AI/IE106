@@ -1,6 +1,6 @@
 import AppShell from '@/components/layout/app-shell'
 import LibraryPage from '@/components/pages/library-page'
-import { searchSpotifyAlbums } from '@/lib/spotify'
+import { searchSpotifyAlbums, searchSpotifyTracks } from '@/lib/spotify'
 
 export const metadata = { title: 'Library — VibeWave' }
 
@@ -19,9 +19,24 @@ export default async function Page() {
     type: 'album'
   }))
 
+  const likedSongsQueries = ['Sơn Tùng M-TP', 'Đen Vâu', 'Vũ.', 'Ngọt', 'Hoàng Thùy Linh', 'Chillies', 'MCK', 'tlinh']
+  const tracksPromises = likedSongsQueries.map(artist => searchSpotifyTracks(artist, 2))
+  const tracksResults = await Promise.all(tracksPromises)
+  
+  const likedTracks = tracksResults.flat().map(track => ({
+    id: track.id,
+    title: track.title,
+    artist: track.artist,
+    album: track.album,
+    albumArt: track.albumArt,
+    duration: track.duration,
+    url: track.url || '',
+    type: 'track'
+  }))
+
   return (
     <AppShell>
-      <LibraryPage initialAlbums={albums} />
+      <LibraryPage initialAlbums={albums} initialLikedSongs={likedTracks} />
     </AppShell>
   )
 }

@@ -83,9 +83,10 @@ export default function MusicCard({
     >
       {/* Art square */}
       <div
-        className="relative aspect-square w-full flex items-center justify-center text-4xl font-display font-bold overflow-hidden"
+        className="relative w-full flex items-center justify-center text-4xl font-display font-bold overflow-hidden"
         style={{
           background: displayImage ? 'none' : `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+          aspectRatio: '1/1',
         }}
       >
         {displayImage ? (
@@ -159,18 +160,20 @@ export default function MusicCard({
 
       {/* Info */}
       <div className="p-3">
+        <div className="h-9 mb-1">
+          <p
+            className="text-sm font-semibold leading-tight line-clamp-2"
+            style={{
+              color: 'rgba(255,255,255,0.95)',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.3px',
+            }}
+          >
+            {title}
+          </p>
+        </div>
         <p
-          className="text-sm font-semibold leading-tight line-clamp-2"
-          style={{
-            color: 'rgba(255,255,255,0.95)',
-            fontFamily: 'var(--font-display)',
-            letterSpacing: '-0.3px',
-          }}
-        >
-          {title}
-        </p>
-        <p
-          className="text-xs mt-1 truncate"
+          className="text-xs truncate"
           style={{ color: 'rgba(255,255,255,0.55)' }}
         >
           {subtitle}
