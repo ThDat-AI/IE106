@@ -30,7 +30,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   const NAV_ITEMS = [
     { icon: Home, label: t.home, href: '/' },
     { icon: Sparkles, label: t.yourVibe, href: '/your-vibe' },
-    { icon: Library, label: t.history, href: '/library' },
+    { icon: Library, label: t.library, href: '/library' },
     { icon: BarChart2, label: t.charts, href: '/charts' },
   ]
 
@@ -125,7 +125,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <nav aria-label="Library" className="px-2">
             <div className="px-3 pb-2 flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                {t.history}
+                {t.library}
               </span>
             </div>
             {LIBRARY_ITEMS.map(({ icon: Icon, label, href, count }) => {

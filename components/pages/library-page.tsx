@@ -6,12 +6,21 @@ import MusicCard from '@/components/music/music-card'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
 
-type Tab = 'playlists' | 'albums' | 'artists' | 'liked'
+type Tab = 'playlists' | 'albums' | 'liked'
 type View = 'grid' | 'list'
 
-export default function LibraryPage() {
+interface LibraryItem {
+  id: string
+  title: string
+  subtitle: string
+  image?: string
+  href: string
+  type: string
+}
+
+export default function LibraryPage({ initialAlbums = [] }: { initialAlbums?: LibraryItem[] }) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<Tab>('playlists')
+  const [activeTab, setActiveTab] = useState<Tab>('albums')
   const [view, setView] = useState<View>('grid')
   const [searchQ, setSearchQ] = useState('')
 
@@ -26,35 +35,14 @@ export default function LibraryPage() {
     { id: 'p8', title: 'Road Trip', subtitle: `38 ${t.songsLabel} · 2h 31m`, href: '/playlist/road-trip' },
   ]
 
-  const ALBUMS = [
-    { id: 'a1', title: 'After Hours', subtitle: 'The Weeknd · 2020', href: '/album/after-hours' },
-    { id: 'a2', title: 'Future Nostalgia', subtitle: 'Dua Lipa · 2020', href: '/album/future-nostalgia' },
-    { id: 'a3', title: 'SOUR', subtitle: 'Olivia Rodrigo · 2021', href: '/album/sour' },
-    { id: 'a4', title: 'Justice', subtitle: 'Justin Bieber · 2021', href: '/album/justice' },
-    { id: 'a5', title: 'Certified Lover Boy', subtitle: 'Drake · 2021', href: '/album/clb' },
-    { id: 'a6', title: 'Planet Her', subtitle: 'Doja Cat · 2021', href: '/album/planet-her' },
-  ]
-
-  const ARTISTS = [
-    { id: 'ar1', title: 'The Weeknd', subtitle: `47 ${t.songsSaved}`, href: '/artist/the-weeknd' },
-    { id: 'ar2', title: 'Dua Lipa', subtitle: `23 ${t.songsSaved}`, href: '/artist/dua-lipa' },
-    { id: 'ar3', title: 'Drake', subtitle: `31 ${t.songsSaved}`, href: '/artist/drake' },
-    { id: 'ar4', title: 'Olivia Rodrigo', subtitle: `18 ${t.songsSaved}`, href: '/artist/olivia-rodrigo' },
-    { id: 'ar5', title: 'Taylor Swift', subtitle: `44 ${t.songsSaved}`, href: '/artist/taylor-swift' },
-    { id: 'ar6', title: 'Post Malone', subtitle: `27 ${t.songsSaved}`, href: '/artist/post-malone' },
-  ]
 
   const TABS: { id: Tab; label: string; count: number }[] = [
+    { id: 'albums', label: t.albums, count: initialAlbums.length },
     { id: 'playlists', label: t.playlists, count: 8 },
-    { id: 'albums', label: t.albums, count: 6 },
-    { id: 'artists', label: t.artists, count: 6 },
     { id: 'liked', label: t.likedSongs, count: 243 },
   ]
 
-  const items = activeTab === 'playlists' ? PLAYLISTS
-    : activeTab === 'albums' ? ALBUMS
-    : activeTab === 'artists' ? ARTISTS
-    : []
+  const items = activeTab === 'playlists' ? PLAYLISTS : activeTab === 'albums' ? initialAlbums : []
 
   const filtered = items.filter(i =>
     i.title.toLowerCase().includes(searchQ.toLowerCase())
@@ -190,7 +178,7 @@ export default function LibraryPage() {
           {view === 'grid' ? (
             <div className="grid grid-cols-4 gap-4 lg:grid-cols-5 xl:grid-cols-6">
               {filtered.map((item) => (
-                <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} href={item.href} type={activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist'} />
+                <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} image={(item as any).image} href={item.href} type={activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist'} />
               ))}
               {filtered.length === 0 && (
                 <div className="col-span-full py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -207,12 +195,16 @@ export default function LibraryPage() {
                   className="flex items-center gap-4 px-4 py-3 transition-vw hover:bg-white/[0.03]"
                   style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
                 >
-                  <div
-                    className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center font-bold text-lg"
-                    style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.6)', borderRadius: activeTab === 'artists' ? '50%' : '12px' }}
-                  >
-                    {item.title.charAt(0)}
-                  </div>
+                  {(item as any).image ? (
+                    <img src={(item as any).image} alt={item.title} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                  ) : (
+                    <div
+                      className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center font-bold text-lg"
+                      style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.6)', borderRadius: activeTab === 'artists' ? '50%' : '12px' }}
+                    >
+                      {item.title.charAt(0)}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.95)' }}>{item.title}</p>
                     <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.subtitle}</p>
