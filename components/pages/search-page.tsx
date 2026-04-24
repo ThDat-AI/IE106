@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
+import { Play } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { SAMPLE_TRACKS, usePlayerStore, type Track } from '@/lib/player-store'

@@ -106,7 +106,7 @@ export default function HomePage() {
 
       {/* Continue Listening — highest priority */}
       <section aria-labelledby="continue-listening-heading">
-        <SectionHeader title={t.continueListening} href="/library" />
+        <SectionHeader title={t.continueListening} href="/library/recent" />
         <div className="grid grid-cols-6 gap-4">
           {continueListening.map((item) => (
             <MusicCard
@@ -165,6 +165,23 @@ export default function HomePage() {
       {/* Quick Picks — track list */}
       <section aria-labelledby="quick-picks-heading">
         <SectionHeader title={t.quickPicks} />
+        
+        {/* Filter Labels */}
+        <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+          {['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn'].map((label) => (
+            <button
+              key={label}
+              className="px-4 py-1.5 rounded-full text-sm font-medium transition-vw hover:opacity-80 whitespace-nowrap"
+              style={{
+                backgroundColor: label === 'Tất cả' ? 'rgba(155,77,224,0.15)' : 'rgba(255,255,255,0.05)',
+                border: label === 'Tất cả' ? '1px solid rgba(155,77,224,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                color: label === 'Tất cả' ? '#9B4DE0' : 'rgba(255,255,255,0.6)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div
           className="rounded-2xl overflow-hidden"
           style={{

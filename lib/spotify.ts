@@ -37,7 +37,19 @@ export async function getSpotifyToken() {
       body: 'grant_type=client_credentials',
     });
 
-    const data = await response.json();
+    if (response.status === 429) {
+      console.error('Spotify API rate limit exceeded (429).');
+      return null;
+    }
+
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse Spotify token response:', text);
+      return null;
+    }
     
     if (data.error) {
       console.error('Spotify Token Error:', data.error);
@@ -69,13 +81,26 @@ async function spotifyFetch(endpoint: string) {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('Spotify API Error:', error);
+    if (response.status === 429) {
+      console.error('Spotify API rate limit exceeded (429).');
       return null;
     }
 
-    return await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse Spotify API response:', text);
+      return null;
+    }
+
+    if (!response.ok) {
+      console.error('Spotify API Error:', data);
+      return null;
+    }
+
+    return data;
   } catch (error) {
     console.error('Spotify Fetch Error:', error);
     return null;

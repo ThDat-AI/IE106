@@ -17,6 +17,9 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: 'VibeWave — Music that works with you',
   description: 'Dark minimalist music streaming platform with AI-powered personalization.',
+}
+
+export const viewport = {
   themeColor: '#170F23',
 }
 

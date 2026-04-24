@@ -15,12 +15,13 @@ export default function YourVibePage() {
   const [discovered, setDiscovered] = useState<Track[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const MOODS = [
-    { label: 'Focus', color: '#9B4DE0', active: true },
-    { label: 'Energize', color: '#6b3ab5', active: false },
-    { label: 'Relax', color: '#4a2a7a', active: false },
-    { label: 'Sleep', color: '#3d1f5c', active: false },
-    { label: 'Party', color: '#7a3dc8', active: false },
+  const CATEGORIES = [
+    { label: 'Tất cả', active: true },
+    { label: 'Pop', active: false },
+    { label: 'Hip-hop', active: false },
+    { label: 'EDM', active: false },
+    { label: 'Tập trung', active: false },
+    { label: 'Thư giãn', active: false },
   ]
 
   const INITIAL_ARTISTS = [
@@ -97,18 +98,18 @@ export default function YourVibePage() {
 
         {/* Mood selector */}
         <div className="flex items-center gap-3 mt-8">
-          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.mood}:</span>
-          {MOODS.map((mood) => (
+          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.genre}:</span>
+          {CATEGORIES.map((cat) => (
             <button
-              key={mood.label}
+              key={cat.label}
               className="px-4 py-1.5 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
               style={{
-                backgroundColor: mood.active ? 'rgba(155,77,224,0.15)' : 'rgba(255,255,255,0.05)',
-                border: mood.active ? '1px solid rgba(155,77,224,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color: mood.active ? '#9B4DE0' : 'rgba(255,255,255,0.6)',
+                backgroundColor: cat.active ? 'rgba(155,77,224,0.15)' : 'rgba(255,255,255,0.05)',
+                border: cat.active ? '1px solid rgba(155,77,224,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                color: cat.active ? '#9B4DE0' : 'rgba(255,255,255,0.6)',
               }}
             >
-              {mood.label}
+              {cat.label}
             </button>
           ))}
         </div>

@@ -35,8 +35,8 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   ]
 
   const LIBRARY_ITEMS = [
-    { icon: Heart, label: t.likedSongs, href: '/library?tab=liked', count: '243' },
-    { icon: Clock, label: t.recentlyPlayed, href: '/library?tab=recent', count: null },
+    { icon: Heart, label: t.likedSongs, href: '/library/liked', count: '243' },
+    { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
   ]
 
   const PLAYLISTS = [
@@ -55,6 +55,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/'
+    if (href === '/library') return pathname === '/library'
     return pathname.startsWith(href)
   }
 
@@ -149,7 +150,14 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                     {label}
                   </span>
                   {count && (
-                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    <span 
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" 
+                      style={{ 
+                        backgroundColor: label === t.likedSongs ? 'rgba(155,77,224,0.2)' : 'rgba(255,255,255,0.1)', 
+                        color: label === t.likedSongs ? '#9B4DE0' : 'rgba(255,255,255,0.5)',
+                        border: label === t.likedSongs ? '1px solid rgba(155,77,224,0.3)' : '1px solid rgba(255,255,255,0.1)'
+                      }}
+                    >
                       {count}
                     </span>
                   )}

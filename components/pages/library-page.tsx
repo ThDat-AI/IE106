@@ -23,12 +23,8 @@ interface LibraryItem {
 
 export default function LibraryPage({ 
   initialAlbums = [], 
-  initialLikedSongs = [],
-  initialRecentlyPlayedSongs = []
 }: { 
   initialAlbums?: LibraryItem[], 
-  initialLikedSongs?: Track[],
-  initialRecentlyPlayedSongs?: Track[]
 }) {
   const { t } = useTranslation()
   const searchParams = useSearchParams()
@@ -36,7 +32,7 @@ export default function LibraryPage({
   
   useEffect(() => {
     const tabParam = searchParams.get('tab') as Tab | null
-    if (tabParam && ['albums', 'playlists', 'liked', 'recent'].includes(tabParam)) {
+    if (tabParam && ['albums', 'playlists'].includes(tabParam)) {
       setActiveTab(tabParam)
     }
   }, [searchParams])
@@ -58,30 +54,10 @@ export default function LibraryPage({
   const TABS: { id: Tab; label: string; count: number }[] = [
     { id: 'albums', label: t.albums, count: initialAlbums.length },
     { id: 'playlists', label: t.playlists, count: 8 },
-    { id: 'liked', label: t.likedSongs, count: initialLikedSongs.length > 0 ? initialLikedSongs.length : 243 },
-    { id: 'recent', label: t.recentlyPlayed, count: initialRecentlyPlayedSongs.length > 0 ? initialRecentlyPlayedSongs.length : 50 },
   ]
 
   const items = activeTab === 'playlists' ? PLAYLISTS 
-    : activeTab === 'albums' ? initialAlbums 
-    : activeTab === 'recent' ? initialRecentlyPlayedSongs.map(t => ({
-      id: t.id,
-      title: t.title,
-      subtitle: t.artist,
-      image: t.albumArt,
-      href: `/track/${t.id}`,
-      type: 'track',
-      originalTrack: t
-    }))
-    : initialLikedSongs.map(t => ({
-    id: t.id,
-    title: t.title,
-    subtitle: t.artist,
-    image: t.albumArt,
-    href: `/track/${t.id}`,
-    type: 'track',
-    originalTrack: t
-  }))
+    : initialAlbums 
 
   const filtered = items.filter(i =>
     i.title.toLowerCase().includes(searchQ.toLowerCase()) || i.subtitle.toLowerCase().includes(searchQ.toLowerCase())
@@ -103,15 +79,13 @@ export default function LibraryPage({
             {t.historySub}
           </p>
         </div>
-        {(activeTab !== 'liked' && activeTab !== 'recent') && (
-          <button
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
-            style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
-          >
-            <Plus size={15} />
-            {activeTab === 'albums' ? t.newAlbum : t.newPlaylist}
-          </button>
-        )}
+        <button
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
+          style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
+        >
+          <Plus size={15} />
+          {activeTab === 'albums' ? t.newAlbum : t.newPlaylist}
+        </button>
       </div>
 
       {/* Tabs + controls */}
@@ -162,41 +136,16 @@ export default function LibraryPage({
         </div>
       </div>
 
-      {/* Items view */}
-      {(activeTab !== 'liked' && activeTab !== 'recent') ? (
-        <div className="grid grid-cols-4 gap-4 lg:grid-cols-5 xl:grid-cols-6 mt-6">
-          {filtered.map((item) => (
-            <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} image={(item as any).image} href={item.href} type={(item as any).type || (activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist')} />
-          ))}
-          {filtered.length === 0 && (
-            <div className="col-span-full py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              <p className="text-sm">{t.noResults} &ldquo;{searchQ}&rdquo;</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2 mt-6">
-          <div className="flex items-center gap-4 px-3 py-2 text-xs font-medium uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            <div className="w-6 text-center">#</div>
-            <div className="w-10 shrink-0"></div>
-            <div className="flex-1 min-w-0">{t.titleLabel || 'TITLE'}</div>
-            <div className="hidden md:block w-40 shrink-0">{t.albumLabel || 'ALBUM'}</div>
-            <div className="flex items-center justify-end gap-3 shrink-0" style={{ width: '84px' }}>
-              <Clock size={14} className="mr-6" />
-            </div>
+      <div className="grid grid-cols-4 gap-4 lg:grid-cols-5 xl:grid-cols-6 mt-6">
+        {filtered.map((item) => (
+          <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} image={(item as any).image} href={item.href} type={(item as any).type || (activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist')} />
+        ))}
+        {filtered.length === 0 && (
+          <div className="col-span-full py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-sm">{t.noResults} &ldquo;{searchQ}&rdquo;</p>
           </div>
-          <div className="flex flex-col">
-            {filtered.map((item, i) => (
-              <TrackRow key={item.id} index={i + 1} track={(item as any).originalTrack} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="py-16 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                <p className="text-sm">{t.noResults} &ldquo;{searchQ}&rdquo;</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
