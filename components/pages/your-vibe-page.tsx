@@ -29,6 +29,10 @@ export default function YourVibePage() {
     { id: 'ta2', title: 'Hoàng Thùy Linh', subtitle: `38 ${t.playsThisMonth}`, href: '/artist/hoang-thuy-linh', image: '' },
     { id: 'ta3', title: 'Đen Vâu', subtitle: `31 ${t.playsThisMonth}`, href: '/artist/den', image: '' },
     { id: 'ta4', title: 'GREY D', subtitle: `28 ${t.playsThisMonth}`, href: '/artist/grey-d', image: '' },
+    { id: 'ta5', title: 'MONO', subtitle: `25 ${t.playsThisMonth}`, href: '/artist/mono', image: '' },
+    { id: 'ta6', title: 'tlinh', subtitle: `22 ${t.playsThisMonth}`, href: '/artist/tlinh', image: '' },
+    { id: 'ta7', title: 'HIEUTHUHAI', subtitle: `19 ${t.playsThisMonth}`, href: '/artist/hieuthuhai', image: '' },
+    { id: 'ta8', title: 'Mỹ Tâm', subtitle: `15 ${t.playsThisMonth}`, href: '/artist/my-tam', image: '' },
   ]
 
   const [topArtists, setTopArtists] = useState(INITIAL_ARTISTS)
