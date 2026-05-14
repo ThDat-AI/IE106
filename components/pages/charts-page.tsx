@@ -7,7 +7,7 @@ import { usePlayerStore, type Track } from '@/lib/player-store'
 import { getTopSongsByRegion, searchMusic } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 
-type Region = 'global' | 'us' | 'uk' | 'vn'
+type Region = 'global' | 'usuk' | 'kpop' | 'vn'
 
 function TrendIcon({ change }: { change: string }) {
   if (change === 'up') return <TrendingUp size={13} style={{ color: '#4ade80' }} />
@@ -27,8 +27,8 @@ export default function ChartsPage() {
 
   const REGIONS: { id: Region; label: string }[] = [
     { id: 'global', label: t.global },
-    { id: 'us', label: t.us },
-    { id: 'uk', label: t.uk },
+    { id: 'usuk', label: t.usuk },
+    { id: 'kpop', label: t.kpop },
     { id: 'vn', label: t.vietnam },
   ]
 
@@ -39,10 +39,14 @@ export default function ChartsPage() {
         const top = await getTopSongsByRegion(region, 20)
         setTopTracks(top)
 
-        const viral = await searchMusic(region === 'vn' ? 'TikTok Việt' : 'Viral Hits', 5, region === 'vn' ? 'VN' : 'US')
+        const viralSearchTerm = region === 'vn' ? 'TikTok Việt' : 
+                               region === 'kpop' ? 'K-Pop Viral' : 
+                               region === 'usuk' ? 'Viral Hits US UK' : 'Viral Hits'
+        const viralCountry = region === 'vn' ? 'VN' : region === 'kpop' ? 'KR' : 'US'
+        const viral = await searchMusic(viralSearchTerm, 4, viralCountry)
         setViralTracks(viral)
 
-        const releases = await searchMusic(region === 'vn' ? 'Mới phát hành' : 'New Music', 4, region === 'vn' ? 'VN' : 'US')
+        const releases = await searchMusic(region === 'vn' ? 'Mới phát hành' : 'New Music', 13, region === 'vn' ? 'VN' : 'US')
         setNewReleases(releases)
       } catch (error) {
         console.error('Failed to load charts:', error)

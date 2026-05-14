@@ -7,7 +7,7 @@ import { usePlayerStore, SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { searchMusic } from '@/lib/music-api'
+import { searchMusic, searchAlbums } from '@/lib/music-api'
 
 function SectionHeader({ title, href }: { title: string; href?: string }) {
   const { t } = useTranslation()
@@ -32,24 +32,43 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
   )
 }
 
-export default function HomePage() {
+export default function HomePage({
+  initialTrending = [],
+  initialQuickPicks = [],
+  initialTopAlbums = []
+}: {
+  initialTrending?: Track[],
+  initialQuickPicks?: Track[],
+  initialTopAlbums?: any[]
+}) {
   const { t } = useTranslation()
   const { setTrack } = usePlayerStore()
-  const [trending, setTrending] = useState<Track[]>([])
-  const [quickPicks, setQuickPicks] = useState<Track[]>(SAMPLE_TRACKS)
+  const [trending, setTrending] = useState<Track[]>(initialTrending)
+  const [quickPicks, setQuickPicks] = useState<Track[]>(initialQuickPicks.length > 0 ? initialQuickPicks : SAMPLE_TRACKS)
   const [continueListening, setContinueListening] = useState<any[]>([])
   const [madeForYou, setMadeForYou] = useState<any[]>([])
+  const [topAlbums, setTopAlbums] = useState<any[]>(initialTopAlbums)
 
   useEffect(() => {
-    // Fetch real music on mount
+    // Fetch remaining data or fallback if initial is empty
     async function loadMusic() {
-      // Trending: Sơn Tùng M-TP & J97
-      const trendingData = await searchMusic('Sơn Tùng M-TP', 4)
-      if (trendingData.length > 0) setTrending(trendingData)
+      // Only fetch if missing
+      if (trending.length === 0) {
+        const trendingData = await searchMusic('Sơn Tùng M-TP', 4)
+        if (trendingData.length > 0) setTrending(trendingData)
+      }
 
-      // Quick Picks: A mix of requested top Vietnamese artists
-      const picksData = await searchMusic('V-Pop Hits 2024', 10)
-      if (picksData.length > 0) setQuickPicks(picksData)
+      if (initialQuickPicks.length === 0) {
+        const picksData = await searchMusic('V-Pop Hits 2024', 10)
+        if (picksData.length > 0) setQuickPicks(picksData)
+      }
+
+      if (topAlbums.length === 0) {
+        const albumSearchTerms = ['Hoàng Thùy Linh', 'Đen Vâu', 'Vũ.', 'Mỹ Tâm', 'Sơn Tùng M-TP']
+        const randomTerm = albumSearchTerms[Math.floor(Math.random() * albumSearchTerms.length)]
+        const albumsData = await searchAlbums(randomTerm, 6)
+        setTopAlbums(albumsData)
+      }
 
       // Continue Listening: Focus on specific requested artists
       const artists = ['Đen Vâu', 'Hoàng Thùy Linh', 'Lyly', 'Phùng Khánh Linh', 'Vũ.', 'Jack - J97']
@@ -116,6 +135,24 @@ export default function HomePage() {
               subtitle={item.subtitle}
               type={item.type}
               track={item.track}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Top Albums Section */}
+      <section aria-labelledby="top-albums-heading">
+        <SectionHeader title={t.albums} href="/library?tab=albums" />
+        <div className="grid grid-cols-6 gap-4">
+          {topAlbums.map((album) => (
+            <MusicCard
+              key={album.id}
+              id={album.id}
+              title={album.title}
+              subtitle={album.artist}
+              image={album.albumArt}
+              href={`/album/${album.id}`}
+              type="album"
             />
           ))}
         </div>
