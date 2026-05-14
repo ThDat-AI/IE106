@@ -150,10 +150,10 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                     {label}
                   </span>
                   {count && (
-                    <span 
-                      className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" 
-                      style={{ 
-                        backgroundColor: label === t.likedSongs ? 'rgba(155,77,224,0.2)' : 'rgba(255,255,255,0.1)', 
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                      style={{
+                        backgroundColor: label === t.likedSongs ? 'rgba(155,77,224,0.2)' : 'rgba(255,255,255,0.1)',
                         color: label === t.likedSongs ? '#9B4DE0' : 'rgba(255,255,255,0.5)',
                         border: label === t.likedSongs ? '1px solid rgba(155,77,224,0.3)' : '1px solid rgba(255,255,255,0.1)'
                       }}

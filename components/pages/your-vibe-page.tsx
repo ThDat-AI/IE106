@@ -3,26 +3,26 @@
 import { Sparkles, RefreshCw, Play, ChevronRight, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
-import TrackRow from '@/components/music/track-row'
 import { SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { searchMusic, searchArtistImage } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
+import {
+  PageHero,
+  AccentBar,
+  AiBadge,
+  FilterPills,
+  RANK_COLORS,
+} from '@/components/ui/vibewave'
+
+const GENRE_CATEGORIES = ['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn']
 
 export default function YourVibePage() {
   const { t } = useTranslation()
   const [mixes, setMixes] = useState<Track[]>([])
   const [discovered, setDiscovered] = useState<Track[]>([])
   const [isLoading, setIsLoading] = useState(true)
-
-  const CATEGORIES = [
-    { label: 'Tất cả', active: true },
-    { label: 'Pop', active: false },
-    { label: 'Hip-hop', active: false },
-    { label: 'EDM', active: false },
-    { label: 'Tập trung', active: false },
-    { label: 'Thư giãn', active: false },
-  ]
+  const [activeGenre, setActiveGenre] = useState('Tất cả')
 
   const INITIAL_ARTISTS = [
     { id: 'ta1', title: 'Sơn Tùng M-TP', subtitle: `47 ${t.playsThisMonth}`, href: '/artist/son-tung-mtp', image: '' },
@@ -68,70 +68,55 @@ export default function YourVibePage() {
 
       {/* Hero */}
       <section>
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={18} style={{ color: '#9B4DE0' }} />
-              <span
-                className="text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md"
-                style={{ backgroundColor: 'rgba(155,77,224,0.15)', color: '#9B4DE0' }}
-              >
-                {t.aiPowered}
-              </span>
-            </div>
-            <h1
-              className="font-display font-bold leading-display mb-4"
-              style={{ fontSize: 56, color: 'rgba(255,255,255,0.95)', letterSpacing: '-1.2px', lineHeight: 0.96 }}
+        <PageHero
+          eyebrowIcon={<Sparkles size={13} />}
+          eyebrowLabel={t.aiPowered}
+          title={t.yourVibe}
+          subtitle={t.yourVibeSub}
+          gradientClass="from-white via-purple-200 to-purple-400"
+          action={
+            <button
+              onClick={fetchData}
+              disabled={isLoading}
+              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 disabled:opacity-50 backdrop-blur-md hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(155,77,224,0.4)]"
+              style={{ backgroundColor: 'rgba(155,77,224,0.1)', color: '#E9D5FF', border: '1px solid rgba(155,77,224,0.3)' }}
             >
-              {t.yourVibe}
-            </h1>
-            <p className="text-base max-w-lg" style={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
-              {t.yourVibeSub}
-            </p>
-          </div>
-          <button
-            onClick={fetchData}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-vw hover:opacity-80 disabled:opacity-50"
-            style={{ backgroundColor: 'rgba(155,77,224,0.12)', color: '#9B4DE0', border: '1px solid rgba(155,77,224,0.25)' }}
-          >
-            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-            {t.refresh}
-          </button>
-        </div>
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} className="transition-transform group-hover:rotate-180 duration-500" />}
+              {t.refresh}
+            </button>
+          }
+        />
 
         {/* Mood selector */}
-        <div className="flex items-center gap-3 mt-8">
-          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.genre}:</span>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.label}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
-              style={{
-                backgroundColor: cat.active ? 'rgba(155,77,224,0.15)' : 'rgba(255,255,255,0.05)',
-                border: cat.active ? '1px solid rgba(155,77,224,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color: cat.active ? '#9B4DE0' : 'rgba(255,255,255,0.6)',
-              }}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div className="mt-8">
+          <FilterPills
+            categories={GENRE_CATEGORIES}
+            active={activeGenre}
+            onSelect={setActiveGenre}
+            label={t.genre}
+          />
         </div>
       </section>
 
       {/* Featured AI Mix */}
       <section>
         <div
-          className="rounded-2xl p-8 relative overflow-hidden"
+          className="rounded-3xl p-10 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(155,77,224,0.2)]"
           style={{
-            backgroundColor: '#1F162E',
-            border: '1px solid rgba(155,77,224,0.2)',
+            background: 'linear-gradient(145deg, rgba(31,22,46,0.9) 0%, rgba(18,14,24,0.95) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(155,77,224,0.3)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
           }}
         >
           <div
-            className="absolute inset-0 opacity-20"
-            style={{ background: 'radial-gradient(ellipse 60% 80% at 0% 50%, rgba(155,77,224,0.4), transparent 70%)', pointerEvents: 'none' }}
+            className="absolute inset-0 opacity-30 transition-opacity duration-500 group-hover:opacity-50"
+            style={{ background: 'radial-gradient(circle at 20% 50%, rgba(155,77,224,0.6), transparent 50%), radial-gradient(circle at 80% 80%, rgba(67,56,202,0.4), transparent 50%)', pointerEvents: 'none', filter: 'blur(40px)' }}
             aria-hidden="true"
+          />
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
           />
           <div className="relative flex items-center gap-8">
             <div className="shrink-0">
@@ -139,7 +124,7 @@ export default function YourVibePage() {
                 <img 
                   src={mixes[0].albumArt} 
                   alt="Daily Mix" 
-                  className="w-32 h-32 rounded-2xl object-cover shadow-2xl shadow-purple-500/20"
+                  className="w-36 h-36 rounded-2xl object-cover shadow-[0_10px_40px_rgba(155,77,224,0.4)] transition-transform duration-500 group-hover:scale-105 group-hover:rotate-1"
                 />
               ) : (
                 <div
@@ -151,29 +136,34 @@ export default function YourVibePage() {
               )}
             </div>
             <div className="flex-1">
-              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9B4DE0' }}>
-                {t.topPickToday}
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2" style={{ backgroundColor: 'rgba(155,77,224,0.2)', color: '#D8B4FE', border: '1px solid rgba(155,77,224,0.3)' }}>
+                ✨ {t.topPickToday}
               </span>
-              <h2 className="font-display font-bold mt-1 mb-2" style={{ fontSize: 32, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
+              <h2 className="font-display font-bold mt-1 mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
                 V-Pop Daily Mix
               </h2>
-              <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 {mixes[0]?.artist || '...'} &amp; các nghệ sĩ V-Pop hàng đầu · {isLoading ? '...' : '25'} bài hát
               </p>
               <div className="flex items-center gap-3">
                 <button
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
-                  style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
+                  className="group/btn flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden relative"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #9B4DE0 0%, #6B21A8 100%)', 
+                    color: '#ffffff',
+                    boxShadow: '0 10px 25px -5px rgba(155,77,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2)'
+                  }}
                 >
-                  <Play size={15} fill="white" />
-                  {t.listenNow}
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+                  <Play size={16} fill="currentColor" className="relative z-10 drop-shadow-md" />
+                  <span className="relative z-10">{t.listenNow}</span>
                 </button>
                 <Link
                   href="/playlist/daily-mix-1"
-                  className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="group/link flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-white/10 hover:border-white/20 backdrop-blur-md"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
-                  {t.viewPlaylist} <ChevronRight size={14} />
+                  {t.viewPlaylist} <ChevronRight size={16} className="opacity-70 group-hover/link:opacity-100 transition-opacity" />
                 </Link>
               </div>
             </div>
@@ -183,8 +173,9 @@ export default function YourVibePage() {
 
       {/* AI Mixes grid */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display font-semibold" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="font-display font-bold flex items-center gap-3" style={{ fontSize: 30, color: '#ffffff', letterSpacing: '-0.5px' }}>
+            <AccentBar height={8} color="purple" />
             {t.collectionsForYou}
           </h2>
         </div>
@@ -211,7 +202,8 @@ export default function YourVibePage() {
       {/* Recently Discovered + Top Artists row */}
       <div className="grid grid-cols-2 gap-8">
         <section>
-          <h2 className="font-display font-semibold mb-6" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+          <h2 className="font-display font-bold flex items-center gap-3 mb-6" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
+            <AccentBar height={6} color="pink" />
             {t.recentlyDiscovered}
           </h2>
           <div className="grid grid-cols-2 gap-4">
@@ -235,44 +227,91 @@ export default function YourVibePage() {
         </section>
 
         <section>
-          <h2 className="font-display font-semibold mb-6" style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+          <h2 className="font-display font-bold flex items-center gap-3 mb-6" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
+            <AccentBar height={6} color="blue" />
             {t.topArtists}
           </h2>
           <div className="space-y-3">
-            {topArtists.map((artist, i) => (
-              <Link
-                key={artist.id}
-                href={artist.href}
-                className="flex items-center gap-4 p-3 rounded-xl transition-vw hover:bg-white/[0.03]"
-                style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <span className="font-display font-bold text-xl w-6 text-center shrink-0" style={{ color: i === 0 ? '#9B4DE0' : 'rgba(255,255,255,0.25)' }}>
-                  {i + 1}
-                </span>
-                <div
-                  className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold overflow-hidden"
-                  style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)', border: '2px solid rgba(255,255,255,0.1)' }}
+            {topArtists.map((artist, i) => {
+              const isTop4 = i < 4
+              const rc = RANK_COLORS[i]
+              return (
+                <Link
+                  key={artist.id}
+                  href={artist.href}
+                  className="group/artist flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+                  style={{ 
+                    background: isTop4 
+                      ? 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' 
+                      : 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)', 
+                    backdropFilter: 'blur(15px)',
+                    border: isTop4 ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)',
+                    boxShadow: '0 8px 30px -5px rgba(0,0,0,0.3)'
+                  }}
                 >
-                  {artist.image ? (
-                    <img src={artist.image} alt={artist.title} className="w-full h-full object-cover" />
-                  ) : (
-                    artist.title.charAt(0)
+                  {/* Hover Highlight */}
+                  <div className="absolute inset-0 bg-white/[0.06] opacity-0 group-hover/artist:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  
+                  {/* Shimmer for Top 1 */}
+                  {i === 0 && (
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover/artist:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                      style={{ 
+                        background: 'linear-gradient(90deg, transparent, rgba(58,190,249,0.15), transparent)', 
+                        transform: 'translateX(-100%) skewX(-15deg)', 
+                        animation: 'shimmer 2.5s infinite' 
+                      }} 
+                    />
                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{artist.title}</p>
-                  <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{artist.subtitle}</p>
-                </div>
-                <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)' }} />
-              </Link>
-            ))}
+
+                  {/* Rank number */}
+                  <span 
+                    className="font-display font-bold w-10 text-center shrink-0 transition-all duration-300 group-hover/artist:scale-110 group-hover/artist:-rotate-3 z-10" 
+                    style={{ 
+                      color: rc ? rc.text : 'rgba(255,255,255,0.8)',
+                      fontSize: i === 0 ? '28px' : i === 1 ? '24px' : i === 2 ? '22px' : i === 3 ? '20px' : '18px',
+                      textShadow: rc ? `0 0 ${i === 0 ? 25 : 20}px ${rc.glow}` : 'none'
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  
+                  {/* Avatar */}
+                  <div
+                    className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center font-bold overflow-hidden z-10 relative"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', 
+                      color: 'rgba(255,255,255,0.7)', 
+                      border: rc ? `2px solid ${rc.border}` : '1px solid rgba(255,255,255,0.1)',
+                      boxShadow: rc ? `0 0 ${i === 0 ? 25 : 20}px ${rc.glow.replace('0.5', '0.4').replace('0.4', '0.3')}` : '0 4px 10px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    {artist.image ? (
+                      <img src={artist.image} alt={artist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover/artist:scale-110" />
+                    ) : (
+                      artist.title.charAt(0)
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0 z-10">
+                    <p className="text-base font-semibold truncate transition-colors group-hover/artist:text-white" style={{ color: isTop4 ? '#ffffff' : 'rgba(255,255,255,0.85)' }}>{artist.title}</p>
+                    <p className="text-xs truncate mt-0.5 uppercase tracking-wide font-medium" style={{ color: 'rgba(155,77,224,0.9)' }}>{artist.subtitle}</p>
+                  </div>
+                  
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover/artist:bg-white/10 z-10">
+                    <ChevronRight size={18} className="transition-transform duration-300 group-hover/artist:translate-x-0.5 group-hover/artist:text-white" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       </div>
 
       {/* Listening stats */}
       <section>
-        <h2 className="font-display font-semibold mb-6" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
+        <h2 className="font-display font-bold flex items-center gap-3 mb-8" style={{ fontSize: 30, color: '#ffffff', letterSpacing: '-0.5px' }}>
+          <AccentBar height={8} color="indigo" />
           {t.monthlyStats}
         </h2>
         <div className="grid grid-cols-4 gap-4">
@@ -281,17 +320,37 @@ export default function YourVibePage() {
             { label: t.tracksPlayed, value: '312', sub: `${t.fromDifferentArtists.replace('artists', '62 nghệ sĩ')}` },
             { label: t.favoriteTracks, value: '243', sub: `${t.addedThisMonth.replace('month', '18 bài mới tháng này')}` },
             { label: t.playlistsCreated, value: '7', sub: `2 ${t.newlyCreated}` },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="p-5 rounded-2xl"
-              style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>{stat.label}</p>
-              <p className="font-display font-bold" style={{ fontSize: 36, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.8px', lineHeight: 1 }}>{stat.value}</p>
-              <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>{stat.sub}</p>
-            </div>
-          ))}
+          ].map((stat, i) => {
+            const rc = RANK_COLORS[i]
+            return (
+              <div
+                key={stat.label}
+                className="p-6 rounded-3xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-500"
+                style={{ 
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', 
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)'
+                }}
+              >
+                <div 
+                  className="absolute top-0 left-0 w-full h-1 opacity-50 group-hover:opacity-100 transition-opacity" 
+                  style={{ background: `linear-gradient(90deg, ${rc.text}, ${rc.bg.replace('0.1', '1').replace('0.12', '1')})` }}
+                />
+                <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
+                <p className="font-display font-bold bg-clip-text text-transparent" style={{ 
+                  fontSize: 42, 
+                  letterSpacing: '-1px', 
+                  lineHeight: 1,
+                  backgroundImage: i === 0 ? 'linear-gradient(135deg, #ffffff 0%, #BAE6FD 100%)' : 
+                                   i === 1 ? 'linear-gradient(135deg, #ffffff 0%, #A7F3D0 100%)' : 
+                                   i === 2 ? 'linear-gradient(135deg, #ffffff 0%, #FECDD3 100%)' : 
+                                   'linear-gradient(135deg, #ffffff 0%, #FEF08A 100%)'
+                }}>{stat.value}</p>
+                <p className="text-sm mt-3 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{stat.sub}</p>
+              </div>
+            )
+          })}
         </div>
       </section>
 

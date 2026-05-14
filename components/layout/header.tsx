@@ -25,8 +25,8 @@ export default function Header() {
 
   const filtered = query.length > 0
     ? SEARCH_SUGGESTIONS.filter(s =>
-        s.label.toLowerCase().includes(query.toLowerCase())
-      )
+      s.label.toLowerCase().includes(query.toLowerCase())
+    )
     : SEARCH_SUGGESTIONS
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function Header() {
           style={{ backgroundColor: '#9B4DE0' }}
         >
           <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            <path d="M3 9 Q5 4 7 9 Q9 14 11 9 Q13 4 15 9" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
           </svg>
         </div>
         <div className="flex flex-col -space-y-0.5">
@@ -79,8 +79,8 @@ export default function Header() {
           >
             VibeWave
           </span>
-          <span 
-            className="text-[10px] font-medium" 
+          <span
+            className="text-[10px] font-medium"
             style={{ color: 'rgba(255,255,255,0.45)' }}
           >
             {t.musicThatWorks}

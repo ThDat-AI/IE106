@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter, Montserrat } from 'next/font/google'
+import { Poppins, Montserrat } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-poppins',
   display: 'swap',
 })
 
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport = {
-  themeColor: '#170F23',
+  themeColor: '#231E32',
 }
 
 export default function RootLayout({
@@ -29,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${montserrat.variable} bg-vw-bg`}>
+    <html lang="en" className={`${poppins.variable} ${montserrat.variable} bg-vw-bg`}>
       <body className="font-sans antialiased bg-vw-bg text-primary-text">
         {children}
       </body>

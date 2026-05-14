@@ -20,11 +20,11 @@ interface MusicCardProps {
 
 const GRADIENT_PAIRS = [
   ['#9B4DE0', '#2A1F3D'],
-  ['#4a2a7a', '#170F23'],
-  ['#6b3ab5', '#1F162E'],
+  ['#4a2a7a', 'var(--vw-bg)'],
+  ['#6b3ab5', 'var(--vw-surface)'],
   ['#3d1f5c', '#2A1F3D'],
-  ['#7a3dc8', '#170F23'],
-  ['#5c2e9e', '#1F162E'],
+  ['#7a3dc8', 'var(--vw-bg)'],
+  ['#5c2e9e', 'var(--vw-surface)'],
 ]
 
 export default function MusicCard({
@@ -71,12 +71,12 @@ export default function MusicCard({
     <div
       className={cn('relative rounded-2xl overflow-hidden cursor-pointer group', className)}
       style={{
-        backgroundColor: '#1F162E',
+        backgroundColor: 'var(--vw-surface)',
         border: '1px solid rgba(255,255,255,0.06)',
         transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
         transform: isHovered ? 'scale(1.03)' : 'scale(1)',
-        boxShadow: isHovered ? '0 0 20px rgba(155,77,224,0.15)' : 'none',
-        borderColor: isHovered ? 'rgba(155,77,224,0.3)' : 'rgba(255,255,255,0.06)',
+        boxShadow: isHovered ? '0 0 20px rgba(155,77,224,0.15)' : '0 8px 30px rgba(0,0,0,0.6)',
+        borderColor: isHovered ? 'rgba(155,77,224,0.3)' : 'var(--vw-border)',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -96,7 +96,7 @@ export default function MusicCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <span style={{ color: 'var(--vw-text-secondary)' }}>
             {title.charAt(0).toUpperCase()}
           </span>
         )}
@@ -132,7 +132,7 @@ export default function MusicCard({
           style={{
             backgroundColor: 'rgba(23,15,35,0.7)',
             opacity: isHovered ? 1 : 0,
-            color: isLiked ? '#9B4DE0' : 'rgba(255,255,255,0.65)',
+            color: isLiked ? '#9B4DE0' : 'var(--vw-text-secondary)',
           }}
           aria-label={isLiked ? `Unlike ${title}` : `Like ${title}`}
           aria-pressed={isLiked}
@@ -164,7 +164,7 @@ export default function MusicCard({
           <p
             className="text-sm font-semibold leading-tight line-clamp-2"
             style={{
-              color: 'rgba(255,255,255,0.95)',
+              color: 'var(--vw-text-primary)',
               fontFamily: 'var(--font-display)',
               letterSpacing: '-0.3px',
             }}
@@ -174,7 +174,7 @@ export default function MusicCard({
         </div>
         <p
           className="text-xs truncate"
-          style={{ color: 'rgba(255,255,255,0.55)' }}
+          style={{ color: 'var(--vw-text-secondary)' }}
         >
           {subtitle}
         </p>

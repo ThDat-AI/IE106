@@ -36,7 +36,7 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
     <div
       className="flex items-center gap-4 px-3 py-2.5 rounded-lg group transition-vw"
       style={{
-        backgroundColor: isHovered ? 'rgba(255,255,255,0.04)' : isActive ? 'rgba(155,77,224,0.06)' : 'transparent',
+        backgroundColor: isHovered ? 'rgba(255,255,255,0.1)' : isActive ? 'rgba(155,77,224,0.06)' : 'transparent',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -72,7 +72,7 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
         ) : (
           <span
             className="text-sm tabular-nums"
-            style={{ color: isActive ? '#9B4DE0' : 'rgba(255,255,255,0.35)' }}
+            style={{ color: isActive ? '#9B4DE0' : 'var(--vw-text-muted)' }}
           >
             {index}
           </span>
@@ -84,7 +84,7 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
         className="w-10 h-10 rounded-lg shrink-0 overflow-hidden flex items-center justify-center text-base font-bold"
         style={{
           background: track.albumArt ? 'none' : `linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)`,
-          color: 'rgba(255,255,255,0.6)',
+          color: 'var(--vw-text-secondary)',
         }}
       >
         {track.albumArt ? (
@@ -98,11 +98,11 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
       <div className="flex-1 min-w-0">
         <p
           className="text-sm font-medium truncate"
-          style={{ color: isActive ? '#9B4DE0' : 'rgba(255,255,255,0.95)' }}
+          style={{ color: isActive ? '#9B4DE0' : 'var(--vw-text-primary)' }}
         >
           {track.title}
         </p>
-        <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--vw-text-muted)' }}>
           {track.artist}
         </p>
       </div>
@@ -110,7 +110,7 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
       {/* Album */}
       {showAlbum && (
         <div className="hidden md:block w-40 shrink-0">
-          <p className="text-sm truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-sm truncate" style={{ color: 'var(--vw-text-muted)' }}>
             {track.album}
           </p>
         </div>
@@ -124,21 +124,21 @@ export default function TrackRow({ index, track, showAlbum = true }: TrackRowPro
           aria-pressed={isLiked}
           className="transition-vw"
           style={{
-            color: isLiked ? '#9B4DE0' : 'rgba(255,255,255,0.35)',
+            color: isLiked ? '#9B4DE0' : 'var(--vw-text-muted)',
             opacity: isHovered || isLiked ? 1 : 0,
           }}
         >
           <Heart size={15} fill={isLiked ? '#9B4DE0' : 'none'} />
         </button>
 
-        <span className="text-xs tabular-nums" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <span className="text-xs tabular-nums" style={{ color: 'var(--vw-text-muted)' }}>
           {formatTime(track.duration)}
         </span>
 
         <button
           aria-label="More options"
           className="transition-vw"
-          style={{ color: 'rgba(255,255,255,0.35)', opacity: isHovered ? 1 : 0 }}
+          style={{ color: 'var(--vw-text-muted)', opacity: isHovered ? 1 : 0 }}
         >
           <MoreHorizontal size={15} />
         </button>
