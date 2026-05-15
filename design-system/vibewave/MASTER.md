@@ -7,7 +7,7 @@
 ---
 
 **Project:** VibeWave
-**Generated:** 2026-05-16 02:34:06
+**Generated:** 2026-05-16 03:02:52
 **Category:** Music Streaming
 
 ---
@@ -163,11 +163,11 @@
 
 ### Page Pattern
 
-**Pattern Name:** Event/Conference Landing
+**Pattern Name:** Product Review/Ratings Focused
 
-- **Conversion Strategy:** Early bird pricing with deadline. Social proof (past attendees). Speaker credibility. Multi-ticket discounts.
-- **CTA Placement:** Register CTA sticky + After speakers + Bottom
-- **Section Order:** 1. Hero (date/location/countdown), 2. Speakers grid, 3. Agenda/schedule, 4. Sponsors, 5. Register CTA
+- **Conversion Strategy:** User-generated content builds trust. Show verified purchases. Filter by rating. Respond to negative reviews.
+- **CTA Placement:** After reviews summary + Buy button alongside reviews
+- **Section Order:** 1. Hero (product + aggregate rating), 2. Rating breakdown, 3. Individual reviews, 4. Buy/CTA
 
 ---
 

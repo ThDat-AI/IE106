@@ -12,16 +12,17 @@ export default function Footer() {
       { label: t.library, href: '/library' },
       { label: t.charts, href: '/charts' },
     ],
-    [t.support]: [
+    [t.company]: [
       { label: t.aboutUs, href: '/about' },
       { label: t.contactUs, href: '/contact' },
+    ],
+    [t.support]: [
       { label: t.faq, href: '/faq' },
     ],
     [t.legal]: [
       { label: t.termsOfService, href: '/terms' },
       { label: t.privacyPolicy, href: '/privacy' },
       { label: t.copyright, href: '/copyright' },
-      { label: t.communityGuidelines, href: '/community-guidelines' },
     ],
   }
 
@@ -34,9 +35,9 @@ export default function Footer() {
       }}
     >
       <div className="max-w-[1440px] mx-auto px-8 py-10">
-        <div className="grid grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12">
           {/* Brand */}
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"

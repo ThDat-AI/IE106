@@ -1,26 +1,26 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Camera, Check, ChevronRight, Volume2, Type, LayoutGrid, Globe, PanelLeft, Palette, Moon } from 'lucide-react'
-import { useI18nStore, useTranslation, Language } from '@/lib/i18n-store'
+import {
+  Camera, Check, ChevronRight, Volume2, Type, Globe,
+  Palette, Moon, User, Bell, Shield, Music, Zap, Sparkles, Trash2, Mail
+} from 'lucide-react'
+import { useI18nStore, useTranslation } from '@/lib/i18n-store'
+import { PageHero, GlassPanel, AmbientOrbs, AiBadge, AccentBar } from '@/components/ui/vibewave'
 
-const TABS = ['Profile', 'Playback', 'Appearance', 'Notifications', 'Privacy'] as const
-type Tab = typeof TABS[number]
 
-const ACCENT_OPTIONS = [
-  { label: 'VibeWave Purple', value: '#9B4DE0' },
-  { label: 'Slate', value: '#64748b' },
-  { label: 'Rose', value: '#e11d48' },
-]
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionHeader({ title, icon: Icon, color = 'purple' }: { title: string, icon?: any, color?: any }) {
   return (
-    <h3
-      className="font-display font-semibold mb-6"
-      style={{ fontSize: 18, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}
-    >
-      {children}
-    </h3>
+    <div className="flex items-center gap-3 mb-8">
+      <AccentBar height={7} color={color} />
+      <div className="flex items-center gap-2.5">
+        {Icon && <Icon size={20} className="opacity-80" style={{ color: 'var(--vw-text-primary)' }} />}
+        <h3 className="font-display font-bold text-2xl tracking-tight" style={{ color: 'var(--vw-text-primary)' }}>
+          {title}
+        </h3>
+      </div>
+    </div>
   )
 }
 
@@ -36,41 +36,36 @@ function SettingRow({
   children: React.ReactNode
 }) {
   return (
-    <div
-      className="flex items-center justify-between py-4"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-          style={{ backgroundColor: 'rgba(155,77,224,0.1)' }}
-        >
-          <Icon size={16} style={{ color: '#9B4DE0' }} />
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between py-5 gap-4 border-b border-white/5 last:border-0">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110"
+          style={{ backgroundColor: 'rgba(155,77,224,0.08)', border: '1px solid rgba(155,77,224,0.15)' }}>
+          <Icon size={18} style={{ color: '#9B4DE0' }} />
         </div>
         <div>
-          <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{label}</div>
+          <div className="text-[15px] font-semibold text-white/90">{label}</div>
           {description && (
-            <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{description}</div>
+            <div className="text-sm mt-0.5 text-white/40 font-light">{description}</div>
           )}
         </div>
       </div>
-      <div>{children}</div>
+      <div className="flex items-center justify-end">{children}</div>
     </div>
   )
 }
 
 function SelectChips({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/5">
       {options.map((opt) => (
         <button
           key={opt}
           onClick={() => onChange(opt)}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150"
+          className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 whitespace-nowrap"
           style={{
-            backgroundColor: value === opt ? '#9B4DE0' : 'rgba(255,255,255,0.07)',
-            color: value === opt ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.55)',
-            border: value === opt ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: value === opt ? '#9B4DE0' : 'transparent',
+            color: value === opt ? 'white' : 'rgba(255,255,255,0.45)',
+            boxShadow: value === opt ? '0 4px 12px rgba(155,77,224,0.3)' : 'none',
           }}
         >
           {opt}
@@ -86,19 +81,19 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      className="relative w-10 h-5.5 rounded-full transition-all duration-200 flex items-center"
+      className="relative w-12 h-6.5 rounded-full transition-all duration-300 flex items-center p-1"
       style={{
-        backgroundColor: checked ? '#9B4DE0' : 'rgba(255,255,255,0.12)',
-        width: 40,
-        height: 22,
+        backgroundColor: checked ? '#9B4DE0' : 'rgba(255,255,255,0.1)',
+        boxShadow: checked ? '0 0 15px rgba(155,77,224,0.2)' : 'none',
+        border: checked ? '1px solid rgba(155,77,224,0.3)' : '1px solid rgba(255,255,255,0.05)',
       }}
     >
       <span
-        className="absolute rounded-full bg-white transition-all duration-200"
+        className="block rounded-full bg-white shadow-lg transition-all duration-300 ease-out"
         style={{
-          width: 16,
-          height: 16,
-          left: checked ? 22 : 3,
+          width: 18,
+          height: 18,
+          transform: checked ? 'translateX(22px)' : 'translateX(0)',
         }}
       />
     </button>
@@ -109,10 +104,14 @@ export default function ProfileSettingsPage() {
   const { t, language: currentLang } = useTranslation()
   const setGlobalLanguage = useI18nStore((state) => state.setLanguage)
 
-  const TABS = [t.profile, t.playback, t.appearance, t.notifications, t.privacy] as const
-  type Tab = typeof TABS[number]
+  const TABS = [
+    { id: 'profile', label: t.account, icon: User },
+    { id: 'playback', label: t.playback, icon: Music },
+    { id: 'appearance', label: t.appearance, icon: Palette },
+    { id: 'notifications', label: t.notifications, icon: Bell },
+  ] as const
 
-  const [activeTab, setActiveTab] = useState<Tab>(t.profile)
+  const [activeTab, setActiveTab] = useState<string>('profile')
 
   // Profile
   const [name, setName] = useState('Alex Johnson')
@@ -121,16 +120,11 @@ export default function ProfileSettingsPage() {
   const [profileSaved, setProfileSaved] = useState(false)
 
   // Appearance
-  const [motion, setMotion] = useState('On')
   const [fontSize, setFontSize] = useState('M')
-  const [density, setDensity] = useState('Comfortable')
-  const [sidebar, setSidebar] = useState('Auto')
-  const [accent, setAccent] = useState('#9B4DE0')
 
   // Notifications
   const [notifNewReleases, setNotifNewReleases] = useState(true)
   const [notifRecommendations, setNotifRecommendations] = useState(true)
-  const [notifActivity, setNotifActivity] = useState(false)
   const [notifMarketing, setNotifMarketing] = useState(false)
 
   // Playback
@@ -143,344 +137,286 @@ export default function ProfileSettingsPage() {
   const [publicProfile, setPublicProfile] = useState(true)
   const [shareActivity, setShareActivity] = useState(false)
 
-  // Sync tab when language changes
-  useEffect(() => {
-    setActiveTab((prev) => {
-      if (prev === 'Profile' || prev === 'Hồ sơ') return t.profile
-      if (prev === 'Playback' || prev === 'Phát nhạc') return t.playback
-      if (prev === 'Appearance' || prev === 'Giao diện') return t.appearance
-      if (prev === 'Notifications' || prev === 'Thông báo') return t.notifications
-      if (prev === 'Privacy' || prev === 'Quyền riêng tư') return t.privacy
-      return t.profile
-    })
-  }, [t])
-
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     setProfileSaved(true)
     setTimeout(() => setProfileSaved(false), 2500)
   }
 
-  const inputStyle = {
-    backgroundColor: '#2A1F3D',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: 'rgba(255,255,255,0.95)',
-    borderRadius: 8,
-    outline: 'none',
-    width: '100%',
-    padding: '11px 14px',
-    fontSize: 14,
-    transition: 'border-color 0.15s ease',
-  }
+  const inputClasses = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[15px] text-white/90 placeholder:text-white/20 outline-none transition-all duration-200 focus:border-purple-500/50 focus:bg-purple-500/5 focus:ring-4 focus:ring-purple-500/10"
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Page header */}
-      <div className="mb-10">
-        <h1
-          className="font-display font-bold leading-display mb-2"
-          style={{ fontSize: 40, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.8px', lineHeight: 1.05 }}
-        >
-          {t.profileAndSettings}
-        </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, lineHeight: 1.5 }}>
-          {t.manageAccount}
-        </p>
-      </div>
+    <div className="relative min-h-[calc(100vh-120px)] pb-20 px-4 md:px-8">
+      <AmbientOrbs position="absolute" />
 
-      {/* Tab bar */}
-      <div
-        className="flex items-center gap-1 mb-10 p-1 rounded-xl w-fit"
-        style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-            style={{
-              backgroundColor: activeTab === tab ? '#2A1F3D' : 'transparent',
-              color: activeTab === tab ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <div className="max-w-6xl mx-auto pt-12">
+        <PageHero
+          eyebrowIcon={<Zap size={12} />}
+          eyebrowLabel="VibeWave Account"
+          title={t.profileAndSettings}
+          subtitle={t.manageAccount}
+          action={
+            <div className="flex items-center gap-4">
+              <AiBadge label="Premium Member" withIcon />
+            </div>
+          }
+        />
 
-      {/* Panel */}
-      <div
-        className="rounded-2xl p-8"
-        style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-      >
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12 items-start">
 
-        {/* ─── PROFILE TAB ─────────────────────────────── */}
-        {activeTab === t.profile && (
-          <form onSubmit={handleSaveProfile}>
-            <SectionTitle>{t.yourProfile}</SectionTitle>
-
-            {/* Avatar */}
-            <div className="flex items-center gap-6 mb-8">
-              <div className="relative">
-                <img
-                  src="/UserAvatar.jpg"
-                  alt="Alex Johnson"
-                  className="w-20 h-20 rounded-full object-cover"
-                  style={{ border: '2px solid rgba(255,255,255,0.1)' }}
-                />
+          {/* Sidebar Navigation */}
+          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide sticky top-24">
+            {TABS.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.id
+              return (
                 <button
-                  type="button"
-                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center transition-vw hover:opacity-80"
-                  style={{ backgroundColor: '#9B4DE0' }}
-                  aria-label="Change profile photo"
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group"
+                  style={{
+                    backgroundColor: isActive ? 'rgba(155,77,224,0.12)' : 'transparent',
+                    color: isActive ? '#C4B5FD' : 'rgba(255,255,255,0.45)',
+                    border: isActive ? '1px solid rgba(155,77,224,0.2)' : '1px solid transparent',
+                  }}
                 >
-                  <Camera size={13} style={{ color: 'rgba(255,255,255,0.95)' }} />
+                  <Icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 opacity-60'}`} />
+                  {tab.label}
+                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#C4B5FD]" />}
                 </button>
-              </div>
-              <div>
-                <div className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{t.profilePhoto}</div>
-                <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.photoDesc}</div>
-              </div>
-            </div>
+              )
+            })}
 
-            {/* Fields */}
-            <div className="space-y-5">
-              <div>
-                <label htmlFor="display-name" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  {t.displayName}
-                </label>
-                <input
-                  id="display-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  style={inputStyle}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = '#9B4DE0' }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-                />
-              </div>
-              <div>
-                <label htmlFor="profile-email" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  {t.emailAddress}
-                </label>
-                <input
-                  id="profile-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={inputStyle}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = '#9B4DE0' }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-                />
-              </div>
-              <div>
-                <label htmlFor="bio" className="block text-sm font-medium mb-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                  {t.bio}
-                </label>
-                <textarea
-                  id="bio"
-                  rows={3}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  style={{ ...inputStyle, resize: 'none', lineHeight: 1.5 }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = '#9B4DE0' }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 mt-8">
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
-                style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
-              >
-                {profileSaved ? <><Check size={14} /> {t.saved}</> : t.saveChanges}
+            <div className="mt-8 pt-8 border-t border-white/5 hidden lg:block">
+              <p className="px-5 text-[11px] font-bold uppercase tracking-widest text-white/20 mb-4">Support</p>
+              <button className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium text-white/40 hover:text-white/80 hover:bg-white/5 transition-all">
+                <Globe size={16} /> Help Center
               </button>
-              <button
-                type="button"
-                className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-vw hover:opacity-80"
-                style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)' }}
-              >
-                {t.cancel}
+              <button className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium text-white/40 hover:text-white/80 hover:bg-white/5 transition-all">
+                <Shield size={16} /> Legal Info
               </button>
             </div>
+          </nav>
 
-            {/* Danger zone */}
-            <div
-              className="mt-10 pt-8"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <h4 className="text-sm font-semibold mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>{t.dangerZone}</h4>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{t.deleteAccount}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                    {t.deleteAccountDesc}
+          {/* Settings Panel */}
+          <GlassPanel className="p-8 md:p-12" variant="dark">
+            <div className="max-w-3xl">
+
+              {/* ─── PROFILE TAB ─────────────────────────────── */}
+              {activeTab === 'profile' && (
+                <form onSubmit={handleSaveProfile} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.yourProfile} icon={User} color="purple" />
+
+                  {/* Avatar Section */}
+                  <div className="flex flex-col sm:flex-row items-center gap-8 mb-12 p-6 rounded-3xl bg-white/5 border border-white/5">
+                    <div className="relative group/avatar">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-purple-500/20 group-hover/avatar:border-purple-500/40 transition-all duration-500">
+                        <img
+                          src="/UserAvatar.jpg"
+                          alt="Alex Johnson"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center bg-purple-500 text-white shadow-xl hover:scale-110 transition-all duration-300"
+                        aria-label="Change profile photo"
+                      >
+                        <Camera size={14} />
+                      </button>
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <h4 className="text-lg font-bold text-white/90 mb-1">{t.profilePhoto}</h4>
+                      <p className="text-sm text-white/40 font-light mb-4">{t.photoDesc}</p>
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-3">
+                        <button type="button" className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-all">Upload New</button>
+                        <button type="button" className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-white/40 hover:bg-white/10 hover:text-white/60 transition-all">Remove</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Form Fields */}
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="display-name" className="text-sm font-bold text-white/50 px-1">{t.displayName}</label>
+                        <input
+                          id="display-name"
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className={inputClasses}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="profile-email" className="text-sm font-bold text-white/50 px-1">{t.emailAddress}</label>
+                        <div className="relative">
+                          <input
+                            id="profile-email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className={inputClasses}
+                          />
+                          <Mail size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="bio" className="text-sm font-bold text-white/50 px-1">{t.bio}</label>
+                      <textarea
+                        id="bio"
+                        rows={4}
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        className={`${inputClasses} resize-none leading-relaxed`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-12">
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-[15px] font-bold transition-all duration-300 hover:opacity-90 active:scale-95 shadow-lg shadow-purple-500/25"
+                      style={{ backgroundColor: '#9B4DE0', color: 'white' }}
+                    >
+                      {profileSaved ? <><Check size={18} /> {t.saved}</> : <><Sparkles size={18} /> {t.saveChanges}</>}
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full sm:w-auto px-8 py-4 rounded-2xl text-[15px] font-bold text-white/40 hover:text-white/80 hover:bg-white/5 transition-all border border-transparent hover:border-white/10"
+                    >
+                      {t.cancel}
+                    </button>
+                  </div>
+
+                  {/* Danger zone */}
+                  <div className="mt-16 pt-12 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                        <Trash2 size={16} className="text-red-400" />
+                      </div>
+                      <h4 className="text-lg font-bold text-red-400/80">{t.dangerZone}</h4>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Delete Personal Data */}
+                      <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white/[0.08] transition-all duration-300">
+                        <div className="text-center md:text-left">
+                          <div className="text-base font-bold text-white/90 mb-1">{t.deletePersonalData}</div>
+                          <div className="text-sm text-white/40 font-light max-w-md">
+                            {t.deletePersonalDataDesc}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-white/5 text-white/60 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all duration-300"
+                        >
+                          {t.deletePersonalData}
+                        </button>
+                      </div>
+
+                      {/* Delete Account */}
+                      <div className="p-6 rounded-3xl bg-red-500/5 border border-red-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="text-center md:text-left">
+                          <div className="text-base font-bold text-white/90 mb-1">{t.deleteAccount}</div>
+                          <div className="text-sm text-white/40 font-light max-w-md">
+                            {t.deleteAccountDesc}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300"
+                        >
+                          {t.deleteAccount}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              )}
+
+              {/* ─── PLAYBACK TAB ─────────────────────────────── */}
+              {activeTab === 'playback' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.playbackSettings} icon={Music} color="blue" />
+                  <div className="space-y-2">
+                    <SettingRow icon={Volume2} label={t.audioQuality} description={t.audioQualityDesc}>
+                      <SelectChips options={['Normal', 'High', 'Very High']} value={audioQuality} onChange={setAudioQuality} />
+                    </SettingRow>
+                    <SettingRow icon={ChevronRight} label={t.crossfade} description={t.crossfadeDesc}>
+                      <SelectChips options={['Off', '2s', '5s', '10s']} value={crossfade} onChange={setCrossfade} />
+                    </SettingRow>
+                    <SettingRow icon={Zap} label={t.normalizeVolume} description={t.normalizeVolumeDesc}>
+                      <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume((v) => !v)} />
+                    </SettingRow>
+                    <SettingRow icon={Music} label={t.offlineSync} description={t.offlineSyncDesc}>
+                      <Toggle checked={offlineSync} onChange={() => setOfflineSync((v) => !v)} />
+                    </SettingRow>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-vw hover:opacity-85"
-                  style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}
-                >
-                  {t.deleteAccount}
-                </button>
-              </div>
-            </div>
-          </form>
-        )}
+              )}
 
-        {/* ─── PLAYBACK TAB ─────────────────────────────── */}
-        {activeTab === t.playback && (
-          <div>
-            <SectionTitle>{t.playbackSettings}</SectionTitle>
-            <div>
-              <SettingRow icon={Volume2} label={t.audioQuality} description={t.audioQualityDesc}>
-                <SelectChips options={['Normal', 'High', 'Very High']} value={audioQuality} onChange={setAudioQuality} />
-              </SettingRow>
-              <SettingRow icon={ChevronRight} label={t.crossfade} description={t.crossfadeDesc}>
-                <SelectChips options={['Off', '2s', '5s', '10s']} value={crossfade} onChange={setCrossfade} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.normalizeVolume} description={t.normalizeVolumeDesc}>
-                <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume((v) => !v)} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.offlineSync} description={t.offlineSyncDesc}>
-                <Toggle checked={offlineSync} onChange={() => setOfflineSync((v) => !v)} />
-              </SettingRow>
-            </div>
-          </div>
-        )}
+              {/* ─── APPEARANCE TAB ─────────────────────────────── */}
+              {activeTab === 'appearance' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.appearance} icon={Palette} color="pink" />
+                  <div className="space-y-2">
 
-        {/* ─── APPEARANCE TAB ─────────────────────────────── */}
-        {activeTab === t.appearance && (
-          <div>
-            <SectionTitle>{t.appearance}</SectionTitle>
-            <div>
-              <SettingRow icon={Volume2} label={t.motion} description={t.motionDesc}>
-                <SelectChips options={['On', 'Reduced', 'Off']} value={motion} onChange={setMotion} />
-              </SettingRow>
-              <SettingRow icon={Type} label={t.fontSize} description={t.fontSizeDesc}>
-                <SelectChips options={['S', 'M', 'L']} value={fontSize} onChange={setFontSize} />
-              </SettingRow>
-              <SettingRow icon={LayoutGrid} label={t.uiDensity} description={t.uiDensityDesc}>
-                <SelectChips options={['Comfortable', 'Compact']} value={density} onChange={setDensity} />
-              </SettingRow>
-              <SettingRow icon={Globe} label={t.language} description={t.languageDesc}>
-                <div className="flex items-center gap-1.5">
-                  {(['en', 'vi'] as const).map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => setGlobalLanguage(lang)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150"
-                      style={{
-                        backgroundColor: currentLang === lang ? '#9B4DE0' : 'rgba(255,255,255,0.07)',
-                        color: currentLang === lang ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.55)',
-                        border: currentLang === lang ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      {lang === 'en' ? 'English' : 'Tiếng Việt'}
-                    </button>
-                  ))}
-                </div>
-              </SettingRow>
-              <SettingRow icon={PanelLeft} label={t.sidebar} description={t.sidebarDesc}>
-                <SelectChips options={['Expanded', 'Collapsed', 'Auto']} value={sidebar} onChange={setSidebar} />
-              </SettingRow>
-              <SettingRow icon={Palette} label={t.accentColor} description={t.accentColorDesc}>
-                <div className="flex items-center gap-2">
-                  {ACCENT_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setAccent(opt.value)}
-                      className="relative w-7 h-7 rounded-full transition-vw hover:scale-110"
-                      style={{
-                        backgroundColor: opt.value,
-                        border: accent === opt.value ? '2px solid rgba(255,255,255,0.8)' : '2px solid transparent',
-                        outline: accent === opt.value ? '2px solid rgba(255,255,255,0.3)' : 'none',
-                        outlineOffset: 2,
-                      }}
-                      aria-label={`Set accent to ${opt.label}`}
-                      title={opt.label}
-                    >
-                      {accent === opt.value && (
-                        <Check size={12} className="absolute inset-0 m-auto" style={{ color: 'rgba(255,255,255,0.95)' }} />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </SettingRow>
-              <SettingRow icon={Moon} label={t.theme} description={t.themeDesc}>
-                <span className="text-xs px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)' }}>
-                  {t.darkOnly}
-                </span>
-              </SettingRow>
-            </div>
-          </div>
-        )}
+                    <SettingRow icon={Type} label={t.fontSize} description={t.fontSizeDesc}>
+                      <SelectChips options={['S', 'M', 'L']} value={fontSize} onChange={setFontSize} />
+                    </SettingRow>
 
-        {/* ─── NOTIFICATIONS TAB ─────────────────────────────── */}
-        {activeTab === t.notifications && (
-          <div>
-            <SectionTitle>{t.notificationPreferences}</SectionTitle>
-            <div>
-              <SettingRow icon={Volume2} label={t.newReleases} description={t.newReleasesDesc}>
-                <Toggle checked={notifNewReleases} onChange={() => setNotifNewReleases((v) => !v)} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.aiRecommendations} description={t.aiRecommendationsDesc}>
-                <Toggle checked={notifRecommendations} onChange={() => setNotifRecommendations((v) => !v)} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.socialActivity} description={t.socialActivityDesc}>
-                <Toggle checked={notifActivity} onChange={() => setNotifActivity((v) => !v)} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.marketingEmails} description={t.marketingEmailsDesc}>
-                <Toggle checked={notifMarketing} onChange={() => setNotifMarketing((v) => !v)} />
-              </SettingRow>
-            </div>
-          </div>
-        )}
+                    <SettingRow icon={Globe} label={t.language} description={t.languageDesc}>
+                      <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/5">
+                        {(['en', 'vi'] as const).map((lang) => (
+                          <button
+                            key={lang}
+                            onClick={() => setGlobalLanguage(lang)}
+                            className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200"
+                            style={{
+                              backgroundColor: currentLang === lang ? '#9B4DE0' : 'transparent',
+                              color: currentLang === lang ? 'white' : 'rgba(255,255,255,0.45)',
+                              boxShadow: currentLang === lang ? '0 4px 12px rgba(155,77,224,0.3)' : 'none',
+                            }}
+                          >
+                            {lang === 'en' ? 'English' : 'Tiếng Việt'}
+                          </button>
+                        ))}
+                      </div>
+                    </SettingRow>
 
-        {/* ─── PRIVACY TAB ─────────────────────────────── */}
-        {activeTab === t.privacy && (
-          <div>
-            <SectionTitle>{t.privacy}</SectionTitle>
-            <div>
-              <SettingRow icon={Volume2} label={t.publicProfile} description={t.publicProfileDesc}>
-                <Toggle checked={publicProfile} onChange={() => setPublicProfile((v) => !v)} />
-              </SettingRow>
-              <SettingRow icon={Volume2} label={t.shareActivity} description={t.shareActivityDesc}>
-                <Toggle checked={shareActivity} onChange={() => setShareActivity((v) => !v)} />
-              </SettingRow>
-            </div>
-
-            <div className="mt-8 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {t.dataAndDownloads}
-              </p>
-              {[
-                { label: t.downloadData, desc: t.downloadDataDesc },
-                { label: t.requestDeletion, desc: t.requestDeletionDesc },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-between py-4"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div>
-                    <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{item.label}</div>
-                    <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.desc}</div>
+                    <SettingRow icon={Moon} label={t.theme} description={t.themeDesc}>
+                      <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                        {t.darkOnly}
+                      </span>
+                    </SettingRow>
                   </div>
-                  <button
-                    className="flex items-center gap-1 text-sm transition-vw hover:opacity-80"
-                    style={{ color: '#9B4DE0' }}
-                  >
-                    {t.request} <ChevronRight size={14} />
-                  </button>
                 </div>
-              ))}
+              )}
+
+              {/* ─── NOTIFICATIONS TAB ─────────────────────────────── */}
+              {activeTab === 'notifications' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.notificationPreferences} icon={Bell} color="yellow" />
+                  <div className="space-y-2">
+                    <SettingRow icon={Zap} label={t.newReleases} description={t.newReleasesDesc}>
+                      <Toggle checked={notifNewReleases} onChange={() => setNotifNewReleases((v) => !v)} />
+                    </SettingRow>
+                    <SettingRow icon={Sparkles} label={t.aiRecommendations} description={t.aiRecommendationsDesc}>
+                      <Toggle checked={notifRecommendations} onChange={() => setNotifRecommendations((v) => !v)} />
+                    </SettingRow>
+
+                    <SettingRow icon={Mail} label={t.marketingEmails} description={t.marketingEmailsDesc}>
+                      <Toggle checked={notifMarketing} onChange={() => setNotifMarketing((v) => !v)} />
+                    </SettingRow>
+                  </div>
+                </div>
+              )}
+
             </div>
-          </div>
-        )}
+          </GlassPanel>
+        </div>
       </div>
     </div>
   )

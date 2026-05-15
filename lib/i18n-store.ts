@@ -24,6 +24,7 @@ export const translations = {
   en: {
     // Footer & Common
     product: 'Product',
+    company: 'Company',
     support: 'Support',
     legal: 'Legal',
     home: 'Home',
@@ -41,7 +42,6 @@ export const translations = {
     termsOfService: 'Terms of Service',
     privacyPolicy: 'Privacy Policy',
     copyright: 'Copyright / DMCA',
-    communityGuidelines: 'Community Guidelines',
     allRightsReserved: 'All rights reserved.',
     notifications: 'Notifications',
     signOut: 'Sign Out',
@@ -171,6 +171,7 @@ export const translations = {
     profileAndSettings: 'Profile & Settings',
     manageAccount: 'Manage your account and personalize VibeWave.',
     profile: 'Profile',
+    account: 'Account',
     playback: 'Playback',
     appearance: 'Appearance',
     notifications: 'Notifications',
@@ -187,6 +188,8 @@ export const translations = {
     dangerZone: 'Danger Zone',
     deleteAccount: 'Delete Account',
     deleteAccountDesc: 'Permanently remove your account and all data. This cannot be undone.',
+    deletePersonalData: 'Delete Personal Data',
+    deletePersonalDataDesc: 'Delete data so AI can relearn your preferences.',
 
     // Playback
     playbackSettings: 'Playback Settings',
@@ -194,10 +197,10 @@ export const translations = {
     audioQualityDesc: 'Higher quality uses more data',
     crossfade: 'Crossfade',
     crossfadeDesc: 'Fade between tracks',
-    normalizeVolume: 'Normalize Volume',
-    normalizeVolumeDesc: 'Keep volume consistent across tracks',
-    offlineSync: 'Offline Sync',
-    offlineSyncDesc: 'Auto-download your playlists for offline use',
+    normalizeVolume: 'Auto Volume Balance',
+    normalizeVolumeDesc: 'Keep volume level consistent across all tracks',
+    offlineSync: 'Auto-preload Next Track',
+    offlineSyncDesc: 'Pre-load the next song for a gapless listening experience',
 
     // Appearance
     motion: 'Motion',
@@ -242,6 +245,7 @@ export const translations = {
   vi: {
     // Footer & Common
     product: 'Khám phá',
+    company: 'Công ty',
     support: 'Hỗ trợ',
     legal: 'Pháp lý',
     home: 'Trang chủ',
@@ -259,7 +263,6 @@ export const translations = {
     termsOfService: 'Điều khoản dịch vụ',
     privacyPolicy: 'Chính sách bảo mật',
     copyright: 'Bản quyền / DMCA',
-    communityGuidelines: 'Nguyên tắc cộng đồng',
     allRightsReserved: 'All rights reserved.',
     notifications: 'Thông báo',
     signOut: 'Đăng xuất',
@@ -389,6 +392,7 @@ export const translations = {
     profileAndSettings: 'Hồ sơ & Cài đặt',
     manageAccount: 'Quản lý tài khoản và cá nhân hóa VibeWave.',
     profile: 'Hồ sơ',
+    account: 'Tài khoản',
     playback: 'Phát nhạc',
     appearance: 'Giao diện',
     notifications: 'Thông báo',
@@ -405,6 +409,8 @@ export const translations = {
     dangerZone: 'Vùng nguy hiểm',
     deleteAccount: 'Xóa tài khoản',
     deleteAccountDesc: 'Xóa vĩnh viễn tài khoản và tất cả dữ liệu của bạn. Hành động này không thể hoàn tác.',
+    deletePersonalData: 'Xóa dữ liệu cá nhân',
+    deletePersonalDataDesc: 'Xóa dữ liệu để AI học lại sở thích của bạn.',
 
     // Playback
     playbackSettings: 'Cài đặt phát nhạc',
@@ -412,10 +418,10 @@ export const translations = {
     audioQualityDesc: 'Chất lượng cao hơn sử dụng nhiều dữ liệu hơn',
     crossfade: 'Chuyển bài mượt mà',
     crossfadeDesc: 'Làm mờ giữa các bài hát',
-    normalizeVolume: 'Chuẩn hóa âm lượng',
-    normalizeVolumeDesc: 'Giữ âm lượng nhất quán giữa các bài hát',
-    offlineSync: 'Đồng bộ hóa ngoại tuyến',
-    offlineSyncDesc: 'Tự động tải xuống danh sách phát để sử dụng ngoại tuyến',
+    normalizeVolume: 'Cân bằng âm lượng tự động',
+    normalizeVolumeDesc: 'Giữ mức âm lượng đồng nhất giữa tất cả các bài hát',
+    offlineSync: 'Tự động tải trước bài tiếp theo',
+    offlineSyncDesc: 'Tự động tải trước bài hát kế tiếp để trải nghiệm nghe không gián đoạn',
 
     // Appearance
     motion: 'Chuyển động',
