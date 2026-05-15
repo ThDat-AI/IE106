@@ -71,6 +71,15 @@ const config: Config = {
         md: "8px",
         sm: "8px",
       },
+      keyframes: {
+        breathing: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+        }
+      },
+      animation: {
+        breathing: 'breathing 4s ease-in-out infinite',
+      }
     },
   },
   plugins: [],

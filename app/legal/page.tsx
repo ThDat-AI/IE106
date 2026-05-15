@@ -1,14 +1,14 @@
 import AppShell from '@/components/layout/app-shell'
-import ContactPage from '@/components/pages/contact-page'
+import LegalCombinedPage from '@/components/pages/legal-combined-page'
 
 export const metadata = {
-  title: 'Contact Us — VibeWave',
+  title: 'Legal — VibeWave',
 }
 
 export default function Page() {
   return (
     <AppShell>
-      <ContactPage />
+      <LegalCombinedPage />
     </AppShell>
   )
 }

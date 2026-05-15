@@ -111,13 +111,15 @@ export function AccentBar({ height = 8, color = 'purple' }: AccentBarProps) {
 interface PageHeroProps {
   /** Small eyebrow badge icon (Lucide React node) */
   eyebrowIcon?: React.ReactNode
-  eyebrowLabel: string
+  eyebrowLabel?: string
   title: string
   subtitle?: string
   /** h1 gradient class. Default: white → purple */
   gradientClass?: string
   /** Custom right-side action element */
   action?: React.ReactNode
+  /** Whether to center all content. Default: false */
+  centered?: boolean
 }
 
 export function PageHero({
@@ -127,20 +129,25 @@ export function PageHero({
   subtitle,
   gradientClass = 'from-white via-purple-100 to-purple-400',
   action,
+  centered = false,
 }: PageHeroProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-      <div className="space-y-4">
+    <div className={`flex flex-col ${centered ? 'items-center text-center' : 'md:flex-row md:items-end justify-between'} gap-6`}>
+      <div className={`space-y-4 ${centered ? 'flex flex-col items-center' : ''}`}>
         {/* Eyebrow badge */}
-        <div
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md"
-          style={{ backgroundColor: 'rgba(155,77,224,0.12)', border: '1px solid rgba(155,77,224,0.25)' }}
-        >
-          {eyebrowIcon && <span style={{ color: '#9B4DE0' }}>{eyebrowIcon}</span>}
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#C4B5FD' }}>
-            {eyebrowLabel}
-          </span>
-        </div>
+        {(eyebrowIcon || eyebrowLabel) && (
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md"
+            style={{ backgroundColor: 'rgba(155,77,224,0.12)', border: '1px solid rgba(155,77,224,0.25)' }}
+          >
+            {eyebrowIcon && <span style={{ color: '#9B4DE0' }}>{eyebrowIcon}</span>}
+            {eyebrowLabel && (
+              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#C4B5FD' }}>
+                {eyebrowLabel}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Title */}
         <h1
@@ -152,7 +159,7 @@ export function PageHero({
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-base font-light leading-relaxed max-w-lg" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          <p className={`text-base font-light leading-relaxed ${centered ? 'max-w-2xl' : 'max-w-lg'}`} style={{ color: 'rgba(255,255,255,0.55)' }}>
             {subtitle}
           </p>
         )}

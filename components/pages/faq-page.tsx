@@ -1,174 +1,289 @@
 "use client"
 
-import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { ChevronDown, Search, HelpCircle, MessageSquare, LifeBuoy, CreditCard, PlayCircle, Settings } from 'lucide-react'
+import { PageHero, GlassPanel, AmbientOrbs, SectionHeader, AccentBar } from '@/components/ui/vibewave'
+import { useTranslation } from '@/lib/i18n-store'
 
-const CATEGORIES = [
-  {
-    name: 'Account',
-    questions: [
-      { q: 'How do I create a VibeWave account?', a: 'Visit vibewave.fm and click "Register." Enter your name, email, and a password. No credit card is required to get started with the free tier.' },
-      { q: 'How do I reset my password?', a: 'On the Login page, click "Forgot password?" and enter your email. You will receive a reset link within a few minutes. Check your spam folder if it does not arrive.' },
-      { q: 'Can I change my username?', a: 'Yes. Go to Profile > Settings > Profile and update your Display Name. Changes take effect immediately.' },
-      { q: 'How do I delete my account?', a: 'Navigate to Profile > Settings > Profile > Danger Zone and click "Delete Account." This action is irreversible and will erase all your data within 30 days.' },
-      { q: 'Can I have multiple accounts?', a: 'Each email address supports one VibeWave account. You may switch between accounts on the same device using the sign-out option in the profile menu.' },
-      { q: 'What happens to my data when I delete my account?', a: 'We will permanently delete your personal data, listening history, and playlists within 30 days of account deletion, in compliance with applicable privacy laws.' },
-    ],
-  },
-  {
-    name: 'Playback',
-    questions: [
-      { q: 'Why is my music buffering?', a: 'Buffering is usually caused by a slow or unstable internet connection. Try switching to a lower audio quality in Settings > Playback > Audio Quality or connect to a stronger network.' },
-      { q: 'How does crossfade work?', a: 'Crossfade smoothly transitions between tracks by overlapping their endings and beginnings. Enable it in Settings > Playback > Crossfade and choose a duration between 2 and 10 seconds.' },
-      { q: 'Can I play music in the background?', a: 'Yes. VibeWave is designed for background listening. Audio continues playing when you switch apps or lock your screen on mobile.' },
-      { q: 'What is volume normalization?', a: 'Volume normalization keeps the perceived loudness consistent across all tracks so you do not have to constantly adjust your volume. Enable it in Settings > Playback.' },
-      { q: 'How do I control playback with keyboard shortcuts?', a: 'Press Space to play or pause, arrow keys to skip, and M to mute. A full list of keyboard shortcuts is available in Settings > Shortcuts.' },
-      { q: 'Why does audio quality change automatically?', a: 'VibeWave adjusts audio quality based on your connection speed by default. You can lock quality to a specific setting in Settings > Playback > Audio Quality.' },
-    ],
-  },
-  {
-    name: 'Subscription',
-    questions: [
-      { q: 'What is included in the free plan?', a: 'The free plan includes standard audio quality, limited skips, and access to curated playlists. Ads are served occasionally between tracks.' },
-      { q: 'How much does VibeWave Premium cost?', a: 'Premium is $9.99 per month or $89.99 per year. A family plan for up to 6 accounts is available at $14.99 per month.' },
-      { q: 'How do I cancel my subscription?', a: 'Go to Profile > Settings > Subscription and click "Cancel Plan." You keep Premium access until the end of the current billing period.' },
-      { q: 'Will I be charged after a free trial?', a: 'Yes. If you do not cancel before the trial ends, your payment method will be charged automatically. You can cancel at any time during the trial at no cost.' },
-      { q: 'Do you offer student discounts?', a: 'Yes. Students with a valid .edu email address qualify for 50% off the monthly plan. Verify your status at vibewave.fm/student.' },
-      { q: 'How do refunds work?', a: 'We offer a full refund within 7 days of a charge if you have not streamed more than 2 hours during that period. Contact support@vibewave.fm to request one.' },
-    ],
-  },
-  {
-    name: 'Technical',
-    questions: [
-      { q: 'Which browsers does VibeWave support?', a: 'VibeWave works best on the latest versions of Chrome, Safari, Firefox, and Edge. Internet Explorer is not supported.' },
-      { q: 'Is there a desktop app?', a: 'A native desktop app for macOS and Windows is currently in development. Sign up for early access at vibewave.fm/desktop.' },
-      { q: 'How do I report a bug?', a: 'Use the Contact Us form, select "Report a Bug," and describe what happened. Screenshots or screen recordings help us resolve issues faster.' },
-      { q: 'Why is the player not showing on some pages?', a: 'The bottom player requires JavaScript to be enabled. Make sure your browser has JavaScript enabled and that no extensions are blocking scripts on vibewave.fm.' },
-      { q: 'How do I clear my cache?', a: 'Press Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac) in your browser, select cached images and files, and click Clear Data. Then reload VibeWave.' },
-      { q: 'Does VibeWave work offline?', a: 'Offline listening is available for Premium subscribers. Enable Offline Sync in Settings > Playback to automatically download your playlists on Wi-Fi.' },
-    ],
-  },
-]
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'Account': <Settings size={20} />,
+  'Playback': <PlayCircle size={20} />,
+  'Technical': <LifeBuoy size={20} />,
+  // Vietnamese mappings
+  'Tài khoản': <Settings size={20} />,
+  'Phát nhạc': <PlayCircle size={20} />,
+  'Kỹ thuật': <LifeBuoy size={20} />,
+}
 
 export default function FaqPage() {
+  const { t } = useTranslation()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState(t.faqData[0].name)
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
-  const [activeCategory, setActiveCategory] = useState('Account')
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  function toggle(key: string) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  const toggle = (key: string) => {
     setOpenItems((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const currentCategory = CATEGORIES.find((c) => c.name === activeCategory)!
+  const filteredQuestions = useMemo(() => {
+    if (!searchQuery) return null
+
+    const results: Array<{ cat: string; q: string; a: string; index: number }> = []
+    t.faqData.forEach((cat: any) => {
+      cat.questions.forEach((item: any, i: number) => {
+        if (
+          item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.a.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          results.push({ cat: cat.name, q: item.q, a: item.a, index: i })
+        }
+      })
+    })
+    return results
+  }, [searchQuery, t.faqData])
+
+  const currentCategory = t.faqData.find((c: any) => c.name === activeCategory) || t.faqData[0]
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-12">
-        <h1
-          className="font-display font-bold leading-display mb-4"
-          style={{ fontSize: 56, color: 'rgba(255,255,255,0.95)', letterSpacing: '-1.2px', lineHeight: 0.96 }}
-        >
-          FAQ
-        </h1>
-        <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-          Quick answers to the most common questions.
-        </p>
-      </div>
+    <div className="relative pb-20">
+      <AmbientOrbs position="absolute" />
 
-      <div className="grid grid-cols-4 gap-10">
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Hero Section */}
+        <div className="pt-12 mb-16">
+          <PageHero
+            title={t.faqHeroTitle}
+            subtitle={t.faqHeroSub}
+            centered
+          />
 
-        {/* Category nav */}
-        <div className="col-span-1">
-          <nav className="sticky top-24 space-y-1">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.name}
-                onClick={() => setActiveCategory(cat.name)}
-                className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
-                style={{
-                  backgroundColor: activeCategory === cat.name ? 'rgba(155,77,224,0.1)' : 'transparent',
-                  color: activeCategory === cat.name ? '#9B4DE0' : 'rgba(255,255,255,0.5)',
-                  borderLeft: activeCategory === cat.name ? '3px solid #9B4DE0' : '3px solid transparent',
-                  paddingLeft: activeCategory === cat.name ? 'calc(1rem - 3px)' : '1rem',
-                }}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </nav>
+          {/* Search Bar Container */}
+          <div className="mt-12 max-w-2xl mx-auto relative group">
+            {/* Ambient Breathing Glow */}
+            <div
+              className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-fuchsia-400 to-purple-500 rounded-[22px] blur-2xl animate-breathing opacity-40 group-focus-within:opacity-80 transition-opacity duration-700"
+              aria-hidden
+            />
+            
+            {/* Search Input Wrapper */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl rounded-2xl border border-white/20 group-hover:border-white/30 group-focus-within:border-purple-400/50 group-focus-within:bg-white/15 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.5)]" />
+              
+              <div className="relative flex items-center px-5">
+                <Search className="text-white/40 group-focus-within:text-purple-400 transition-colors" size={22} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder={t.searchFaqPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-4 pr-12 py-5 bg-transparent text-white text-lg placeholder-white/30 focus:outline-none transition-all"
+                />
+                
+                {/* Keyboard Hint */}
+                <div className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-white/30 group-focus-within:opacity-0 transition-opacity">
+                  <span className="text-[12px]">/</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Popular Topics / Suggestions */}
+            {!searchQuery && (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-top-2 duration-700 delay-150">
+                <span className="text-xs font-semibold text-white/30 uppercase tracking-wider mr-1">{t.popularTopics}:</span>
+                {Object.entries(t.topics).map(([key, label]: [string, any]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSearchQuery(label)
+                      inputRef.current?.focus()
+                    }}
+                    className="px-4 py-1.5 bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/30 rounded-full text-xs text-white/50 hover:text-purple-300 transition-all active:scale-95"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Questions */}
-        <div className="col-span-3">
-          <h2
-            className="font-display font-semibold mb-6"
-            style={{ fontSize: 22, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}
-          >
-            {currentCategory.name}
-          </h2>
-          <div className="space-y-2">
-            {currentCategory.questions.map((item, i) => {
-              const key = `${activeCategory}-${i}`
-              const isOpen = !!openItems[key]
-              return (
-                <div
-                  key={key}
-                  className="rounded-2xl overflow-hidden"
-                  style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
+        {searchQuery ? (
+          /* Search Results */
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-3 mb-8">
+              <AccentBar color="green" />
+              <h2 className="text-2xl font-display font-semibold text-white">
+                {filteredQuestions?.length
+                  ? t.searchResultsFound.replace('{count}', filteredQuestions.length.toString())
+                  : t.noResultsFound}
+              </h2>
+            </div>
+
+            {filteredQuestions?.length ? (
+              <div className="space-y-4">
+                {filteredQuestions.map((item, i) => (
+                  <FaqItem
+                    key={`search-${i}`}
+                    item={item}
+                    isOpen={!!openItems[`search-${i}`]}
+                    onToggle={() => toggle(`search-${i}`)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <GlassPanel variant="dark" className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-white/20">
+                    <Search size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">{t.noResultsFound}</h3>
+                    <p className="text-white/50 max-w-md">
+                      {t.noResultsDesc}
+                    </p>
+                  </div>
                   <button
-                    onClick={() => toggle(key)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left transition-all duration-150 hover:bg-white/[0.02]"
-                    aria-expanded={isOpen}
+                    onClick={() => setSearchQuery('')}
+                    className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 rounded-full text-sm font-medium transition-colors"
                   >
-                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontWeight: 500, lineHeight: 1.4 }}>
-                      {item.q}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      style={{
-                        color: isOpen ? '#9B4DE0' : 'rgba(255,255,255,0.3)',
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-                        transition: 'transform 0.2s ease, color 0.15s ease',
-                        flexShrink: 0,
-                        marginLeft: 16,
-                      }}
-                    />
+                    {t.clearSearch}
                   </button>
-                  {isOpen && (
-                    <div
-                      className="px-6 pb-5"
-                      style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+                </div>
+              </GlassPanel>
+            )}
+          </div>
+        ) : (
+          /* Category Browsing */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Sidebar Navigation */}
+            <div className="lg:col-span-4">
+              <div className="sticky top-24 space-y-2">
+                <SectionHeader title={t.categories} />
+                <div className="space-y-1">
+                  {t.faqData.map((cat: any) => (
+                    <button
+                      key={cat.name}
+                      onClick={() => setActiveCategory(cat.name)}
+                      className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
+                      style={{
+                        backgroundColor: activeCategory === cat.name ? 'rgba(155,77,224,0.1)' : 'transparent',
+                        border: activeCategory === cat.name ? '1px solid rgba(155,77,224,0.3)' : '1px solid transparent',
+                      }}
                     >
-                      <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, paddingTop: 14 }}>
-                        {item.a}
+                      {activeCategory === cat.name && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
+                      )}
+                      <span className={`transition-colors ${activeCategory === cat.name ? 'text-purple-400' : 'text-white/40 group-hover:text-white/70'}`}>
+                        {CATEGORY_ICONS[cat.name] || <HelpCircle size={20} />}
+                      </span>
+                      <span className={`font-medium transition-colors ${activeCategory === cat.name ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`}>
+                        {cat.name}
+                      </span>
+                      {activeCategory === cat.name && (
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(155,77,224,0.8)]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Support Box */}
+                <GlassPanel variant="surface" className="mt-8 p-6">
+                  <div className="flex flex-col gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+                      <MessageSquare size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold mb-1">{t.directSupport}</h4>
+                      <p className="text-white/40 text-xs leading-relaxed">
+                        {t.directSupportDesc}
                       </p>
                     </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Still need help */}
-          <div
-            className="mt-8 rounded-2xl p-6 flex items-center justify-between"
-            style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>Still need help?</div>
-              <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Our support team replies within one business day.</div>
+                    <a
+                      href="/about?tab=contact"
+                      className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-xl text-center shadow-lg shadow-purple-900/20 transition-all active:scale-[0.98]"
+                    >
+                      {t.contactUs}
+                    </a>
+                  </div>
+                </GlassPanel>
+              </div>
             </div>
-            <a
-              href="/contact"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 hover:opacity-85"
-              style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
-            >
-              Contact Us
-            </a>
+
+            {/* Questions List */}
+            <div className="lg:col-span-8 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="flex items-center gap-3 mb-8">
+                <AccentBar color="purple" />
+                <h2 className="text-3xl font-display font-semibold text-white tracking-tight">
+                  {currentCategory.name}
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                {currentCategory.questions.map((item: any, i: number) => {
+                  const key = `${activeCategory}-${i}`
+                  return (
+                    <FaqItem
+                      key={key}
+                      item={item}
+                      isOpen={!!openItems[key]}
+                      onToggle={() => toggle(key)}
+                    />
+                  )
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
 }
+
+
+function FaqItem({ item, isOpen, onToggle }: { item: { q: string; a: string }; isOpen: boolean; onToggle: () => void }) {
+  return (
+    <GlassPanel
+      variant={isOpen ? 'dark' : 'surface'}
+      className={`transition-all duration-300 ${isOpen ? 'ring-1 ring-purple-500/30' : 'hover:border-white/20'}`}
+    >
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-7 py-6 text-left group"
+        aria-expanded={isOpen}
+      >
+        <span className={`text-lg font-medium transition-colors ${isOpen ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
+          {item.q}
+        </span>
+        <div className={`shrink-0 ml-4 transition-all duration-300 ${isOpen ? 'rotate-180 text-purple-400' : 'text-white/20 group-hover:text-white/40'}`}>
+          <ChevronDown size={20} />
+        </div>
+      </button>
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+      >
+        <div className="overflow-hidden">
+          <div className="px-7 pb-6">
+            <div className="w-full h-px bg-white/5 mb-6" />
+            <p className="text-white/50 leading-relaxed text-[15px]">
+              {item.a}
+            </p>
+          </div>
+        </div>
+      </div>
+    </GlassPanel>
+  )
+}
+

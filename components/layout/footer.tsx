@@ -13,16 +13,16 @@ export default function Footer() {
       { label: t.charts, href: '/charts' },
     ],
     [t.company]: [
-      { label: t.aboutUs, href: '/about' },
-      { label: t.contactUs, href: '/contact' },
+      { label: t.aboutUs, href: '/about?tab=about' },
+      { label: t.contactUs, href: '/about?tab=contact' },
     ],
     [t.support]: [
       { label: t.faq, href: '/faq' },
     ],
     [t.legal]: [
-      { label: t.termsOfService, href: '/terms' },
-      { label: t.privacyPolicy, href: '/privacy' },
-      { label: t.copyright, href: '/copyright' },
+      { label: t.termsOfService, href: '/legal?tab=terms' },
+      { label: t.privacyPolicy, href: '/legal?tab=privacy' },
+      { label: t.copyright, href: '/legal?tab=copyright' },
     ],
   }
 

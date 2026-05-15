@@ -303,9 +303,9 @@ export default function RegisterPage() {
               </p>
               <p className="text-[10px] leading-relaxed px-4" style={{ color: 'rgba(255, 255, 255, 0.25)' }}>
                 {t.termsAgree}{' '}
-                <Link href="/terms" className="underline hover:text-white/40 transition-colors duration-200">{t.termsLink}</Link>
+                <Link href="/legal?tab=terms" className="underline hover:text-white/40 transition-colors duration-200">{t.termsLink}</Link>
                 {' '}{t.andText}{' '}
-                <Link href="/privacy" className="underline hover:text-white/40 transition-colors duration-200">{t.privacyLink}</Link>.
+                <Link href="/legal?tab=privacy" className="underline hover:text-white/40 transition-colors duration-200">{t.privacyLink}</Link>.
               </p>
             </div>
           </GlassPanel>

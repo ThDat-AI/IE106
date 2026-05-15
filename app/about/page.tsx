@@ -1,15 +1,15 @@
 import AppShell from '@/components/layout/app-shell'
-import AboutPage from '@/components/pages/about-page'
+import AboutContactPage from '@/components/pages/about-contact-page'
 
 export const metadata = {
-  title: 'About Us — VibeWave',
-  description: 'Learn about VibeWave — a music streaming platform built for background listening and AI-powered personalization.',
+  title: 'About Us & Contact — VibeWave',
+  description: 'Learn about VibeWave and get in touch with our team.',
 }
 
 export default function Page() {
   return (
     <AppShell>
-      <AboutPage />
+      <AboutContactPage />
     </AppShell>
   )
 }
