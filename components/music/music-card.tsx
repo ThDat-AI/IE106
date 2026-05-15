@@ -16,6 +16,7 @@ interface MusicCardProps {
   className?: string
   track?: Track
   image?: string
+  variant?: 'default' | 'compact'
 }
 
 const GRADIENT_PAIRS = [
@@ -37,6 +38,7 @@ export default function MusicCard({
   className,
   track,
   image,
+  variant = 'default',
 }: MusicCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
@@ -67,7 +69,36 @@ export default function MusicCard({
 
   const displayImage = track?.albumArt || image
 
-  const card = (
+  const card = variant === 'compact' ? (
+    <div
+      className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 relative">
+        {displayImage ? (
+          <img src={displayImage} alt={title} className="w-full h-full object-cover" />
+        ) : (
+          <div 
+            className="w-full h-full flex items-center justify-center text-xl font-bold"
+            style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`, color: 'rgba(255,255,255,0.3)' }}
+          >
+            {title.charAt(0)}
+          </div>
+        )}
+        {/* Compact play overlay */}
+        <div 
+          className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Play size={14} fill="white" className="text-white" />
+        </div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-white/90 truncate group-hover:text-purple-400 transition-colors">{title}</p>
+        <p className="text-xs text-white/40 truncate">{subtitle}</p>
+      </div>
+    </div>
+  ) : (
     <div
       className={cn('relative rounded-2xl overflow-hidden cursor-pointer group', className)}
       style={{

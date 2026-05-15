@@ -197,10 +197,21 @@
 
   /* Deep Background Effects */
   @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(50px, -50px) scale(1.1); }
-    66% { transform: translate(-40px, 40px) scale(0.9); }
-    100% { transform: translate(0px, 0px) scale(1); }
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+      transform: translate(50px, -50px) scale(1.1);
+    }
+
+    66% {
+      transform: translate(-40px, 40px) scale(0.9);
+    }
+
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
   }
 
   .animate-blob {
@@ -214,7 +225,7 @@
   .animation-delay-4000 {
     animation-delay: 4s;
   }
-  
+
   .animation-delay-6000 {
     animation-delay: 6s;
   }
@@ -224,7 +235,12 @@
   }
 
   @keyframes shimmer {
-    0% { transform: translateX(-100%) skewX(-15deg); }
-    100% { transform: translateX(200%) skewX(-15deg); }
+    0% {
+      transform: translateX(-100%) skewX(-15deg);
+    }
+
+    100% {
+      transform: translateX(200%) skewX(-15deg);
+    }
   }
 }
