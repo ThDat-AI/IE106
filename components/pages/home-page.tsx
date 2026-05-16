@@ -12,6 +12,7 @@ import {
   FilterPills,
   GlassMusicCard,
   PodiumCard,
+  MusicShelf,
 } from '@/components/ui/vibewave'
 
 const GENRE_LABELS = ['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn']
@@ -63,7 +64,7 @@ export default function HomePage({
         track: t
       })))
 
-      const madeData = await searchMusic('Indie Việt', 5)
+      const madeData = await searchMusic('Indie Việt', 10)
       setMadeForYou(madeData.map(t => ({
         id: t.id,
         title: t.title,
@@ -106,7 +107,7 @@ export default function HomePage({
       {/* Continue Listening — highest priority */}
       <section aria-labelledby="continue-listening-heading">
         <SectionHeader title={t.continueListening} href="/library/recent" />
-        <div className="grid grid-cols-6 gap-4">
+        <MusicShelf>
           {continueListening.map((item) => (
             <MusicCard
               key={item.id}
@@ -117,13 +118,13 @@ export default function HomePage({
               track={item.track}
             />
           ))}
-        </div>
+        </MusicShelf>
       </section>
 
       {/* Top Albums Section */}
       <section aria-labelledby="top-albums-heading">
         <SectionHeader title={t.albums} href="/library?tab=albums" />
-        <div className="grid grid-cols-6 gap-4">
+        <MusicShelf>
           {topAlbums.map((album) => (
             <MusicCard
               key={album.id}
@@ -135,7 +136,7 @@ export default function HomePage({
               type="album"
             />
           ))}
-        </div>
+        </MusicShelf>
       </section>
 
       {/* Made For You — AI section with glassmorphism cards */}
@@ -160,7 +161,7 @@ export default function HomePage({
             {t.yourVibe}
           </a>
         </div>
-        <div className="grid grid-cols-5 gap-4">
+        <MusicShelf>
           {madeForYou.map((item, i) => (
             <GlassMusicCard
               key={item.id}
@@ -168,7 +169,7 @@ export default function HomePage({
               rankIndex={i}
             />
           ))}
-        </div>
+        </MusicShelf>
       </section>
 
       {/* Quick Picks — track list */}

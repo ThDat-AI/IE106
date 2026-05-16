@@ -19,7 +19,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ChevronRight, Play, Heart } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Play, Heart } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
 import { usePlayerStore, type Track } from '@/lib/player-store'
 
@@ -571,6 +571,105 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
         <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
           {track.artist}
         </p>
+      </div>
+    </div>
+  )
+}
+/* ─────────────────────────────────────────────
+   MUSIC SHELF  — Horizontal scrollable section
+───────────────────────────────────────────── */
+interface MusicShelfProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function MusicShelf({ children, className = '' }: MusicShelfProps) {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [showLeft, setShowLeft] = React.useState(false)
+  const [showRight, setShowRight] = React.useState(true)
+
+  const checkScroll = () => {
+    if (!scrollRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+    setShowLeft(scrollLeft > 10)
+    setShowRight(scrollLeft < scrollWidth - clientWidth - 10)
+  }
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (el) {
+      el.addEventListener('scroll', checkScroll)
+      // Initial check
+      checkScroll()
+      // Re-check on window resize
+      window.addEventListener('resize', checkScroll)
+    }
+    return () => {
+      if (el) el.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+    }
+  }, [])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return
+    const { clientWidth } = scrollRef.current
+    const scrollAmount = clientWidth * 0.8
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    })
+  }
+
+  const maskStyle: React.CSSProperties = {
+    maskImage: `linear-gradient(to right, 
+      ${showLeft ? 'transparent' : 'white'} 0%, 
+      white ${showLeft ? '48px' : '0px'}, 
+      white ${showRight ? 'calc(100% - 80px)' : '100%'}, 
+      ${showRight ? 'transparent' : 'white'} 100%)`,
+    WebkitMaskImage: `linear-gradient(to right, 
+      ${showLeft ? 'transparent' : 'white'} 0%, 
+      white ${showLeft ? '48px' : '0px'}, 
+      white ${showRight ? 'calc(100% - 80px)' : '100%'}, 
+      ${showRight ? 'transparent' : 'white'} 100%)`
+  }
+
+  return (
+    <div className={`relative group/shelf ${className}`}>
+      {/* Navigation Arrows */}
+      <button
+        onClick={() => scroll('left')}
+        className={`absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-xl border border-white/10 shadow-2xl hover:scale-110 active:scale-95 ${showLeft ? 'opacity-0 group-hover/shelf:opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'rgba(255,255,255,0.05)' }}
+        aria-label="Scroll left"
+      >
+        <ChevronLeft size={24} className="text-white/80" />
+      </button>
+
+      <button
+        onClick={() => scroll('right')}
+        className={`absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-xl border border-white/10 shadow-2xl hover:scale-110 active:scale-95 ${showRight ? 'opacity-0 group-hover/shelf:opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'rgba(255,255,255,0.05)' }}
+        aria-label="Scroll right"
+      >
+        <ChevronRight size={24} className="text-white/80" />
+      </button>
+
+      {/* Scroll Container with Premium Masking */}
+      <div
+        ref={scrollRef}
+        className="flex gap-5 overflow-x-auto pb-8 pt-2 px-1 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          ...maskStyle
+        }}
+      >
+        {React.Children.map(children, (child) => (
+          <div className="shrink-0 w-[180px] md:w-[200px] snap-start">
+            {child}
+          </div>
+        ))}
+        {/* Extra spacer for the right gradient visual cue */}
+        <div className="shrink-0 w-12" aria-hidden />
       </div>
     </div>
   )

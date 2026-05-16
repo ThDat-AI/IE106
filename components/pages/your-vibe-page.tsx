@@ -13,6 +13,7 @@ import {
   AiBadge,
   FilterPills,
   RANK_COLORS,
+  MusicShelf,
 } from '@/components/ui/vibewave'
 
 const GENRE_CATEGORIES = ['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn']
@@ -41,7 +42,7 @@ export default function YourVibePage() {
     setIsLoading(true)
     try {
       const [mixData, discoveredData, ...artistImages] = await Promise.all([
-        searchMusic('V-Pop Hits', 5),
+        searchMusic('V-Pop Hits', 10),
         searchMusic('Nhạc trẻ mới nhất', 4),
         ...INITIAL_ARTISTS.map(a => searchArtistImage(a.title))
       ])
@@ -179,7 +180,7 @@ export default function YourVibePage() {
             {t.collectionsForYou}
           </h2>
         </div>
-        <div className="grid grid-cols-5 gap-4">
+        <MusicShelf>
           {isLoading ? (
             Array(5).fill(0).map((_, i) => (
               <div key={i} className="aspect-square rounded-2xl bg-white/5 animate-pulse" />
@@ -196,7 +197,7 @@ export default function YourVibePage() {
               />
             ))
           )}
-        </div>
+        </MusicShelf>
       </section>
 
       {/* Recently Discovered + Top Artists row */}
