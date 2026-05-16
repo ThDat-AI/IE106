@@ -1,7 +1,7 @@
 # Auth Page Overrides
 
 > **PROJECT:** VibeWave
-> **Generated:** 2026-05-16 02:34:06
+> **Generated:** 2026-05-17 00:07:53
 > **Page Type:** Authentication
 
 > ⚠️ **IMPORTANT:** Rules in this file **override** the Master file (`design-system/MASTER.md`).
@@ -13,13 +13,13 @@
 
 ### Layout Overrides
 
-- **Max Width:** 1200px (standard)
-- **Layout:** Full-width sections, centered content
-- **Sections:** 1. Hero (date/location/countdown), 2. Speakers grid, 3. Agenda/schedule, 4. Sponsors, 5. Register CTA
+- **Max Width:** 800px (narrow, focused)
+- **Layout:** Single column, centered
+- **Sections:** 1. Hero (benefit headline), 2. Lead magnet preview (ebook cover, checklist, etc), 3. Form (minimal fields), 4. CTA submit
 
 ### Spacing Overrides
 
-- No overrides — use Master spacing
+- **Content Density:** Low — focus on clarity
 
 ### Typography Overrides
 
@@ -27,11 +27,12 @@
 
 ### Color Overrides
 
-- **Strategy:** Urgency colors (countdown). Event branding. Speaker cards professional. Sponsor logos neutral.
+- **Strategy:** Lead magnet: Professional design. Form: Clean white bg. Inputs: Light border #CCCCCC. CTA: Brand color
 
 ### Component Overrides
 
-- Avoid: Show loading spinner for 10s+
+- Avoid: No feedback after submit
+- Avoid: Placeholder-only inputs
 
 ---
 
@@ -43,6 +44,7 @@
 
 ## Recommendations
 
-- Effects: Testimonial carousel animations, logo grid fade-in, stat counter animations (number count-up), review star ratings
-- AI Interaction: Stream text response token by token
-- CTA Placement: Register CTA sticky + After speakers + Bottom
+- Effects: Hover states on CTA (color shift, slight scale), form field focus animations, loading spinner, success feedback
+- Forms: Show loading then success/error state
+- Accessibility: Use label with for attribute or wrap input
+- CTA Placement: Form CTA: Submit button

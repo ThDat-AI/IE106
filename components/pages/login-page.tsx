@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Eye, EyeOff, ArrowRight, Mail, Lock, Music2, Headphones, Radio, Disc3 } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Mail, Lock, User, Music2, Headphones, Radio, Disc3 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
 import { AmbientOrbs, GlassPanel } from '@/components/ui/vibewave'
 
@@ -72,36 +72,56 @@ function FloatingNotes() {
   )
 }
 
-export default function LoginPage() {
+export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'login' | 'register' }) {
   const { t } = useTranslation()
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode)
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  
+  // Login State
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({})
 
-  function validate() {
-    const e: typeof errors = {}
-    if (!email) e.email = t.emailRequired
-    else if (!/\S+@\S+\.\S+/.test(email)) e.email = t.validEmail
-    if (!password) e.password = t.passwordRequired
-    else if (password.length < 6) e.password = t.passwordMin
+  // Register State
+  const [regForm, setRegForm] = useState({ name: '', email: '', password: '' })
+  const [regErrors, setRegErrors] = useState<Partial<typeof regForm>>({})
+
+  function validateLogin() {
+    const e: typeof loginErrors = {}
+    if (!loginEmail) e.email = t.emailRequired
+    else if (!/\S+@\S+\.\S+/.test(loginEmail)) e.email = t.validEmail
+    if (!loginPassword) e.password = t.passwordRequired
     return e
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function validateRegister() {
+    const e: typeof regErrors = {}
+    if (!regForm.name.trim()) e.name = t.nameRequired
+    if (!regForm.email) e.email = t.emailRequired
+    else if (!/\S+@\S+\.\S+/.test(regForm.email)) e.email = t.validEmail
+    if (!regForm.password) e.password = t.passwordRequired
+    else if (regForm.password.length < 8) e.password = t.passwordMinRegister
+    return e
+  }
+
+  function handleLoginSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const errs = validate()
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs)
-      return
-    }
-    setErrors({})
+    const errs = validateLogin()
+    if (Object.keys(errs).length > 0) { setLoginErrors(errs); return }
+    setLoginErrors({})
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-    }, 1500)
+    setTimeout(() => setLoading(false), 1500)
+  }
+
+  function handleRegisterSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const errs = validateRegister()
+    if (Object.keys(errs).length > 0) { setRegErrors(errs); return }
+    setRegErrors({})
+    setLoading(true)
+    setTimeout(() => setLoading(false), 1500)
   }
 
   const inputContainerStyle = (fieldName: string, hasError: boolean) => ({
@@ -112,350 +132,178 @@ export default function LoginPage() {
     boxShadow: focusedField === fieldName ? '0 0 20px rgba(155, 77, 224, 0.15)' : 'none',
   })
 
+  const pwStrength = regForm.password.length === 0 ? 0 : regForm.password.length < 6 ? 1 : regForm.password.length < 10 ? 2 : 3
+
   return (
-    <div className="relative min-h-screen flex overflow-hidden" style={{ backgroundColor: '#0A0712' }}>
-      {/* Dynamic Background */}
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#0A0712' }}>
       <AmbientOrbs position="fixed" />
+      <FloatingNotes />
 
-      {/* ── LEFT PANEL: Brand showcase (hidden on mobile) ── */}
-      <div className="hidden lg:flex lg:w-[42%] xl:w-[45%] relative items-center justify-center p-12">
-        {/* Decorative gradient background */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(135deg, rgba(155, 77, 224, 0.08) 0%, rgba(67, 56, 202, 0.04) 50%, rgba(155, 77, 224, 0.05) 100%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(155, 77, 224, 0.3), transparent)' }}
-        />
-        <div
-          className="absolute top-0 bottom-0 right-0 w-px"
-          style={{ background: 'linear-gradient(180deg, transparent, rgba(155, 77, 224, 0.2), transparent)' }}
-        />
+      {/* Background glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-20 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, #9B4DE0 0%, transparent 70%)',
+          filter: 'blur(120px)',
+        }}
+      />
 
-        {/* Floating notes */}
-        <FloatingNotes />
-
-        {/* Brand content */}
-        <div className="relative z-10 max-w-md space-y-10">
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center relative"
-              style={{
-                background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)',
-                boxShadow: '0 0 40px rgba(155, 77, 224, 0.5)',
-              }}
-            >
-              <Music2 size={28} color="white" />
+      {/* ── UNIFIED AUTH CONTAINER ── */}
+      <div className="w-full max-w-[480px] relative z-10 p-6 md:p-0">
+        <GlassPanel className="p-8 md:p-10 min-h-[720px] flex flex-col transition-all duration-500 ease-in-out" variant="dark">
+          
+          {/* Header Section (Shared) */}
+          <div className="flex flex-col items-center mb-8 text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 relative group transition-transform duration-500 hover:rotate-12"
+              style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)', boxShadow: '0 0 40px rgba(155, 77, 224, 0.5)' }}>
+              <Music2 size={32} color="white" />
+              <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <span
-              className="font-display font-bold text-2xl tracking-tight"
-              style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-            >
-              VibeWave
-            </span>
+
+            <div className="h-[90px] flex flex-col justify-center">
+              <h1 className="font-display font-bold text-2xl md:text-3xl mb-3 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500 whitespace-nowrap" key={mode === 'login' ? 'title-l' : 'title-r'} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
+                {mode === 'login' ? t.welcomeBack : t.createAccount}
+              </h1>
+              <p className="text-sm md:text-base font-medium opacity-50 animate-in fade-in duration-700" key={mode === 'login' ? 'sub-l' : 'sub-r'}>
+                {mode === 'login' ? t.signInSub : t.createAccountSub}
+              </p>
+            </div>
           </div>
 
-          {/* Hero text */}
-          <div className="space-y-4">
-            <h2
-              className="font-display font-bold text-transparent bg-clip-text bg-gradient-to-br from-white via-purple-200 to-purple-500"
-              style={{ fontSize: 'clamp(36px, 4vw, 52px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
-            >
-              {t.musicThatWorks}
-            </h2>
-            <p className="text-base leading-relaxed max-w-sm" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-              {t.loginHeroSub}
-            </p>
-          </div>
-
-          {/* Feature highlights */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Social Login (Shared) */}
+          <div className="grid grid-cols-4 gap-3 mb-8">
             {[
-              { icon: <Headphones size={18} />, label: 'Lossless Audio', color: '#9B4DE0' },
-              { icon: <Radio size={18} />, label: 'AI Radio', color: '#3ABEF9' },
-              { icon: <Disc3 size={18} />, label: '100M+ Tracks', color: '#F73859' },
-              { icon: <Music2 size={18} />, label: 'Smart Lyrics', color: '#05D69E' },
-            ].map((feat) => (
-              <div
-                key={feat.label}
-                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 cursor-default group/feat"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                }}
-              >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 group-hover/feat:scale-105"
-                  style={{
-                    backgroundColor: `${feat.color}15`,
-                    color: feat.color,
-                    border: `1px solid ${feat.color}25`,
-                  }}
-                >
-                  {feat.icon}
-                </div>
-                <span className="text-xs font-semibold" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                  {feat.label}
-                </span>
-              </div>
+              { icon: <GoogleIcon size={20} />, label: 'Google', id: 'google-auth' },
+              { icon: <FacebookIcon size={20} />, label: 'Facebook', id: 'facebook-auth' },
+              { icon: <AppleIcon size={20} />, label: 'Apple', id: 'apple-auth' },
+              { icon: <PhoneIcon size={20} />, label: 'Phone', id: 'phone-auth' },
+            ].map((p) => (
+              <button key={p.id} type="button" className="flex flex-col items-center justify-center gap-2 py-4 rounded-xl text-[10px] font-bold transition-all duration-300 bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1 hover:shadow-lg">
+                {p.icon}
+                <span className="uppercase tracking-wider">{p.label}</span>
+              </button>
             ))}
           </div>
 
-          {/* Bottom tag */}
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {['#9B4DE0', '#3ABEF9', '#F73859'].map((color, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-full border-2 border-[#0A0712] flex items-center justify-center"
-                  style={{ backgroundColor: `${color}30`, boxShadow: `0 0 10px ${color}40` }}
-                >
-                  <Music2 size={12} style={{ color }} />
-                </div>
-              ))}
-            </div>
-            <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.35)' }}>
-              <span className="font-semibold" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>2M+</span> music lovers worldwide
-            </p>
+          {/* Divider (Shared) */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">{t.orContinueWith} Email</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
-        </div>
-      </div>
 
-      {/* ── RIGHT PANEL: Login form ── */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-10">
-        {/* Background glow for form area */}
-        <div
-          className="absolute top-1/2 left-1/2 lg:left-3/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-15 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, #9B4DE0 0%, transparent 70%)',
-            filter: 'blur(120px)',
-          }}
-        />
+          {/* Dynamic Forms Area */}
+          <div className="relative flex-1">
+            {mode === 'login' ? (
+              <form onSubmit={handleLoginSubmit} noValidate className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.email}</label>
+                  <div className="relative flex items-center group" style={inputContainerStyle('login-email', !!loginErrors.email)}>
+                    <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Mail size={18} /></div>
+                    <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} onFocus={() => setFocusedField('login-email')} onBlur={() => setFocusedField(null)} placeholder="you@example.com" className="w-full bg-transparent border-none outline-none py-4 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
+                  </div>
+                  {loginErrors.email && <p className="text-xs font-medium mt-2 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{loginErrors.email}</p>}
+                </div>
 
-        <div className="w-full max-w-[480px] relative z-10">
-          <GlassPanel className="p-7 md:p-9" variant="dark">
-            {/* Logo & Header */}
-            <div className="flex flex-col items-center mb-7 text-center">
-              {/* Mobile-only logo */}
-              <div
-                className="w-13 h-13 rounded-2xl flex items-center justify-center mb-5 relative group lg:hidden"
-                style={{
-                  background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)',
-                  boxShadow: '0 0 30px rgba(155, 77, 224, 0.4)',
-                  width: 52,
-                  height: 52
-                }}
-              >
-                <Music2 size={26} color="white" className="transition-transform duration-500 group-hover:scale-110" />
-                <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-white/50">{t.password}</label>
+                    <button type="button" className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300">{t.forgotPassword}</button>
+                  </div>
+                  <div className="relative flex items-center group" style={inputContainerStyle('login-password', !!loginErrors.password)}>
+                    <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Lock size={18} /></div>
+                    <input type={showPassword ? 'text' : 'password'} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} onFocus={() => setFocusedField('login-password')} onBlur={() => setFocusedField(null)} placeholder={t.enterPassword} className="w-full bg-transparent border-none outline-none py-4 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="pr-4 text-white/30 hover:text-white/60">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                  </div>
+                  {loginErrors.password && <p className="text-xs font-medium mt-2 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{loginErrors.password}</p>}
+                </div>
 
-              <h1
-                className="font-display font-bold text-3xl mb-2 tracking-tight"
-                style={{ color: 'rgba(255, 255, 255, 0.95)' }}
-              >
-                {t.welcomeBack}
-              </h1>
-              <p className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>
-                {t.signInSub}
-              </p>
-            </div>
-
-            {/* Social Login Buttons */}
-            <div className="grid grid-cols-4 gap-2.5 mb-7">
-              {[
-                { icon: <GoogleIcon size={18} />, label: 'Google', id: 'google-login' },
-                { icon: <FacebookIcon size={18} />, label: 'Facebook', id: 'facebook-login' },
-                { icon: <AppleIcon size={18} />, label: 'Apple', id: 'apple-login' },
-                { icon: <PhoneIcon size={18} />, label: 'Phone', id: 'phone-login' },
-              ].map((provider) => (
-                <button
-                  key={provider.id}
-                  id={provider.id}
-                  type="button"
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-[10px] font-semibold transition-all duration-300 cursor-pointer"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}
-                  aria-label={`Sign in with ${provider.label}`}
-                >
-                  {provider.icon}
-                  <span>{provider.label}</span>
+                <button type="submit" disabled={loading} className="group relative w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-base font-bold transition-all duration-300 mt-4 overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)', boxShadow: '0 8px 25px -5px rgba(155, 77, 224, 0.5)' }}>
+                  {loading ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <><span className="relative z-10">{t.signIn}</span><ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" /></>}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 </button>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)' }} />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-                {t.orContinueWith} Email
-              </span>
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)' }} />
-            </div>
-
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label htmlFor="login-email" className="block text-[11px] font-bold uppercase tracking-widest ml-1" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                  {t.email}
-                </label>
-                <div
-                  className="relative flex items-center group"
-                  style={inputContainerStyle('email', !!errors.email)}
-                >
-                  <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors duration-200">
-                    <Mail size={17} />
+              </form>
+            ) : (
+              <form onSubmit={handleRegisterSubmit} noValidate className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.fullName}</label>
+                  <div className="relative flex items-center group" style={inputContainerStyle('reg-name', !!regErrors.name)}>
+                    <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><User size={18} /></div>
+                    <input type="text" value={regForm.name} onChange={(e) => setRegForm({ ...regForm, name: e.target.value })} onFocus={() => setFocusedField('reg-name')} onBlur={() => setFocusedField(null)} placeholder="Alex Johnson" className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
                   </div>
-                  <input
-                    id="login-email"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="you@example.com"
-                    className="w-full bg-transparent border-none outline-none py-3 px-3 text-[14px] placeholder:text-white/20"
-                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'login-email-error' : undefined}
-                  />
+                  {regErrors.name && <p className="text-xs font-medium mt-1 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{regErrors.name}</p>}
                 </div>
-                {errors.email && (
-                  <p id="login-email-error" role="alert" className="text-xs font-medium mt-1.5 ml-1 flex items-center gap-1.5" style={{ color: '#f87171' }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="6" opacity="0.2" /><text x="6" y="9" textAnchor="middle" fontSize="9" fill="currentColor">!</text></svg>
-                    {errors.email}
-                  </p>
-                )}
-              </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between ml-1">
-                  <label htmlFor="login-password" className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                    {t.password}
-                  </label>
-                  <Link href="#" className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300 transition-colors duration-200">
-                    {t.forgotPassword}
-                  </Link>
-                </div>
-                <div
-                  className="relative flex items-center group"
-                  style={inputContainerStyle('password', !!errors.password)}
-                >
-                  <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors duration-200">
-                    <Lock size={17} />
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.email}</label>
+                  <div className="relative flex items-center group" style={inputContainerStyle('reg-email', !!regErrors.email)}>
+                    <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Mail size={18} /></div>
+                    <input type="email" value={regForm.email} onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} onFocus={() => setFocusedField('reg-email')} onBlur={() => setFocusedField(null)} placeholder="you@example.com" className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
                   </div>
-                  <input
-                    id="login-password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder={t.enterPassword}
-                    className="w-full bg-transparent border-none outline-none py-3 px-3 text-[14px] placeholder:text-white/20"
-                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-                    aria-invalid={!!errors.password}
-                    aria-describedby={errors.password ? 'login-password-error' : undefined}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="pr-4 text-white/30 hover:text-white/60 transition-colors duration-200 cursor-pointer"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
+                  {regErrors.email && <p className="text-xs font-medium mt-1 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{regErrors.email}</p>}
                 </div>
-                {errors.password && (
-                  <p id="login-password-error" role="alert" className="text-xs font-medium mt-1.5 ml-1 flex items-center gap-1.5" style={{ color: '#f87171' }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="6" opacity="0.2" /><text x="6" y="9" textAnchor="middle" fontSize="9" fill="currentColor">!</text></svg>
-                    {errors.password}
-                  </p>
-                )}
-              </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-[0.98] mt-2 overflow-hidden cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)',
-                  color: 'white',
-                  boxShadow: '0 8px 25px -5px rgba(155, 77, 224, 0.5)',
-                  opacity: loading ? 0.8 : 1,
-                }}
-              >
-                {loading ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                ) : (
-                  <>
-                    <span className="relative z-10">{t.signIn}</span>
-                    <ArrowRight size={17} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                  </>
-                )}
-                {/* Button Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-              </button>
-            </form>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.password}</label>
+                  <div className="relative flex items-center group" style={inputContainerStyle('reg-password', !!regErrors.password)}>
+                    <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Lock size={18} /></div>
+                    <input type={showPassword ? 'text' : 'password'} value={regForm.password} onChange={(e) => setRegForm({ ...regForm, password: e.target.value })} onFocus={() => setFocusedField('reg-password')} onBlur={() => setFocusedField(null)} placeholder={t.passwordMinRegister} className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="pr-4 text-white/30 hover:text-white/60">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                  </div>
+                  {regForm.password.length > 0 && (
+                    <div className="px-1 py-1 flex gap-2 items-center">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-1.5 flex-1 rounded-full transition-all duration-500" style={{ backgroundColor: pwStrength >= i ? (pwStrength === 1 ? '#ef4444' : pwStrength === 2 ? '#9B4DE0' : '#05D69E') : 'rgba(255, 255, 255, 0.1)', boxShadow: pwStrength >= i ? `0 0 10px ${pwStrength === 1 ? '#ef444466' : pwStrength === 2 ? '#9B4DE066' : '#05D69E66'}` : 'none' }} />
+                      ))}
+                      <span className="text-[10px] font-bold uppercase tracking-widest ml-2 text-white/35">{pwStrength === 1 ? t.weak : pwStrength === 2 ? t.good : t.strong}</span>
+                    </div>
+                  )}
+                  {regErrors.password && <p className="text-xs font-medium mt-1 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{regErrors.password}</p>}
+                </div>
 
-            {/* Footer Link */}
-            <div className="mt-6 text-center">
-              <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                {t.noAccount}{' '}
-                <Link href="/register" className="font-bold text-purple-400 hover:text-purple-300 transition-colors duration-200">
-                  {t.createOne}
-                </Link>
-              </p>
-            </div>
-          </GlassPanel>
-
-          {/* Bottom decorative hint */}
-          <div className="mt-6 flex items-center justify-center gap-6 opacity-30 hover:opacity-60 transition-all duration-500">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">VibeWave Music Protocol</div>
+                <button type="submit" disabled={loading} className="group relative w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-base font-bold transition-all duration-300 mt-4 overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)', boxShadow: '0 8px 25px -5px rgba(155, 77, 224, 0.5)' }}>
+                  {loading ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <><span className="relative z-10">{t.createAccount}</span><ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" /></>}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                </button>
+              </form>
+            )}
           </div>
+
+          {/* Footer (Shared Toggle) */}
+          <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm text-white/40">
+                {mode === 'login' ? t.noAccount : t.alreadyHaveAccount}{' '}
+                <button 
+                  onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                  className="font-bold text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  {mode === 'login' ? t.createOne : t.signInLink}
+                </button>
+              </p>
+              
+              {mode === 'register' && (
+                <p className="text-[10px] leading-relaxed px-4 text-white/25">
+                  {t.termsAgree} <Link href="/legal?tab=terms" className="underline hover:text-white/40">{t.termsLink}</Link> {t.andText} <Link href="/legal?tab=privacy" className="underline hover:text-white/40">{t.privacyLink}</Link>.
+                </p>
+              )}
+            </div>
+          </div>
+        </GlassPanel>
+
+        {/* Bottom decorative hint */}
+        <div className="mt-8 flex items-center justify-center gap-6 opacity-30 hover:opacity-60 transition-all duration-500">
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">VibeWave Music Protocol</div>
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes shimmer {
-          100% {
-            transform: translateX(100%);
-          }
-        }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
         @keyframes float-note {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-            opacity: 0.05;
-          }
-          50% {
-            transform: translateY(-30px) rotate(10deg);
-            opacity: 0.12;
-          }
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.05; }
+          50% { transform: translateY(-30px) rotate(10deg); opacity: 0.12; }
         }
-        .animate-float-note {
-          animation: float-note 6s ease-in-out infinite;
-        }
+        .animate-float-note { animation: float-note 6s ease-in-out infinite; }
       `}</style>
     </div>
   )
