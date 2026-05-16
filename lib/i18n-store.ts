@@ -339,7 +339,35 @@ export const translations = {
       playback: 'Playback',
       quality: 'Quality',
       offline: 'Offline'
-    }
+    },
+
+    // Notifications Page & Dropdown
+    viewAllNotifications: 'View All Notifications',
+    markAllAsRead: 'Mark all as read',
+    markAsRead: 'Mark as read',
+    backToHome: 'Back to Home',
+    searchNotifications: 'Search notifications...',
+    noNotificationsFound: 'No notifications found',
+    noNotificationsDesc: "We couldn't find any notifications matching your filters.",
+    clearAllFilters: 'Clear all filters',
+    justNow: 'Just now',
+    hoursAgo: '{count} hours ago',
+    yesterday: 'Yesterday',
+    daysAgo: '{count} days ago',
+    todayLabel: 'Today',
+    thisWeekLabel: 'This Week',
+    welcomeNotificationTitle: 'Welcome to VibeWave!',
+    welcomeNotificationDesc: "Hello {name}, we've missed you! Enjoy your personalized music journey today.",
+    newAlbumNotificationTitle: 'New Album Release',
+    newAlbumNotificationDesc: '{artist} just dropped "{album}". Check it out!',
+    systemUpdateNotificationTitle: 'System Update',
+    systemUpdateNotificationDesc: 'VibeWave is now faster and smoother than ever. Version {version} is live.',
+    weeklyDiscoveryNotificationTitle: 'Weekly Discovery Ready',
+    weeklyDiscoveryNotificationDesc: 'Your personalized Weekly Discovery playlist is now available. 30 new tracks just for you.',
+    all: 'All',
+    system: 'System',
+    activity: 'Activity',
+    notificationsDesc: 'Stay updated with your music journey, social interactions, and system alerts.'
   },
   vi: {
     // Footer & Common
@@ -707,7 +735,35 @@ export const translations = {
       playback: 'Phát nhạc',
       quality: 'Chất lượng',
       offline: 'Ngoại tuyến'
-    }
+    },
+
+    // Notifications Page & Dropdown
+    viewAllNotifications: 'Xem tất cả thông báo',
+    markAllAsRead: 'Đánh dấu tất cả đã đọc',
+    markAsRead: 'Đánh dấu đã đọc',
+    backToHome: 'Quay lại trang chủ',
+    searchNotifications: 'Tìm kiếm thông báo...',
+    noNotificationsFound: 'Không tìm thấy thông báo',
+    noNotificationsDesc: 'Chúng tôi không tìm thấy thông báo nào khớp với bộ lọc của bạn.',
+    clearAllFilters: 'Xóa tất cả bộ lọc',
+    justNow: 'Vừa xong',
+    hoursAgo: '{count} giờ trước',
+    yesterday: 'Hôm qua',
+    daysAgo: '{count} ngày trước',
+    todayLabel: 'Hôm nay',
+    thisWeekLabel: 'Tuần này',
+    welcomeNotificationTitle: 'Chào mừng đến với VibeWave!',
+    welcomeNotificationDesc: 'Chào {name}, chúng tôi rất nhớ bạn! Hãy tận hưởng hành trình âm nhạc cá nhân hóa của bạn hôm nay.',
+    newAlbumNotificationTitle: 'Phát hành Album mới',
+    newAlbumNotificationDesc: '{artist} vừa ra mắt "{album}". Khám phá ngay!',
+    systemUpdateNotificationTitle: 'Cập nhật hệ thống',
+    systemUpdateNotificationDesc: 'VibeWave giờ đây nhanh hơn và mượt mà hơn bao giờ hết. Phiên bản {version} đã sẵn sàng.',
+    weeklyDiscoveryNotificationTitle: 'Danh sách Khám phá hàng tuần đã sẵn sàng',
+    weeklyDiscoveryNotificationDesc: 'Danh sách phát Khám phá hàng tuần cá nhân hóa của bạn đã có sẵn. 30 bài hát mới dành riêng cho bạn.',
+    all: 'Tất cả',
+    system: 'Hệ thống',
+    activity: 'Hoạt động',
+    notificationsDesc: 'Cập nhật hành trình âm nhạc, tương tác xã hội và các cảnh báo hệ thống của bạn.'
   }
 }
 

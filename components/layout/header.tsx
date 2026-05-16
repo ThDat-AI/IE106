@@ -20,8 +20,10 @@ export default function Header() {
   const [query, setQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
+  const notificationsRef = useRef<HTMLDivElement>(null)
 
   const filtered = query.length > 0
     ? SEARCH_SUGGESTIONS.filter(s =>
@@ -33,6 +35,9 @@ export default function Header() {
     function handleClick(e: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setShowProfile(false)
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotifications(false)
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSuggestions(false)
@@ -178,9 +183,13 @@ export default function Header() {
 
       {/* Right: User */}
       <div ref={profileRef} className="relative flex items-center gap-3">
+      <div ref={notificationsRef} className="relative flex items-center">
         <button
+          onClick={() => setShowNotifications(!showNotifications)}
           className="relative p-2 rounded-lg transition-vw hover:bg-white/5"
           aria-label={t.notifications}
+          aria-expanded={showNotifications}
+          aria-haspopup="true"
         >
           <Bell size={18} style={{ color: 'rgba(255,255,255,0.65)' }} />
           <span
@@ -189,6 +198,111 @@ export default function Header() {
             aria-hidden="true"
           />
         </button>
+
+        {showNotifications && (
+          <div
+            className="absolute top-full right-0 mt-3 w-80 rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+            style={{
+              backgroundColor: 'rgba(42, 31, 61, 0.8)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div className="p-4 border-b border-white/5 flex items-center justify-between">
+              <h3 className="font-righteous text-sm tracking-widest text-white/90 uppercase">
+                {t.notifications || 'Notifications'}
+              </h3>
+              <button
+                className="text-[10px] font-bold text-vw-purple hover:text-white transition-colors uppercase tracking-wider px-2 py-1 rounded-md hover:bg-white/5"
+                onClick={() => setShowNotifications(false)}
+              >
+                {t.markAllAsRead || 'Mark all as read'}
+              </button>
+            </div>
+
+            <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+              {/* Welcome Notification */}
+              <div className="p-5 flex gap-4 hover:bg-white/[0.03] transition-vw group cursor-pointer border-b border-white/[0.04] bg-white/[0.02]">
+                <div
+                  className="w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110 group-hover:rotate-3"
+                  style={{
+                    background: 'linear-gradient(135deg, #9B4DE0 0%, #6D28D9 100%)',
+                    boxShadow: '0 8px 20px rgba(155,77,224,0.4)',
+                  }}
+                >
+                  <User size={22} className="text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[15px] font-bold text-white leading-tight">
+                      {t.welcomeNotificationTitle || 'Welcome to VibeWave!'}
+                    </p>
+                    <div className="w-2 h-2 rounded-full bg-vw-purple animate-pulse" />
+                  </div>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    {(t.welcomeNotificationDesc || "Hello {name}, we've missed you! Enjoy your personalized music journey today.").replace('{name}', 'Alex Johnson')}
+                  </p>
+                  <span className="text-[9px] text-vw-purple/60 mt-2.5 block font-bold uppercase tracking-[0.1em]">
+                    {t.justNow || 'Just now'} • System
+                  </span>
+                </div>
+              </div>
+
+              {/* Sample notifications */}
+              {[
+                {
+                  icon: <Bell size={18} />,
+                  title: t.newAlbumNotificationTitle || 'New Album Release',
+                  desc: (t.newAlbumNotificationDesc || '{artist} just dropped "{album}". Check it out!').replace('{artist}', 'The Weeknd').replace('{album}', 'Dawn FM'),
+                  time: (t.hoursAgo || '{count} hours ago').replace('{count}', '2'),
+                  color: '#4338CA'
+                },
+                {
+                  icon: <Settings size={18} />,
+                  title: t.systemUpdateNotificationTitle || 'System Update',
+                  desc: (t.systemUpdateNotificationDesc || 'VibeWave is now faster and smoother than ever. Version {version} is live.').replace('{version}', '2.4.0'),
+                  time: t.yesterday || 'Yesterday',
+                  color: '#22C55E'
+                }
+              ].map((notif, i) => (
+                <div key={i} className="p-4 flex gap-4 hover:bg-white/5 transition-vw group cursor-pointer border-b border-white/[0.03]">
+                  <div
+                    className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: notif.color
+                    }}
+                  >
+                    {notif.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white/80 leading-tight">
+                      {notif.title}
+                    </p>
+                    <p className="text-xs text-white/40 mt-1 leading-relaxed line-clamp-2">
+                      {notif.desc}
+                    </p>
+                    <span className="text-[10px] text-white/25 mt-2 block uppercase tracking-tighter">
+                      {notif.time}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              href="/notifications"
+              className="w-full py-3 text-xs font-semibold text-white/40 hover:text-white/70 transition-colors uppercase tracking-widest bg-white/[0.02] hover:bg-white/[0.04] text-center block"
+              onClick={() => setShowNotifications(false)}
+            >
+              {t.viewAllNotifications || 'View All Notifications'}
+            </Link>
+          </div>
+        )}
+      </div>
 
         <button
           onClick={() => setShowProfile(!showProfile)}

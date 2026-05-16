@@ -7,7 +7,7 @@
 ---
 
 **Project:** VibeWave
-**Generated:** 2026-05-17 02:03:33
+**Generated:** 2026-05-17 03:12:52
 **Category:** Music Streaming
 
 ---
@@ -163,10 +163,11 @@
 
 ### Page Pattern
 
-**Pattern Name:** Feature-Rich Showcase
+**Pattern Name:** Scroll-Triggered Storytelling
 
-- **CTA Placement:** Above fold
-- **Section Order:** Hero > Features > CTA
+- **Conversion Strategy:** Narrative increases time-on-page 3x. Use progress indicator. Mobile: simplify animations.
+- **CTA Placement:** End of each chapter (mini) + Final climax CTA
+- **Section Order:** 1. Intro hook, 2. Chapter 1 (problem), 3. Chapter 2 (journey), 4. Chapter 3 (solution), 5. Climax CTA
 
 ---
 
