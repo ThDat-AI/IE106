@@ -6,8 +6,9 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Heart, Shuffle, Repeat, ListMusic, Maximize2, Mic2
 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import FullPlayer from './full-player'
+import { cn } from '@/lib/utils'
 
 function formatTime(secs: number) {
   const m = Math.floor(secs / 60)
@@ -15,9 +16,15 @@ function formatTime(secs: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function BottomPlayer() {
+interface BottomPlayerProps {
+  sidebarCollapsed?: boolean
+}
+
+export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerProps) {
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  
   const {
     currentTrack, isPlaying, progress, volume, isMuted, isLiked,
     togglePlay, setProgress, setVolume, toggleMute, toggleFullPlayer, toggleLike,
@@ -70,227 +77,213 @@ export default function BottomPlayer() {
         autoPlay={isPlaying}
       />
       {isFullPlayer && <FullPlayer />}
+      
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex items-center px-6 h-20"
+        className="fixed bottom-0 right-0 z-50 px-4 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all"
         style={{
-          backgroundColor: '#1F162E',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          left: sidebarCollapsed ? '72px' : '240px',
         }}
-        role="region"
-        aria-label="Music player"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Track info */}
-        <div className="flex items-center gap-3 w-64 shrink-0">
-          <button
-            onClick={toggleFullPlayer}
-            className="relative w-12 h-12 rounded-lg overflow-hidden group transition-vw hover:scale-105 shrink-0"
-            aria-label={t.openFullPlayer}
-          >
-            <div
-              className="w-full h-full rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#2A1F3D' }}
+        <div
+          className={cn(
+            "relative mx-auto max-w-7xl h-24 flex items-center px-6 rounded-2xl transition-all duration-500 overflow-hidden",
+            "bg-[#121212]/80 backdrop-blur-2xl border border-white/10",
+            "shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_48px_rgba(155,77,224,0.15)]",
+            isHovered && "border-white/15"
+          )}
+          role="region"
+          aria-label="Music player"
+        >
+          {/* Aurora Effect Background */}
+          <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
+            <div className="absolute top-[-50%] left-[-10%] w-[40%] h-[200%] bg-vw-purple/30 blur-[100px] animate-pulse rounded-full" />
+            <div className="absolute bottom-[-50%] right-[-10%] w-[30%] h-[200%] bg-blue-500/20 blur-[100px] animate-pulse rounded-full" style={{ animationDelay: '1s' }} />
+          </div>
+
+          {/* Track info */}
+          <div className="flex items-center gap-4 w-1/4 min-w-[240px] z-10">
+            <button
+              onClick={toggleFullPlayer}
+              className="relative group shrink-0"
+              aria-label={t.openFullPlayer}
             >
-              {currentTrack.albumArt ? (
-                <img src={currentTrack.albumArt} alt={currentTrack.title} className="w-full h-full object-cover" />
-              ) : (
-                <div
-                  className="w-full h-full rounded-lg flex items-center justify-center text-lg font-bold"
-                  style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', color: 'rgba(255,255,255,0.7)' }}
-                >
-                  {currentTrack.title.charAt(0)}
-                </div>
+              <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(155,77,224,0.3)] bg-[#1F162E]">
+                {currentTrack.albumArt ? (
+                  <img src={currentTrack.albumArt} alt={currentTrack.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-xl font-bold"
+                    style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #1F162E 100%)', color: 'rgba(255,255,255,0.7)' }}
+                  >
+                    {currentTrack.title.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-xl backdrop-blur-[2px]">
+                <Maximize2 size={16} className="text-white" />
+              </div>
+            </button>
+
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display font-semibold text-[15px] text-white/95 truncate leading-tight tracking-wide">
+                {currentTrack.title}
+              </h3>
+              <p className="font-sans font-medium text-[13px] text-white/50 truncate mt-0.5 tracking-tight">
+                {currentTrack.artist}
+              </p>
+            </div>
+
+            <button
+              onClick={toggleLike}
+              aria-label={isLiked ? t.unlikeSong : t.likeSong}
+              aria-pressed={isLiked}
+              className={cn(
+                "p-2 rounded-full transition-all duration-300 hover:bg-white/5 active:scale-90",
+                isLiked ? "text-red-500" : "text-white/40 hover:text-white/70"
               )}
-            </div>
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-vw flex items-center justify-center rounded-lg">
-              <Maximize2 size={14} className="text-white" />
-            </div>
-          </button>
-
-          <div className="flex-1 min-w-0">
-            <div
-              className="text-sm font-medium truncate"
-              style={{ color: 'rgba(255,255,255,0.95)' }}
             >
-              {currentTrack.title}
-            </div>
-            <div
-              className="text-xs truncate mt-0.5"
-              style={{ color: 'rgba(255,255,255,0.55)' }}
-            >
-              {currentTrack.artist}
-            </div>
-          </div>
-
-          <button
-            onClick={toggleLike}
-            aria-label={isLiked ? t.unlikeSong : t.likeSong}
-            aria-pressed={isLiked}
-            className="p-1.5 transition-vw"
-            style={{
-              color: isLiked ? '#9B4DE0' : 'rgba(255,255,255,0.45)',
-              transform: 'scale(1)',
-            }}
-            onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(1.2)')}
-            onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-          >
-            <Heart size={17} fill={isLiked ? '#9B4DE0' : 'none'} />
-          </button>
-        </div>
-
-        {/* Center controls + progress */}
-        <div className="flex-1 flex flex-col items-center gap-2 px-8">
-          {/* Controls */}
-          <div className="flex items-center gap-5">
-            <button
-              className="transition-vw hover:opacity-80"
-              aria-label={t.shuffle}
-              style={{ color: 'rgba(255,255,255,0.45)' }}
-            >
-              <Shuffle size={16} />
-            </button>
-
-            <button
-              onClick={prevTrack}
-              className="transition-vw hover:opacity-80"
-              aria-label={t.previous}
-              style={{ color: 'rgba(255,255,255,0.75)' }}
-            >
-              <SkipBack size={20} />
-            </button>
-
-            <button
-              onClick={togglePlay}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-vw hover:scale-105 active:scale-95"
-              style={{ backgroundColor: '#9B4DE0' }}
-              aria-label={isPlaying ? t.pause : t.play}
-            >
-              {isPlaying
-                ? <Pause size={16} className="text-white" fill="white" />
-                : <Play size={16} className="text-white" fill="white" style={{ marginLeft: 2 }} />
-              }
-            </button>
-
-            <button
-              onClick={nextTrack}
-              className="transition-vw hover:opacity-80"
-              aria-label={t.next}
-              style={{ color: 'rgba(255,255,255,0.75)' }}
-            >
-              <SkipForward size={20} />
-            </button>
-
-            <button
-              className="transition-vw hover:opacity-80"
-              aria-label={t.repeat}
-              style={{ color: 'rgba(255,255,255,0.45)' }}
-            >
-              <Repeat size={16} />
+              <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
             </button>
           </div>
 
-          {/* Progress bar */}
-          <div className="flex items-center gap-2 w-full max-w-sm">
-            <span
-              className="text-[11px] tabular-nums shrink-0"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
-              aria-label={`Elapsed time: ${formatTime(elapsed)}`}
-            >
-              {formatTime(elapsed)}
-            </span>
+          {/* Center controls + progress */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 z-10">
+            {/* Controls */}
+            <div className="flex items-center gap-6">
+              <button
+                className="text-white/40 hover:text-white/90 transition-colors duration-300 active:scale-90"
+                aria-label={t.shuffle}
+              >
+                <Shuffle size={18} strokeWidth={2} />
+              </button>
 
-            <div className="relative flex-1 h-1 group cursor-pointer">
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
-              />
-              <div
-                className="absolute top-0 left-0 h-full rounded-full transition-all"
-                style={{
-                  width: `${progress}%`,
-                  background: 'linear-gradient(to right, #9B4DE0, #b96ff0)',
-                }}
-                aria-hidden="true"
-              />
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={(e) => handleSeek(Number(e.target.value))}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                style={{ height: '100%' }}
-                aria-label="Playback progress"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={progress}
-                aria-valuetext={`${formatTime(elapsed)} of ${formatTime(currentTrack.duration)}`}
-              />
+              <button
+                onClick={prevTrack}
+                className="text-white/70 hover:text-white transition-colors duration-300 active:scale-90"
+                aria-label={t.previous}
+              >
+                <SkipBack size={24} fill="currentColor" strokeWidth={0} />
+              </button>
+
+              <button
+                onClick={togglePlay}
+                className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                  "bg-white text-[#121212] hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]",
+                  isPlaying && "animate-breathing"
+                )}
+                aria-label={isPlaying ? t.pause : t.play}
+              >
+                {isPlaying
+                  ? <Pause size={20} fill="currentColor" />
+                  : <Play size={20} fill="currentColor" className="ml-1" />
+                }
+              </button>
+
+              <button
+                onClick={nextTrack}
+                className="text-white/70 hover:text-white transition-colors duration-300 active:scale-90"
+                aria-label={t.next}
+              >
+                <SkipForward size={24} fill="currentColor" strokeWidth={0} />
+              </button>
+
+              <button
+                className="text-white/40 hover:text-white/90 transition-colors duration-300 active:scale-90"
+                aria-label={t.repeat}
+              >
+                <Repeat size={18} strokeWidth={2} />
+              </button>
             </div>
 
-            <span
-              className="text-[11px] tabular-nums shrink-0"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
-              aria-label={`Total duration: ${formatTime(currentTrack.duration)}`}
-            >
-              {formatTime(currentTrack.duration)}
-            </span>
+            {/* Progress bar */}
+            <div className="flex items-center gap-3 w-full max-w-xl group/progress">
+              <span className="text-[11px] font-medium text-white/30 tabular-nums w-10 text-right">
+                {formatTime(elapsed)}
+              </span>
+
+              <div className="relative flex-1 h-1.5 flex items-center cursor-pointer">
+                <div className="absolute inset-0 rounded-full bg-white/10" />
+                <div
+                  className="absolute top-0 left-0 h-full rounded-full transition-all duration-150"
+                  style={{
+                    width: `${progress}%`,
+                    background: 'linear-gradient(90deg, #9B4DE0 0%, #6366F1 100%)',
+                    boxShadow: '0 0 10px rgba(155,77,224,0.3)'
+                  }}
+                />
+                
+                {/* Progress Knob */}
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200"
+                  style={{ left: `calc(${progress}% - 6px)` }}
+                />
+
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(e) => handleSeek(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label="Playback progress"
+                />
+              </div>
+
+              <span className="text-[11px] font-medium text-white/30 tabular-nums w-10">
+                {formatTime(currentTrack.duration)}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Right: volume + queue */}
-        <div className="flex items-center gap-3 w-48 justify-end shrink-0">
-          <button
-            onClick={toggleFullPlayer}
-            className="transition-vw hover:opacity-80"
-            aria-label={t.lyrics}
-            style={{ color: 'rgba(255,255,255,0.45)' }}
-          >
-            <Mic2 size={16} />
-          </button>
+          {/* Right: volume + utilities */}
+          <div className="flex items-center gap-4 w-1/4 justify-end min-w-[200px] z-10">
+            <button
+              onClick={toggleFullPlayer}
+              className="p-2 text-white/40 hover:text-white/90 transition-all hover:bg-white/5 rounded-full"
+              aria-label={t.lyrics}
+            >
+              <Mic2 size={18} />
+            </button>
 
-          <button
-            className="transition-vw hover:opacity-80"
-            aria-label={t.queue}
-            style={{ color: 'rgba(255,255,255,0.45)' }}
-          >
-            <ListMusic size={16} />
-          </button>
+            <button
+              className="p-2 text-white/40 hover:text-white/90 transition-all hover:bg-white/5 rounded-full"
+              aria-label={t.queue}
+            >
+              <ListMusic size={18} />
+            </button>
 
-          <button
-            onClick={toggleMute}
-            className="transition-vw hover:opacity-80"
-            aria-label={isMuted ? t.unmute : t.mute}
-            style={{ color: 'rgba(255,255,255,0.65)' }}
-          >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
+            <div className="flex items-center gap-2 group/volume ml-2">
+              <button
+                onClick={toggleMute}
+                className="p-2 text-white/60 hover:text-white transition-all rounded-full"
+                aria-label={isMuted ? t.unmute : t.mute}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
 
-          <div className="relative w-20 h-1 group cursor-pointer">
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
-            />
-            <div
-              className="absolute top-0 left-0 h-full rounded-full"
-              style={{
-                width: isMuted ? '0%' : `${volume}%`,
-                background: 'linear-gradient(to right, #9B4DE0, #b96ff0)',
-              }}
-              aria-hidden="true"
-            />
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
-              className="absolute inset-0 w-full opacity-0 cursor-pointer"
-              style={{ height: '100%' }}
-              aria-label={t.volumeLabel}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={isMuted ? 0 : volume}
-            />
+              <div className="relative w-24 h-1 flex items-center cursor-pointer overflow-hidden">
+                <div className="absolute inset-0 rounded-full bg-white/10" />
+                <div
+                  className="absolute top-0 left-0 h-full rounded-full transition-all duration-150"
+                  style={{
+                    width: isMuted ? '0%' : `${volume}%`,
+                    background: 'rgba(255, 255, 255, 0.8)',
+                  }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => setVolume(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label={t.volumeLabel}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -52,11 +52,7 @@ export default function Header() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16"
-      style={{
-        backgroundColor: '#170F23',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 bg-white/[0.01] backdrop-blur-2xl border-b border-white/5"
     >
       {/* Logo */}
       <Link
@@ -232,8 +228,7 @@ export default function Header() {
               <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>alex@example.com</div>
             </div>
             {[
-              { icon: User, label: t.profile, href: '/profile' },
-              { icon: Settings, label: t.settings, href: '/profile#settings' },
+              { icon: User, label: t.profileAndSettings, href: '/profile' },
             ].map(({ icon: Icon, label, href }) => (
               <Link
                 key={label}

@@ -31,8 +31,8 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
         <main
           className="pt-16 pb-20 min-h-screen"
           style={{
-            marginLeft: sidebarCollapsed ? '64px' : '220px',
-            transition: 'margin-left 0.2s ease',
+            marginLeft: sidebarCollapsed ? '72px' : '240px',
+            transition: 'margin-left 0.3s ease',
           }}
         >
           <div className="max-w-[1220px] mx-auto px-8 py-8">
@@ -41,7 +41,7 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
           {showFooter && <Footer />}
         </main>
 
-        <BottomPlayer />
+        <BottomPlayer sidebarCollapsed={sidebarCollapsed} />
       </div>
     </div>
   )

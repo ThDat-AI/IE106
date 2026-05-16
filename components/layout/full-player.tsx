@@ -5,9 +5,10 @@ import { usePlayerStore } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import {
   X, Play, Pause, SkipBack, SkipForward, Heart,
-  Shuffle, Repeat, Volume2, VolumeX, Mic2
+  Shuffle, Repeat, Volume2, VolumeX, Mic2, Maximize2
 } from 'lucide-react'
 import { getMockLyrics, fetchLyrics } from '@/lib/music-api'
+import { cn } from '@/lib/utils'
 
 function formatTime(secs: number) {
   const m = Math.floor(secs / 60)
@@ -82,181 +83,225 @@ export default function FullPlayer() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col"
-      style={{ backgroundColor: '#170F23' }}
+      className="fixed inset-0 z-[100] flex flex-col bg-[#0A0A0B] overflow-hidden animate-in fade-in zoom-in-95 duration-500"
       role="dialog"
       aria-modal="true"
       aria-label={t.openFullPlayer}
     >
-      {/* Background atmosphere */}
-      <div
-        className="absolute inset-0 opacity-15"
-        style={{
-          background: 'radial-gradient(ellipse 60% 60% at 50% 30%, rgba(155,77,224,0.4) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Close */}
-      <div className="relative flex justify-end p-6">
-        <button
-          onClick={toggleFullPlayer}
-          className="w-11 h-11 rounded-full flex items-center justify-center transition-vw hover:bg-white/10"
-          aria-label={t.closeFullPlayer}
-          style={{ color: 'rgba(255,255,255,0.65)' }}
-        >
-          <X size={20} />
-        </button>
+      {/* Dynamic Background Atmosphere */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-40 blur-[120px] transition-all duration-1000"
+          style={{
+            background: `radial-gradient(circle at 20% 30%, #9B4DE0 0%, transparent 50%),
+                         radial-gradient(circle at 80% 70%, #6366F1 0%, transparent 50%)`
+          }}
+        />
+        <div className="absolute inset-0 bg-[#0A0A0B]/60 backdrop-blur-3xl" />
       </div>
 
+      {/* Header */}
+      <header className="relative flex items-center justify-between p-8 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+            <Maximize2 size={18} className="text-white/70" />
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Playing From</p>
+            <p className="text-xs text-white/80 font-medium">{currentTrack.album || 'Unknown Album'}</p>
+          </div>
+        </div>
+        <button
+          onClick={toggleFullPlayer}
+          className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10 hover:scale-110 active:scale-95 text-white/60 hover:text-white"
+          aria-label={t.closeFullPlayer}
+        >
+          <X size={24} />
+        </button>
+      </header>
+
       {/* Content */}
-      <div className="relative flex-1 flex items-start justify-center gap-20 px-16 overflow-hidden">
-        {/* Album art + controls */}
-        <div className="flex flex-col items-center gap-8 pt-4 w-80 shrink-0">
-          {/* Album art */}
-          <div
-            className="w-64 h-64 rounded-2xl flex items-center justify-center text-6xl font-bold overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
-              boxShadow: '0 24px 64px rgba(155,77,224,0.25)',
-              color: 'rgba(255,255,255,0.7)',
-            }}
-          >
-            {currentTrack.albumArt ? (
-              <img src={currentTrack.albumArt} alt={currentTrack.title} className="w-full h-full object-cover" />
-            ) : (
-              currentTrack.title.charAt(0)
-            )}
-          </div>
-
-          {/* Track info */}
-          <div className="text-center">
-            <h2
-              className="font-display text-2xl font-semibold"
-              style={{ color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}
+      <main className="relative flex-1 flex items-center justify-center gap-24 px-20 z-10 overflow-hidden">
+        {/* Left: Album Art + Basic Controls */}
+        <div className="flex flex-col items-center gap-10 w-[400px] shrink-0 animate-in slide-in-from-left-8 duration-700 delay-100">
+          {/* Album Art Container */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-vw-purple/30 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div
+              className="relative w-[360px] h-[360px] rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02]"
+              style={{
+                background: 'linear-gradient(135deg, #1F162E 0%, #0A0A0B 100%)',
+              }}
             >
-              {currentTrack.title}
-            </h2>
-            <p className="text-base mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              {currentTrack.artist}
-            </p>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {currentTrack.album}
-            </p>
+              {currentTrack.albumArt ? (
+                <img src={currentTrack.albumArt} alt={currentTrack.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-8xl font-bold text-white/10">
+                  {currentTrack.title.charAt(0)}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Like */}
-          <button
-            onClick={toggleLike}
-            aria-label={isLiked ? t.unlike : t.like}
-            aria-pressed={isLiked}
-            className="transition-vw"
-            style={{ color: isLiked ? '#9B4DE0' : 'rgba(255,255,255,0.45)' }}
-          >
-            <Heart size={22} fill={isLiked ? '#9B4DE0' : 'none'} />
-          </button>
+          {/* Info + Like */}
+          <div className="w-full flex items-center justify-between px-2">
+            <div className="flex-1 min-w-0">
+              <h2 className="font-display text-4xl font-bold text-white tracking-tight leading-tight truncate">
+                {currentTrack.title}
+              </h2>
+              <p className="font-sans text-xl font-medium text-white/50 mt-2 tracking-wide truncate">
+                {currentTrack.artist}
+              </p>
+            </div>
+            <button
+              onClick={toggleLike}
+              className={cn(
+                "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/5 active:scale-90",
+                isLiked ? "text-red-500" : "text-white/30 hover:text-white/60"
+              )}
+              aria-label={isLiked ? t.unlike : t.like}
+            >
+              <Heart size={28} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
+            </button>
+          </div>
 
-          {/* Progress */}
-          <div className="w-full flex items-center gap-3">
-            <span className="text-xs tabular-nums" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {formatTime(elapsed)}
-            </span>
-            <div className="relative flex-1 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+          {/* Progress Section */}
+          <div className="w-full space-y-4">
+            <div className="relative h-2 w-full flex items-center group/progress cursor-pointer">
+              <div className="absolute inset-0 rounded-full bg-white/10" />
               <div
-                className="absolute top-0 left-0 h-full rounded-full"
-                style={{ width: `${progress}%`, background: 'linear-gradient(to right, #9B4DE0, #b96ff0)' }}
+                className="absolute top-0 left-0 h-full rounded-full transition-all duration-150"
+                style={{
+                  width: `${progress}%`,
+                  background: 'linear-gradient(90deg, #9B4DE0 0%, #6366F1 100%)',
+                  boxShadow: '0 0 20px rgba(155,77,224,0.4)'
+                }}
+              />
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-xl opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200"
+                style={{ left: `calc(${progress}% - 8px)` }}
               />
               <input
                 type="range" min="0" max="100" value={progress}
                 onChange={(e) => setProgress(Number(e.target.value))}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 aria-label="Playback progress"
               />
             </div>
-            <span className="text-xs tabular-nums" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {formatTime(currentTrack.duration)}
-            </span>
+            <div className="flex justify-between text-[13px] font-medium text-white/30 tabular-nums">
+              <span>{formatTime(elapsed)}</span>
+              <span>{formatTime(currentTrack.duration)}</span>
+            </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-6">
-            <button className="transition-vw hover:opacity-80" aria-label={t.shuffle} style={{ color: 'rgba(255,255,255,0.45)' }}>
-              <Shuffle size={18} />
+          {/* Main Controls */}
+          <div className="flex items-center gap-10">
+            <button className="text-white/30 hover:text-white/80 transition-colors" aria-label={t.shuffle}>
+              <Shuffle size={20} />
             </button>
-            <button onClick={prevTrack} className="transition-vw hover:opacity-80" aria-label={t.previous} style={{ color: 'rgba(255,255,255,0.75)' }}>
-              <SkipBack size={24} />
+            <button onClick={prevTrack} className="text-white/80 hover:text-white transition-all hover:scale-110 active:scale-90" aria-label={t.previous}>
+              <SkipBack size={32} fill="currentColor" />
             </button>
             <button
               onClick={togglePlay}
-              className="w-14 h-14 rounded-full flex items-center justify-center transition-vw hover:scale-105 active:scale-95"
-              style={{ backgroundColor: '#9B4DE0', boxShadow: '0 0 24px rgba(155,77,224,0.35)' }}
+              className={cn(
+                "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300",
+                "bg-white text-[#0A0A0B] hover:scale-110 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]",
+                isPlaying && "animate-breathing"
+              )}
               aria-label={isPlaying ? t.pause : t.play}
             >
               {isPlaying
-                ? <Pause size={22} className="text-white" fill="white" />
-                : <Play size={22} className="text-white" fill="white" style={{ marginLeft: 2 }} />
+                ? <Pause size={32} fill="currentColor" />
+                : <Play size={32} fill="currentColor" className="ml-1" />
               }
             </button>
-            <button onClick={nextTrack} className="transition-vw hover:opacity-80" aria-label={t.next} style={{ color: 'rgba(255,255,255,0.75)' }}>
-              <SkipForward size={24} />
+            <button onClick={nextTrack} className="text-white/80 hover:text-white transition-all hover:scale-110 active:scale-90" aria-label={t.next}>
+              <SkipForward size={32} fill="currentColor" />
             </button>
-            <button className="transition-vw hover:opacity-80" aria-label={t.repeat} style={{ color: 'rgba(255,255,255,0.45)' }}>
-              <Repeat size={18} />
+            <button className="text-white/30 hover:text-white/80 transition-colors" aria-label={t.repeat}>
+              <Repeat size={20} />
             </button>
-          </div>
-
-          {/* Volume */}
-          <div className="flex items-center gap-3 w-full">
-            <button onClick={toggleMute} aria-label={isMuted ? t.unmute : t.mute} style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </button>
-            <div className="relative flex-1 h-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-              <div
-                className="absolute top-0 left-0 h-full rounded-full"
-                style={{ width: `${volume}%`, background: 'linear-gradient(to right, #9B4DE0, #b96ff0)' }}
-              />
-            </div>
           </div>
         </div>
 
-        {/* Lyrics panel */}
-        <div className="flex-1 max-w-md pt-4 overflow-hidden h-full flex flex-col">
-          <div className="flex items-center gap-2 mb-8 shrink-0">
-            <Mic2 size={16} style={{ color: '#9B4DE0' }} />
-            <span className="text-sm font-medium uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        {/* Right: Lyrics Panel */}
+        <div className="flex-1 max-w-2xl h-full flex flex-col pt-10 animate-in slide-in-from-right-8 duration-700 delay-200">
+          <div className="flex items-center gap-3 mb-10 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-vw-purple/20 flex items-center justify-center">
+              <Mic2 size={16} className="text-vw-purple" />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">
               {isLoadingLyrics ? t.searchingLyrics : t.lyrics}
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
-            <div className="space-y-5">
-              {lyrics.map((line, i) => {
-                const isCurrentLine = hasTimestamps && currentLyricIdx === i
-                return (
-                  <p
-                    key={i}
-                    className="font-display text-xl font-semibold transition-all duration-300"
-                    style={{
-                      color: isCurrentLine || (!hasTimestamps && !realLyrics) || (realLyrics && !hasTimestamps)
-                        ? 'rgba(255,255,255,0.95)'
-                        : 'rgba(255,255,255,0.25)',
-                      letterSpacing: '-0.3px',
-                      lineHeight: 1.3,
-                      transform: isCurrentLine ? 'scale(1.03)' : 'scale(1)',
-                      transformOrigin: 'left center',
-                    }}
-                  >
-                    {line.text}
-                  </p>
-                )
-              })}
+          <div className="flex-1 overflow-y-auto no-scrollbar pb-64">
+            <div className="space-y-8">
+              {lyrics.length > 0 ? (
+                lyrics.map((line, i) => {
+                  const isCurrentLine = hasTimestamps && currentLyricIdx === i
+                  const isPastLine = hasTimestamps && currentLyricIdx > i
+                  return (
+                    <p
+                      key={i}
+                      className={cn(
+                        "font-display text-4xl font-bold transition-all duration-500 cursor-default",
+                        isCurrentLine 
+                          ? "text-white scale-105 origin-left drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
+                          : isPastLine 
+                            ? "text-white/30" 
+                            : "text-white/10 hover:text-white/30"
+                      )}
+                      style={{
+                        letterSpacing: '-0.02em',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {line.text}
+                    </p>
+                  )
+                })
+              ) : (
+                <div className="h-full flex items-center justify-center text-white/20 font-display text-2xl italic">
+                  No lyrics available for this track
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Backdrop click */}
+      {/* Footer / Additional Info */}
+      <footer className="relative h-24 flex items-center justify-between px-16 z-10 border-t border-white/5 bg-black/20 backdrop-blur-md">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 group/vol cursor-pointer">
+            <button onClick={toggleMute} className="text-white/50 hover:text-white transition-colors">
+              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            </button>
+            <div className="relative w-32 h-1.5 flex items-center">
+              <div className="absolute inset-0 rounded-full bg-white/10" />
+              <div
+                className="absolute top-0 left-0 h-full rounded-full bg-white/80"
+                style={{ width: isMuted ? '0%' : `${volume}%` }}
+              />
+              <input
+                type="range" min="0" max="100" value={isMuted ? 0 : volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-8">
+           <p className="text-[11px] text-white/20 uppercase tracking-widest font-medium">
+             Audio Quality: Lossless 24-bit / 48kHz
+           </p>
+        </div>
+      </footer>
+
+      {/* Backdrop click to close */}
       <div className="absolute inset-0 -z-10" onClick={toggleFullPlayer} aria-hidden="true" />
     </div>
   )

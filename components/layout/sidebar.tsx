@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useTranslation } from '@/lib/i18n-store'
 import {
@@ -14,7 +14,9 @@ import {
   Music2,
   Heart,
   Clock,
+  Disc,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SidebarProps {
   collapsed?: boolean
@@ -24,6 +26,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed: externalCollapsed, onToggle }: SidebarProps) {
   const { t } = useTranslation()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [internalCollapsed, setInternalCollapsed] = useState(false)
   const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed
 
@@ -36,6 +39,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
 
   const LIBRARY_ITEMS = [
     { icon: Heart, label: t.likedSongs, href: '/library/liked', count: '243' },
+    { icon: Disc, label: t.albums, href: '/library?tab=albums', count: '12' },
     { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
   ]
 
@@ -54,63 +58,89 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   }
 
   function isActive(href: string) {
-    if (href === '/') return pathname === '/'
-    if (href === '/library') return pathname === '/library'
-    return pathname.startsWith(href)
+    const [path, query] = href.split('?')
+    if (path === '/') return pathname === '/'
+
+    const pathMatches = pathname === path || (path !== '/library' && pathname.startsWith(path))
+    if (!query) return pathMatches
+
+    const params = new URLSearchParams(query)
+    return pathMatches && Array.from(params.entries()).every(([key, value]) =>
+      searchParams.get(key) === value
+    )
   }
 
   return (
     <aside
-      className="fixed left-0 top-16 bottom-20 flex flex-col overflow-hidden z-40"
+      className={cn(
+        "fixed left-0 top-0 bottom-0 pt-16 flex flex-col z-40 transition-all duration-300 ease-in-out",
+        "bg-gradient-to-b from-[#16111E]/95 via-[#16111E]/85 to-[#231B2F]/40 backdrop-blur-3xl border-r border-white/10 shadow-[10px_0_50px_rgba(0,0,0,0.5)]"
+      )}
       style={{
-        width: collapsed ? '64px' : '220px',
-        backgroundColor: '#1F162E',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        transition: 'width 0.2s ease',
+        width: collapsed ? '72px' : '240px',
       }}
       aria-label="Navigation sidebar"
     >
-      {/* Collapse toggle */}
-      <div className="flex items-center justify-end p-3">
+      {/* Collapse toggle - Redesigned for premium feel */}
+      <div className="flex items-center justify-end p-4">
         <button
           onClick={toggle}
-          className="w-7 h-7 rounded-lg flex items-center justify-center transition-vw hover:bg-white/5"
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-vw hover:bg-white/10 hover:shadow-lg hover:shadow-purple-500/10 group"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <ChevronLeft
-            size={16}
-            style={{
-              color: 'rgba(255,255,255,0.45)',
-              transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
+            size={18}
+            className={cn(
+              "text-white/60 transition-transform duration-300 group-hover:text-vw-purple",
+              collapsed ? "rotate-180" : "rotate-0"
+            )}
           />
         </button>
       </div>
 
       {/* Main navigation */}
-      <nav aria-label="Main navigation" className="px-2">
+      <nav aria-label="Main navigation" className="px-3 space-y-1">
         {NAV_ITEMS.map(({ icon: Icon, label, href }) => {
           const active = isActive(href)
           return (
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 rounded-lg mb-0.5 h-10 transition-vw"
-              style={{
-                paddingLeft: active ? 'calc(0.75rem - 3px)' : '0.75rem',
-                paddingRight: '0.75rem',
-                backgroundColor: active ? 'rgba(155,77,224,0.08)' : 'transparent',
-                borderLeft: active ? '3px solid #9B4DE0' : '3px solid transparent',
-                color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.65)',
-              }}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-xl h-12 transition-vw px-3",
+                active
+                  ? "bg-vw-purple/20 text-white shadow-lg shadow-purple-500/10"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              )}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon size={18} className="shrink-0" />
+              {/* Active Indicator Line */}
+              {active && (
+                <div className="absolute left-0 top-3 bottom-3 w-1 bg-vw-purple rounded-r-full shadow-[0_0_15px_rgba(155,77,224,0.8)]" />
+              )}
+
+              <Icon
+                size={20}
+                className={cn(
+                  "shrink-0 transition-transform duration-300",
+                  active ? "text-vw-purple scale-110" : "group-hover:scale-110 group-hover:text-vw-purple/80"
+                )}
+              />
+
               {!collapsed && (
-                <span className="text-sm font-medium whitespace-nowrap overflow-hidden" style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.15s ease' }}>
+                <span className={cn(
+                  "text-sm font-semibold whitespace-nowrap overflow-hidden transition-all duration-300",
+                  active ? "translate-x-0.5 text-white drop-shadow-[0_0_8px_rgba(155,77,224,0.3)]" : "group-hover:translate-x-0.5"
+                )}>
                   {label}
                 </span>
+              )}
+
+              {/* Tooltip for collapsed mode */}
+              {collapsed && (
+                <div className="absolute left-full ml-4 px-2 py-1 bg-[#1F162E] border border-white/10 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                  {label}
+                </div>
               )}
             </Link>
           )
@@ -118,95 +148,109 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
       </nav>
 
       {!collapsed && (
-        <>
-          {/* Divider */}
-          <div className="mx-3 my-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-
+        <div className="flex-1 overflow-y-auto mt-6 custom-scrollbar px-3 pb-4">
           {/* Library section */}
-          <nav aria-label="Library" className="px-2">
-            <div className="px-3 pb-2 flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <nav aria-label="Library" className="mb-8">
+            <div className="px-3 pb-3 flex items-center justify-between">
+              <span className="text-[11px] font-righteous uppercase tracking-[0.2em] text-white/50">
                 {t.library}
               </span>
             </div>
-            {LIBRARY_ITEMS.map(({ icon: Icon, label, href, count }) => {
-              const active = isActive(href)
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-3 rounded-lg mb-0.5 h-10 transition-vw"
-                  style={{
-                    paddingLeft: active ? 'calc(0.75rem - 3px)' : '0.75rem',
-                    paddingRight: '0.75rem',
-                    backgroundColor: active ? 'rgba(155,77,224,0.08)' : 'transparent',
-                    borderLeft: active ? '3px solid #9B4DE0' : '3px solid transparent',
-                    color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.65)',
-                  }}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  <Icon size={16} className="shrink-0" />
-                  <span className="text-sm font-medium flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                    {label}
-                  </span>
-                  {count && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-                      style={{
-                        backgroundColor: label === t.likedSongs ? 'rgba(155,77,224,0.2)' : 'rgba(255,255,255,0.1)',
-                        color: label === t.likedSongs ? '#9B4DE0' : 'rgba(255,255,255,0.5)',
-                        border: label === t.likedSongs ? '1px solid rgba(155,77,224,0.3)' : '1px solid rgba(255,255,255,0.1)'
-                      }}
-                    >
-                      {count}
+            <div className="space-y-1">
+              {LIBRARY_ITEMS.map(({ icon: Icon, label, href, count }) => {
+                const active = isActive(href)
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl h-11 transition-vw px-3",
+                      active
+                        ? "bg-vw-purple/20 text-white shadow-sm shadow-purple-500/10"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
+                    )}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <Icon
+                      size={18}
+                      className={cn(
+                        "shrink-0 transition-all",
+                        active ? "text-vw-purple" : "group-hover:text-vw-purple/70"
+                      )}
+                    />
+                    <span className="text-sm font-medium flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                      {label}
                     </span>
-                  )}
-                </Link>
-              )
-            })}
+                    {count && (
+                      <span
+                        className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold transition-all",
+                          label === t.likedSongs
+                            ? "bg-vw-purple/30 text-white border border-vw-purple/40 group-hover:bg-vw-purple/40"
+                            : "bg-white/10 text-white/60 border border-white/10 group-hover:bg-white/20"
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
           </nav>
 
-          <div className="mx-3 my-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-
           {/* Playlists */}
-          <div className="px-2 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <div className="space-y-1">
+            <div className="px-3 pb-3 flex items-center justify-between">
+              <span className="text-[11px] font-righteous uppercase tracking-[0.2em] text-white/50">
                 {t.playlists}
               </span>
               <button
-                className="w-5 h-5 rounded-md flex items-center justify-center transition-vw hover:bg-white/10"
+                className="w-6 h-6 rounded-lg flex items-center justify-center transition-vw hover:bg-vw-purple/30 hover:text-white text-white/50 border border-white/5 hover:border-vw-purple/30"
                 aria-label="Create new playlist"
               >
-                <Plus size={13} style={{ color: 'rgba(255,255,255,0.45)' }} />
+                <Plus size={14} />
               </button>
             </div>
-            {PLAYLISTS.map(({ label, href }) => {
-              const active = isActive(href)
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-3 rounded-lg mb-0.5 h-9 transition-vw"
-                  style={{
-                    paddingLeft: active ? 'calc(0.75rem - 3px)' : '0.75rem',
-                    paddingRight: '0.75rem',
-                    backgroundColor: active ? 'rgba(155,77,224,0.08)' : 'transparent',
-                    borderLeft: active ? '3px solid #9B4DE0' : '3px solid transparent',
-                  }}
-                >
-                  <Music2 size={14} className="shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }} />
-                  <span
-                    className="text-sm whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.55)' }}
+            <div className="space-y-0.5">
+              {PLAYLISTS.map(({ label, href }) => {
+                const active = isActive(href)
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl h-10 transition-vw px-3",
+                      active
+                        ? "bg-vw-purple/20 text-white"
+                        : "text-white/55 hover:text-white hover:bg-white/10"
+                    )}
                   >
-                    {label}
-                  </span>
-                </Link>
-              )
-            })}
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                      active ? "bg-vw-purple shadow-[0_0_8px_rgba(155,77,224,0.6)]" : "bg-white/10 group-hover:bg-white/30"
+                    )} />
+                    <span
+                      className="text-sm whitespace-nowrap overflow-hidden text-ellipsis transition-transform group-hover:translate-x-0.5"
+                    >
+                      {label}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-        </>
+        </div>
+      )}
+
+      {/* Collapsed view additional spacer or mini-actions */}
+      {collapsed && (
+        <div className="flex-1 flex flex-col items-center pt-8 space-y-4 px-3">
+          <div className="w-10 h-px bg-white/5" />
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-white/30 hover:bg-vw-purple/20 hover:text-vw-purple transition-vw">
+            <Plus size={20} />
+          </button>
+        </div>
       )}
     </aside>
   )
