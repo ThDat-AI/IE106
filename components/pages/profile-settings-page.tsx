@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useI18nStore, useTranslation } from '@/lib/i18n-store'
 import { PageHero, GlassPanel, AmbientOrbs, AiBadge, AccentBar } from '@/components/ui/vibewave'
+import { DangerAlertModal } from '@/components/ui/danger-alert-modal'
 
 
 
@@ -136,6 +137,12 @@ export default function ProfileSettingsPage() {
   // Privacy
   const [publicProfile, setPublicProfile] = useState(true)
   const [shareActivity, setShareActivity] = useState(false)
+
+  // Danger Modal
+  const [dangerModal, setDangerModal] = useState<{ isOpen: boolean, type: 'data' | 'account' }>({
+    isOpen: false,
+    type: 'data'
+  })
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
@@ -310,6 +317,7 @@ export default function ProfileSettingsPage() {
                         </div>
                         <button
                           type="button"
+                          onClick={() => setDangerModal({ isOpen: true, type: 'data' })}
                           className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-white/5 text-white/60 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all duration-300"
                         >
                           {t.deletePersonalData}
@@ -326,6 +334,7 @@ export default function ProfileSettingsPage() {
                         </div>
                         <button
                           type="button"
+                          onClick={() => setDangerModal({ isOpen: true, type: 'account' })}
                           className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300"
                         >
                           {t.deleteAccount}
@@ -418,6 +427,14 @@ export default function ProfileSettingsPage() {
           </GlassPanel>
         </div>
       </div>
+      <DangerAlertModal
+        isOpen={dangerModal.isOpen}
+        type={dangerModal.type}
+        onClose={() => setDangerModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => {
+          console.log(`Confirmed deletion of ${dangerModal.type}`)
+        }}
+      />
     </div>
   )
 }

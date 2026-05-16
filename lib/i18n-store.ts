@@ -367,7 +367,13 @@ export const translations = {
     all: 'All',
     system: 'System',
     activity: 'Activity',
-    notificationsDesc: 'Stay updated with your music journey, social interactions, and system alerts.'
+    notificationsDesc: 'Stay updated with your music journey, social interactions, and system alerts.',
+    dangerAction: 'Dangerous Action',
+    confirmDeleteData: 'Are you sure you want to delete your personal data?',
+    confirmDeleteAccount: 'Are you sure you want to delete your account?',
+    deleteDataWarning: 'This will reset your AI recommendations. This action cannot be undone.',
+    deleteAccountWarning: 'Everything including your playlists, liked songs, and profile will be gone forever.',
+    permanentlyDelete: 'Permanently Delete'
   },
   vi: {
     // Footer & Common
@@ -763,7 +769,13 @@ export const translations = {
     all: 'Tất cả',
     system: 'Hệ thống',
     activity: 'Hoạt động',
-    notificationsDesc: 'Cập nhật hành trình âm nhạc, tương tác xã hội và các cảnh báo hệ thống của bạn.'
+    notificationsDesc: 'Cập nhật hành trình âm nhạc, tương tác xã hội và các cảnh báo hệ thống của bạn.',
+    dangerAction: 'Hành động nguy hiểm',
+    confirmDeleteData: 'Bạn có chắc chắn muốn xóa dữ liệu cá nhân?',
+    confirmDeleteAccount: 'Bạn có chắc chắn muốn xóa tài khoản?',
+    deleteDataWarning: 'Điều này sẽ đặt lại các đề xuất AI của bạn. Hành động này không thể hoàn tác.',
+    deleteAccountWarning: 'Mọi thứ bao gồm danh sách phát, bài hát đã thích và hồ sơ của bạn sẽ biến mất vĩnh viễn.',
+    permanentlyDelete: 'Xóa vĩnh viễn'
   }
 }
 
