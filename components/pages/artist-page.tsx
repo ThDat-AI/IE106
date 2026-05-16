@@ -1,11 +1,14 @@
 "use client"
 
-import { Play, Heart, UserPlus, MoreHorizontal } from 'lucide-react'
+import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, type Track } from '@/lib/player-store'
 import { useState, useEffect } from 'react'
 import { searchMusic, searchAlbums, searchArtistImage, getArtistTracksById, getArtistAlbumsById } from '@/lib/music-api'
+import { useTranslation } from '@/lib/i18n-store'
+import { AmbientOrbs, GlassPanel, SectionHeader, PageHero } from '@/components/ui/vibewave'
+import { cn } from '@/lib/utils'
 
 function slugToName(slug: string) {
   if (!slug) return ''
@@ -26,12 +29,14 @@ export default function ArtistPage({
   initialImage?: string
 }) {
   const name = slugToName(slug)
+  const { t } = useTranslation()
   const { setTrack } = usePlayerStore()
   const [tracks, setTracks] = useState<Track[]>(initialTracks)
   const [albums, setAlbums] = useState<any[]>(initialAlbums)
   const [artistImage, setArtistImage] = useState<string>(initialImage)
   const [relatedArtists, setRelatedArtists] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(initialTracks.length === 0)
+  const [isFollowing, setIsFollowing] = useState(false)
 
   useEffect(() => {
     async function loadArtistData() {
@@ -64,146 +69,168 @@ export default function ArtistPage({
       setRelatedArtists(related.map(t => ({
         id: t.id,
         title: t.artist,
-        subtitle: 'Nghệ sĩ',
+        subtitle: t.genre || 'Nghệ sĩ',
         href: `/artist/${t.artist.toLowerCase().replace(/\s+/g, '-')}${t.artistId ? `?id=${t.artistId}` : ''}`,
         image: t.albumArt
       })).filter(a => a.title !== name))
     }
     loadArtistData()
-  }, [name, initialTracks])
+  }, [name, initialTracks, id])
 
   return (
-    <div className="space-y-12">
+    <div className="relative min-h-screen pb-20">
+      <AmbientOrbs position="absolute" />
+      
+      {/* Hero Section */}
+      <div className="relative pt-6 mb-10 overflow-hidden rounded-3xl group">
+        {/* Background Layer */}
+        <div className="absolute inset-0 -z-10">
+          {artistImage && (
+            <div className="absolute inset-0">
+               <img src={artistImage} alt={name} className="w-full h-full object-cover blur-2xl opacity-20 scale-110 transition-transform duration-700 group-hover:scale-105" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#16111E]/80 to-[#16111E]" />
+        </div>
 
-      {/* Hero banner */}
-      <div
-        className="relative rounded-2xl overflow-hidden"
-        style={{ height: 320 }}
-      >
-        {/* Atmospheric background image */}
-        {artistImage && (
-          <div className="absolute inset-0">
-             <img src={artistImage} alt={name} className="w-full h-full object-cover blur-xl opacity-30 scale-110" />
+        {/* Content Layer */}
+        <div className="flex flex-col md:flex-row items-center md:items-end gap-8 p-8 md:p-12">
+          {/* Artist Avatar */}
+          <div className="relative shrink-0">
+            <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl relative z-10">
+              {artistImage ? (
+                <img src={artistImage} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-display font-bold text-6xl bg-gradient-to-br from-vw-purple to-vw-elevated text-white/80">
+                  {name.charAt(0)}
+                </div>
+              )}
+            </div>
+            {/* Pulsing ring around avatar */}
+            <div className="absolute inset-0 rounded-full bg-vw-purple/20 blur-xl animate-pulse -z-0" />
           </div>
-        )}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, transparent 0%, #170F23 100%)' }}
-        />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{ background: 'radial-gradient(ellipse 80% 80% at 30% 50%, rgba(155,77,224,0.35), transparent 70%)', pointerEvents: 'none' }}
-          aria-hidden="true"
-        />
 
-        <div className="relative flex items-end h-full p-8 gap-8">
-          <div
-            className="w-40 h-40 rounded-full shrink-0 overflow-hidden"
-            style={{
-              border: '4px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
-            }}
-          >
-            {artistImage ? (
-              <img src={artistImage} alt={name} className="w-full h-full object-cover" />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center font-display font-bold text-5xl"
-                style={{
-                  background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
-                  color: 'rgba(255,255,255,0.75)',
-                }}
+          {/* Artist Meta */}
+          <div className="flex-1 text-center md:text-left pb-4">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                  <CheckCircle2 size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t.verifiedArtist || 'Verified Artist'}</span>
+               </div>
+               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50">
+                  <Users size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">2.4M {t.followers || 'Followers'}</span>
+               </div>
+            </div>
+
+            <h1 className="font-righteous text-5xl md:text-8xl lg:text-9xl mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-purple-400 drop-shadow-sm leading-[0.85]">
+              {name}
+            </h1>
+
+            {/* Actions Bar */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+              <button
+                onClick={() => tracks.length > 0 && setTrack(tracks[0])}
+                className="flex items-center gap-3 px-8 py-4 rounded-full bg-vw-purple text-white font-bold text-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
               >
-                {name.charAt(0)}
+                <Play size={20} fill="currentColor" />
+                {t.playAll || 'Play All'}
+              </button>
+              
+              <button
+                onClick={() => setIsFollowing(!isFollowing)}
+                className={cn(
+                  "flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 transition-all duration-300",
+                  isFollowing 
+                    ? "bg-white/10 border-white/20 text-white/80" 
+                    : "bg-transparent border-white/20 text-white hover:bg-white/5"
+                )}
+              >
+                <UserPlus size={18} />
+                {isFollowing ? (t.following || 'Following') : (t.follow || 'Follow')}
+              </button>
+
+              <button className="p-4 rounded-full bg-white/5 border border-white/10 text-white/50 transition-all duration-300 hover:bg-white/10 hover:text-white">
+                <MoreHorizontal size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-16 px-4 md:px-8">
+        {/* Popular Tracks Section */}
+        <section>
+          <SectionHeader title={t.popular || 'Popular'} />
+          <GlassPanel className="p-2 border-white/5">
+            <div className="divide-y divide-white/5">
+              {isLoading ? (
+                Array(5).fill(0).map((_, i) => (
+                  <div key={i} className="h-16 w-full animate-pulse bg-white/5 rounded-lg mb-1" />
+                ))
+              ) : tracks.length > 0 ? (
+                tracks.map((track, i) => (
+                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
+                ))
+              ) : (
+                <div className="p-12 text-center text-white/30 italic">
+                  {t.noResults || 'No tracks found.'}
+                </div>
+              )}
+            </div>
+          </GlassPanel>
+        </section>
+
+        {/* Discography Section */}
+        <section>
+          <SectionHeader title={t.discography || 'Discography'} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            {isLoading ? (
+               Array(6).fill(0).map((_, i) => (
+                 <div key={i} className="aspect-square w-full animate-pulse bg-white/5 rounded-2xl" />
+               ))
+            ) : albums.length > 0 ? (
+              albums.map((item) => (
+                <MusicCard 
+                  key={item.id} 
+                  id={item.id} 
+                  title={item.title} 
+                  subtitle={`${new Date(item.release_date).getFullYear()}`} 
+                  image={item.albumArt} 
+                  href={`/album/${item.id}`} 
+                  type="album" 
+                  className="card-hover"
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center text-white/20 border-2 border-dashed border-white/5 rounded-3xl">
+                {t.noAlbum || 'No albums yet.'}
               </div>
             )}
           </div>
-          <div className="pb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white">✓</span>
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.65)' }}>Nghệ sĩ xác thực</p>
-            </div>
-            <h1
-              className="font-display font-bold leading-display mb-3"
-              style={{ fontSize: 64, color: 'rgba(255,255,255,0.95)', letterSpacing: '-2px', lineHeight: 0.9 }}
-            >
-              {name}
-            </h1>
-            <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Hàng triệu người nghe hàng tháng
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Action bar */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => tracks.length > 0 && setTrack(tracks[0])}
-          className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-semibold transition-vw hover:opacity-85 active:scale-95"
-          style={{ backgroundColor: '#9B4DE0', color: 'rgba(255,255,255,0.95)' }}
-        >
-          <Play size={18} fill="white" />
-          Phát ngay
-        </button>
-        <button
-          className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-vw hover:opacity-80"
-          style={{ backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <UserPlus size={16} />
-          Theo dõi
-        </button>
-        <button className="p-3 rounded-lg transition-vw hover:bg-white/5" style={{ color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <MoreHorizontal size={18} />
-        </button>
-      </div>
-
-      {/* Popular tracks */}
-      <section>
-        <h2 className="font-display font-semibold mb-6" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-          Phổ biến
-        </h2>
-        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#1F162E', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="py-2">
-            {tracks.map((track, i) => (
-              <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
-            ))}
-            {tracks.length === 0 && !isLoading && (
-               <div className="p-8 text-center text-white/30">Không tìm thấy bài hát nào.</div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Discography */}
-      <section>
-        <h2 className="font-display font-semibold mb-6" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-          Danh sách Album
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {albums.map((item) => (
-            <MusicCard key={item.id} id={item.id} title={item.title} subtitle={`${new Date(item.release_date).getFullYear()}`} image={item.albumArt} href={`/album/${item.id}`} type="album" />
-          ))}
-          {albums.length === 0 && !isLoading && (
-            <div className="col-span-full py-8 text-white/30">Chưa có album nào được liệt kê.</div>
-          )}
-        </div>
-      </section>
-
-      {/* Related artists */}
-      {relatedArtists.length > 0 && (
-        <section>
-          <h2 className="font-display font-semibold mb-6" style={{ fontSize: 28, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.5px' }}>
-            Người hâm mộ cũng thích
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {relatedArtists.map((item) => (
-              <MusicCard key={item.id} id={item.id} title={item.title} subtitle={item.subtitle} image={item.image} href={item.href} type="artist" />
-            ))}
-          </div>
         </section>
-      )}
 
+        {/* Fans Also Like */}
+        {relatedArtists.length > 0 && (
+          <section>
+            <SectionHeader title={t.fansAlsoLike || 'Fans Also Like'} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              {relatedArtists.map((item) => (
+                <MusicCard 
+                  key={item.id} 
+                  id={item.id} 
+                  title={item.title} 
+                  subtitle={item.subtitle} 
+                  image={item.image} 
+                  href={item.href} 
+                  type="artist" 
+                  className="card-hover"
+                />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   )
 }

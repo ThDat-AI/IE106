@@ -96,6 +96,10 @@
     font-family: var(--font-montserrat), system-ui, sans-serif;
   }
 
+  .font-righteous {
+    font-family: var(--font-righteous), system-ui, sans-serif;
+  }
+
   .text-primary-text {
     color: rgba(255, 255, 255, 1);
   }
