@@ -89,9 +89,9 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
         <div
           className={cn(
             "relative mx-auto max-w-7xl h-24 flex items-center px-6 rounded-2xl transition-all duration-500 overflow-hidden",
-            "bg-[#121212]/80 backdrop-blur-2xl border border-white/10",
+            "bg-white/[0.03] backdrop-blur-2xl border border-white/10",
             "shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_48px_rgba(155,77,224,0.15)]",
-            isHovered && "border-white/15"
+            isHovered && "border-white/20"
           )}
           role="region"
           aria-label="Music player"

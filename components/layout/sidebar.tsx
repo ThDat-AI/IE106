@@ -74,7 +74,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
     <aside
       className={cn(
         "fixed left-0 top-0 bottom-0 pt-16 flex flex-col z-40 transition-all duration-300 ease-in-out",
-        "bg-gradient-to-b from-[#16111E]/95 via-[#16111E]/85 to-[#231B2F]/40 backdrop-blur-3xl border-r border-white/10 shadow-[10px_0_50px_rgba(0,0,0,0.5)]"
+        "bg-white/[0.01] backdrop-blur-3xl border-r border-white/5"
       )}
       style={{
         width: collapsed ? '72px' : '240px',
