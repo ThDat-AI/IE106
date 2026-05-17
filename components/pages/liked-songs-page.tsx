@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Clock, Heart, Shuffle, Play, MoreHorizontal, Music2 } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
-import { type Track } from '@/lib/player-store'
+import { type Track, getLikedTracks, toggleLikeTrack, usePlayerStore } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
-import { usePlayerStore } from '@/lib/player-store'
 import {
   PageHero,
   AccentBar,
@@ -22,8 +21,21 @@ export default function LikedSongsPage({
   const { setTrack } = usePlayerStore()
   const [searchQ, setSearchQ] = useState('')
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
+  const [tracks, setTracks] = useState<Track[]>(initialTracks)
 
-  const filtered = initialTracks.filter(track =>
+  useEffect(() => {
+    // Initial load from localStorage
+    setTracks(getLikedTracks())
+
+    const handleLikesUpdated = () => {
+      setTracks(getLikedTracks())
+    }
+
+    window.addEventListener('vw_likes_updated', handleLikesUpdated)
+    return () => window.removeEventListener('vw_likes_updated', handleLikesUpdated)
+  }, [])
+
+  const filtered = tracks.filter(track =>
     track.title.toLowerCase().includes(searchQ.toLowerCase()) || 
     track.artist.toLowerCase().includes(searchQ.toLowerCase()) ||
     track.album?.toLowerCase().includes(searchQ.toLowerCase())
@@ -46,7 +58,7 @@ export default function LikedSongsPage({
           eyebrowIcon={<Heart size={13} />}
           eyebrowLabel={t.likedSongs}
           title={t.likedSongs}
-          subtitle={`${initialTracks.length} ${t.songsSaved}`}
+          subtitle={`${tracks.length} ${t.songsSaved}`}
           gradientClass="from-white via-pink-100 to-rose-400"
           action={
             /* Controls row */
@@ -135,7 +147,7 @@ export default function LikedSongsPage({
           <Heart size={13} style={{ color: '#FB7185' }} />
           <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
             {filtered.length}
-            {searchQ ? ` / ${initialTracks.length}` : ''} bài
+            {searchQ ? ` / ${tracks.length}` : ''} bài
           </span>
         </div>
       </section>
@@ -240,17 +252,22 @@ export default function LikedSongsPage({
                         {track.title.charAt(0)}
                       </div>
                     )}
-                    {/* Heart indicator on hover */}
-                    <div
-                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center transition-opacity duration-200"
+                    {/* Heart indicator on hover (Interactive) */}
+                    <button
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 cursor-pointer z-10"
                       style={{
                         backgroundColor: '#F43F5E',
-                        opacity: hoveredRow === track.id ? 1 : 0,
+                        opacity: hoveredRow === track.id ? 1 : 0.8,
                         boxShadow: '0 0 8px rgba(244,63,94,0.6)',
                       }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleLikeTrack(track)
+                      }}
+                      title="Bỏ thích"
                     >
-                      <Heart size={8} fill="white" className="text-white" />
-                    </div>
+                      <Heart size={9} fill="white" className="text-white" />
+                    </button>
                   </div>
                   <div className="min-w-0">
                     <p

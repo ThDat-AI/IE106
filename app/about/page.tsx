@@ -1,5 +1,6 @@
 import AppShell from '@/components/layout/app-shell'
 import AboutContactPage from '@/components/pages/about-contact-page'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'About Us & Contact — VibeWave',
@@ -9,7 +10,9 @@ export const metadata = {
 export default function Page() {
   return (
     <AppShell>
-      <AboutContactPage />
+      <Suspense fallback={<div className="p-8 text-white/50">Đang tải...</div>}>
+        <AboutContactPage />
+      </Suspense>
     </AppShell>
   )
 }

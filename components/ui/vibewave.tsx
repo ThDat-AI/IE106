@@ -21,7 +21,7 @@ import React from 'react'
 import Link from 'next/link'
 import { ChevronRight, ChevronLeft, Play, Heart } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
-import { usePlayerStore, type Track } from '@/lib/player-store'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
 
 /* ─────────────────────────────────────────────
    RANK COLORS — shared across Home & Charts
@@ -367,16 +367,30 @@ interface PodiumCardProps {
 
 export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
   const rc = RANK_COLORS[index] ?? RANK_COLORS[RANK_COLORS.length - 1]
-  const { setTrack } = usePlayerStore()
+  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const isCurrentlyPlaying = currentTrack?.id === track.id && isPlaying
+  const shouldScroll = track.title.length > 16
 
   function handleClick() {
     if (onPlay) onPlay(track)
     else setTrack(track)
   }
 
+  function handlePlayClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (currentTrack?.id === track.id) {
+      togglePlay()
+    } else {
+      if (onPlay) onPlay(track)
+      else setTrack(track)
+    }
+  }
+
   return (
     <div
-      className="group/pod relative p-5 rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1"
+      className="group/pod relative p-4 rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5"
       style={{
         background: `linear-gradient(145deg, ${rc.bg} 0%, rgba(22,17,30,0.9) 100%)`,
         backdropFilter: 'blur(20px)',
@@ -384,41 +398,114 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
         boxShadow: `0 16px 40px -16px ${rc.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
       }}
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Glow blob */}
       <div
-        className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 pointer-events-none transition-opacity duration-500 group-hover/pod:opacity-40"
-        style={{ background: `radial-gradient(circle, ${rc.text} 0%, transparent 70%)`, filter: 'blur(30px)', transform: 'translate(30%, -30%)' }}
+        className="absolute top-0 right-0 w-36 h-36 rounded-full opacity-20 pointer-events-none transition-opacity duration-500 group-hover/pod:opacity-40"
+        style={{ background: `radial-gradient(circle, ${rc.text} 0%, transparent 70%)`, filter: 'blur(40px)', transform: 'translate(20%, -20%)' }}
         aria-hidden
       />
 
-      <div className="relative flex items-center gap-4">
+      {/* Large Image Container */}
+      <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-4 shadow-lg border border-white/10">
         <img
           src={track.albumArt}
           alt={track.title}
-          className="w-16 h-16 rounded-2xl object-cover shrink-0 transition-transform duration-300 group-hover/pod:scale-105"
-          style={{ boxShadow: `0 0 20px ${rc.glow}`, border: `2px solid ${rc.border}` }}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover/pod:scale-105"
         />
-        <div className="flex-1 min-w-0">
-          <span
-            className="font-display font-bold block"
-            style={{ fontSize: 36, color: rc.text, textShadow: `0 0 24px ${rc.glow}`, letterSpacing: '-1px', lineHeight: 1 }}
+        
+        {/* Play button overlay */}
+        <div
+          className="absolute inset-0 bg-black/45 flex items-center justify-center transition-opacity duration-300"
+          style={{ opacity: isHovered ? 1 : 0 }}
+        >
+          <button
+            onClick={handlePlayClick}
+            className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+            style={{ 
+              backgroundColor: rc.text, 
+              boxShadow: `0 0 20px ${rc.glow}` 
+            }}
+            aria-label={isCurrentlyPlaying ? `Tạm dừng ${track.title}` : `Phát ${track.title}`}
           >
-            #{index + 1}
-          </span>
-          <p className="text-sm font-semibold truncate mt-1" style={{ color: '#ffffff' }}>{track.title}</p>
-          <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{track.artist}</p>
+            {isCurrentlyPlaying ? (
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="black">
+                <rect x="3" y="2" width="3" height="12" rx="1"/>
+                <rect x="10" y="2" width="3" height="12" rx="1"/>
+              </svg>
+            ) : (
+              <Play size={18} fill="#000" className="ml-0.5 text-black" />
+            )}
+          </button>
         </div>
+
+
+
+        {/* Now playing dynamic indicator on image corner */}
+        {isCurrentlyPlaying && (
+          <div 
+            className="absolute bottom-3 right-3 flex items-end gap-0.5 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10" 
+            aria-label="Đang phát"
+          >
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="w-1 rounded-full bg-white"
+                style={{
+                  backgroundColor: rc.text,
+                  height: `${6 + i * 3}px`,
+                  animation: `pulse ${0.5 + i * 0.15}s ease-in-out infinite alternate`,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <button
-        className="absolute bottom-4 right-4 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover/pod:opacity-100 transition-all duration-300 scale-90 group-hover/pod:scale-100"
-        style={{ background: rc.text, boxShadow: `0 0 16px ${rc.glow}` }}
-        aria-label={`Play ${track.title}`}
-        onClick={(e) => { e.stopPropagation(); handleClick() }}
-      >
-        <Play size={13} fill="#000" className="ml-0.5" style={{ color: '#000' }} />
-      </button>
+      {/* Track Metadata Section */}
+      <div className="relative flex items-start gap-3">
+        {/* Left Side big number */}
+        <div 
+          className="font-display font-black shrink-0 text-3xl"
+          style={{ 
+            color: rc.text, 
+            textShadow: `0 0 20px ${rc.glow}`, 
+            letterSpacing: '-1.5px',
+            lineHeight: 1
+          }}
+        >
+          {index + 1}
+        </div>
+
+        {/* Right side song details */}
+        <div className="flex-1 min-w-0">
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes marquee-scroll {
+              0%, 15% { transform: translateX(0); }
+              85%, 100% { transform: translateX(-50%); }
+            }
+          `}} />
+          {shouldScroll && isHovered ? (
+            <div className="w-full overflow-hidden whitespace-nowrap">
+              <span
+                className="text-sm font-semibold inline-block text-white"
+                style={{
+                  animation: 'marquee-scroll 6s linear infinite alternate',
+                }}
+              >
+                {track.title}
+              </span>
+            </div>
+          ) : (
+            <p className="text-sm font-semibold truncate text-white">
+              {track.title}
+            </p>
+          )}
+          <p className="text-xs truncate text-white/50 mt-0.5">{track.artist}</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -436,9 +523,25 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
   const [isHovered, setIsHovered] = React.useState(false)
   const [isLiked, setIsLiked] = React.useState(false)
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
-  const rc = rankIndex !== undefined ? RANK_COLORS[rankIndex % RANK_COLORS.length] : null
+
+  React.useEffect(() => {
+    if (!track) return
+
+    setIsLiked(isTrackLiked(track.id))
+
+    const handleLikesUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: string; isLiked: boolean }>
+      if (customEvent.detail && customEvent.detail.trackId === track.id) {
+        setIsLiked(customEvent.detail.isLiked)
+      }
+    }
+
+    window.addEventListener('vw_likes_updated', handleLikesUpdated)
+    return () => window.removeEventListener('vw_likes_updated', handleLikesUpdated)
+  }, [track])
 
   const isCurrentlyPlaying = currentTrack?.id === track.id && isPlaying
+  const shouldScroll = track.title.length > 18
 
   function handlePlay(e: React.MouseEvent) {
     e.preventDefault()
@@ -450,19 +553,30 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
   function handleLike(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    setIsLiked(!isLiked)
+    if (track) {
+      const newLikedState = toggleLikeTrack(track)
+      setIsLiked(newLikedState)
+
+      // Sync player store if this track is currently loaded
+      const playerStore = usePlayerStore.getState()
+      if (playerStore.currentTrack?.id === track.id) {
+        usePlayerStore.setState({ isLiked: newLikedState })
+      }
+    } else {
+      setIsLiked(!isLiked)
+    }
   }
 
-  const accentColor = rc?.text ?? '#9B4DE0'
-  const accentGlow  = rc?.glow  ?? 'rgba(155,77,224,0.4)'
-  const accentBorder = rc?.border ?? 'rgba(155,77,224,0.3)'
+  const accentColor = '#9B4DE0'
+  const accentGlow  = 'rgba(155,77,224,0.4)'
+  const accentBorder = 'rgba(155,77,224,0.3)'
 
   return (
     <div
       className="relative rounded-2xl overflow-hidden cursor-pointer group/glass"
       style={{
         background: isHovered
-          ? `linear-gradient(145deg, ${rc?.bg ?? 'rgba(155,77,224,0.12)'} 0%, rgba(22,17,30,0.85) 100%)`
+          ? 'linear-gradient(145deg, rgba(155,77,224,0.12) 0%, rgba(22,17,30,0.85) 100%)'
           : 'linear-gradient(145deg, rgba(35,27,47,0.7) 0%, rgba(22,17,30,0.75) 100%)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -529,17 +643,17 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
         {/* Like button */}
         <button
           onClick={handleLike}
-          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity duration-200"
+          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity duration-200 cursor-pointer"
           style={{
             backgroundColor: 'rgba(10,7,18,0.75)',
             backdropFilter: 'blur(8px)',
             opacity: isHovered ? 1 : 0,
-            color: isLiked ? accentColor : 'rgba(255,255,255,0.6)',
+            color: isLiked ? '#F43F5E' : 'rgba(255,255,255,0.6)',
           }}
           aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
           aria-pressed={isLiked}
         >
-          <Heart size={14} fill={isLiked ? accentColor : 'none'} />
+          <Heart size={14} fill={isLiked ? '#F43F5E' : 'none'} />
         </button>
 
         {/* Now-playing bars */}
@@ -562,12 +676,34 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
 
       {/* Info */}
       <div className="p-3">
-        <p
-          className="text-sm font-semibold leading-tight line-clamp-2 mb-1"
-          style={{ color: 'rgba(255,255,255,0.95)', fontFamily: 'var(--font-display)', letterSpacing: '-0.3px' }}
-        >
-          {track.title}
-        </p>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes marquee-scroll {
+            0%, 15% { transform: translateX(0); }
+            85%, 100% { transform: translateX(-50%); }
+          }
+        `}} />
+        {shouldScroll && isHovered ? (
+          <div className="w-full overflow-hidden whitespace-nowrap mb-1">
+            <span
+              className="text-sm font-semibold leading-tight inline-block"
+              style={{
+                color: 'rgba(255,255,255,0.95)',
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.3px',
+                animation: 'marquee-scroll 6s linear infinite alternate',
+              }}
+            >
+              {track.title}
+            </span>
+          </div>
+        ) : (
+          <p
+            className="text-sm font-semibold leading-tight truncate mb-1"
+            style={{ color: 'rgba(255,255,255,0.95)', fontFamily: 'var(--font-display)', letterSpacing: '-0.3px' }}
+          >
+            {track.title}
+          </p>
+        )}
         <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
           {track.artist}
         </p>

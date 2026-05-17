@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n-store'
 import {
   Home,
@@ -30,6 +30,63 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   const [internalCollapsed, setInternalCollapsed] = useState(false)
   const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed
 
+  const [playlists, setPlaylists] = useState<{ label: string; href: string }[]>([])
+  const [albumsCount, setAlbumsCount] = useState(0)
+  const [likedCount, setLikedCount] = useState(0)
+
+  useEffect(() => {
+    function loadPlaylists() {
+      const stored = localStorage.getItem('vw_saved_playlists')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          // Filter out default mockup playlists
+          const customPlaylists = parsed.filter((p: any) => !/^p\d+$/.test(p.id))
+          setPlaylists(customPlaylists.map((p: any) => ({ label: p.title, href: p.href })))
+          return
+        } catch (e) {}
+      }
+      setPlaylists([])
+    }
+
+    function loadAlbumsCount() {
+      const stored = localStorage.getItem('vw_saved_albums')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setAlbumsCount(parsed.length)
+          return
+        } catch (e) {}
+      }
+      setAlbumsCount(0)
+    }
+
+    function loadLikedCount() {
+      const stored = localStorage.getItem('vw_liked_tracks')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setLikedCount(parsed.length)
+          return
+        } catch (e) {}
+      }
+      setLikedCount(0)
+    }
+
+    loadPlaylists()
+    loadAlbumsCount()
+    loadLikedCount()
+
+    window.addEventListener('vw_playlists_updated', loadPlaylists)
+    window.addEventListener('vw_albums_updated', loadAlbumsCount)
+    window.addEventListener('vw_likes_updated', loadLikedCount)
+    return () => {
+      window.removeEventListener('vw_playlists_updated', loadPlaylists)
+      window.removeEventListener('vw_albums_updated', loadAlbumsCount)
+      window.removeEventListener('vw_likes_updated', loadLikedCount)
+    }
+  }, [])
+
   const NAV_ITEMS = [
     { icon: Home, label: t.home, href: '/' },
     { icon: Sparkles, label: t.yourVibe, href: '/your-vibe' },
@@ -38,17 +95,9 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   ]
 
   const LIBRARY_ITEMS = [
-    { icon: Heart, label: t.likedSongs, href: '/library/liked', count: '243' },
-    { icon: Disc, label: t.albums, href: '/library?tab=albums', count: '12' },
+    { icon: Heart, label: t.likedSongs, href: '/library/liked', count: String(likedCount) },
+    { icon: Disc, label: t.albums, href: '/library?tab=albums', count: String(albumsCount) },
     { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
-  ]
-
-  const PLAYLISTS = [
-    { label: 'Deep Focus', href: '/playlist/deep-focus' },
-    { label: 'Late Night Drive', href: '/playlist/late-night-drive' },
-    { label: 'Morning Energy', href: '/playlist/morning-energy' },
-    { label: 'Chill Vibes', href: '/playlist/chill-vibes' },
-    { label: 'Workout Beats', href: '/playlist/workout-beats' },
   ]
 
   function toggle() {
@@ -213,7 +262,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
               </button>
             </div>
             <div className="space-y-0.5">
-              {PLAYLISTS.map(({ label, href }) => {
+              {playlists.map(({ label, href }) => {
                 const active = isActive(href)
                 return (
                   <Link

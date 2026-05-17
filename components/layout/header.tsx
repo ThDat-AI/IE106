@@ -9,7 +9,7 @@ import { useTranslation } from '@/lib/i18n-store'
 const SEARCH_SUGGESTIONS = [
   { type: 'track', label: 'Blinding Lights', sub: 'The Weeknd' },
   { type: 'artist', label: 'Dua Lipa', sub: 'Artist' },
-  { type: 'playlist', label: 'Deep Focus', sub: 'VibeWave Playlist' },
+  { type: 'playlist', label: 'VibeWave Hits', sub: 'Featured Playlist' },
   { type: 'album', label: 'After Hours', sub: 'The Weeknd' },
   { type: 'track', label: 'Levitating', sub: 'Dua Lipa' },
 ]

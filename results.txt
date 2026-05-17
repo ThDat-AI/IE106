@@ -1,0 +1,53 @@
+Total results found: 50
+Filtered albums (trackCount > 1): 32
+
+Name: reputation
+  collectionType: Album
+  trackCount: 15
+  wrapperType: collection
+
+Name: Lover
+  collectionType: Album
+  trackCount: 18
+  wrapperType: collection
+
+Name: Taylor Swift (Bonus Track Version)
+  collectionType: Album
+  trackCount: 15
+  wrapperType: collection
+
+Name: 1989 (Taylor's Version) [Deluxe]
+  collectionType: Album
+  trackCount: 22
+  wrapperType: collection
+
+Name: Speak Now (Taylor's Version)
+  collectionType: Album
+  trackCount: 23
+  wrapperType: collection
+
+Name: 1989
+  collectionType: Album
+  trackCount: 14
+  wrapperType: collection
+
+Name: Fearless
+  collectionType: Album
+  trackCount: 14
+  wrapperType: collection
+
+Name: Red
+  collectionType: Album
+  trackCount: 17
+  wrapperType: collection
+
+Name: Fearless (Taylor's Version)
+  collectionType: Album
+  trackCount: 26
+  wrapperType: collection
+
+Name: Speak Now
+  collectionType: Album
+  trackCount: 15
+  wrapperType: collection
+

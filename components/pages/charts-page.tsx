@@ -339,10 +339,10 @@ export default function ChartsPage() {
           Top 3 hôm nay
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {loading
             ? Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-40 rounded-3xl bg-white/[0.04] animate-pulse" />
+              <div key={i} className="h-80 rounded-3xl bg-white/[0.04] animate-pulse" />
             ))
             : topTracks.slice(0, 3).map((track, i) => (
               <PodiumCard key={track.id} track={track} index={i} />

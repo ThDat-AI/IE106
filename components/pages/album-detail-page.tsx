@@ -1,26 +1,26 @@
 "use client"
 
-import { Play, Shuffle, Heart, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, Share2 } from 'lucide-react'
+import { Play, Shuffle, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, Share2 } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
 import { usePlayerStore, type Track } from '@/lib/player-store'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { getAlbumInfo, getAlbumTracks, searchAlbums } from '@/lib/music-api'
-import { 
-  AmbientOrbs, 
-  GlassPanel, 
-  SectionHeader, 
-  AccentBar, 
-  AiBadge 
+import {
+  AmbientOrbs,
+  GlassPanel,
+  SectionHeader,
+  AccentBar,
+  AiBadge
 } from '@/components/ui/vibewave'
 import { useRouter } from 'next/navigation'
 
-export default function AlbumDetailPage({ 
-  slug, 
-  initialAlbumInfo, 
-  initialTracks 
-}: { 
+export default function AlbumDetailPage({
+  slug,
+  initialAlbumInfo,
+  initialTracks
+}: {
   slug: string,
   initialAlbumInfo?: any,
   initialTracks?: Track[]
@@ -41,7 +41,7 @@ export default function AlbumDetailPage({
         const isId = /^\d+$/.test(slug)
         let info = null
         let albumTracks: Track[] = []
-        
+
         if (isId) {
           info = await getAlbumInfo(slug)
           if (info) albumTracks = await getAlbumTracks(slug)
@@ -88,7 +88,7 @@ export default function AlbumDetailPage({
           <h2 className="text-2xl font-display font-bold text-white/90">Không tìm thấy album</h2>
           <p className="text-white/50 max-w-xs">Giai điệu này có vẻ đã lạc trôi. Hãy thử tìm kiếm một album khác.</p>
         </div>
-        <button 
+        <button
           onClick={() => router.back()}
           className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 transition-vw text-sm font-semibold"
         >
@@ -106,10 +106,10 @@ export default function AlbumDetailPage({
   return (
     <div className="relative pb-24">
       <AmbientOrbs position="absolute" />
-      
+
       {/* Top Navigation */}
       <div className="flex items-center justify-between mb-8">
-        <button 
+        <button
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 transition-vw group"
           aria-label="Go back"
@@ -120,12 +120,6 @@ export default function AlbumDetailPage({
           <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 transition-vw text-white/70 hover:text-white">
             <Share2 size={18} />
           </button>
-          <button 
-            onClick={() => setIsLiked(!isLiked)}
-            className={`w-10 h-10 rounded-full flex items-center justify-center border transition-vw ${isLiked ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'}`}
-          >
-            <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
-          </button>
         </div>
       </div>
 
@@ -134,8 +128,8 @@ export default function AlbumDetailPage({
         <div className="flex flex-col md:flex-row items-center md:items-end gap-8 md:gap-12">
           {/* Album Cover */}
           <div className="relative group">
-            <div 
-              className="absolute -inset-4 bg-purple-600/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" 
+            <div
+              className="absolute -inset-4 bg-purple-600/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10"
               style={{ backgroundColor: 'rgba(155,77,224,0.15)' }}
             />
             <div className="w-64 h-64 md:w-72 md:h-72 rounded-[2rem] overflow-hidden shadow-2xl relative z-10 border border-white/10">
@@ -148,7 +142,7 @@ export default function AlbumDetailPage({
               )}
               {/* Overlay on hover */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <button 
+                <button
                   onClick={() => tracks.length > 0 && setTrack(tracks[0])}
                   className="w-16 h-16 rounded-full bg-purple-500 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform"
                 >
@@ -169,7 +163,7 @@ export default function AlbumDetailPage({
                 {title}
               </h1>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-white/60">
-                <Link 
+                <Link
                   href={`/artist/${encodeURIComponent(artist.toLowerCase().replace(/\s+/g, '-'))}${albumInfo?.artistId ? `?id=${albumInfo.artistId}` : ''}`}
                   className="flex items-center gap-2 font-semibold text-purple-400 hover:text-purple-300 transition-colors"
                 >
@@ -201,7 +195,7 @@ export default function AlbumDetailPage({
                 <span>Phát ngay</span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </button>
-              
+
               <button
                 className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-vw"
               >
@@ -235,16 +229,16 @@ export default function AlbumDetailPage({
             </div>
             <div className="p-2 space-y-1">
               {tracks.map((track, i) => (
-                <TrackRow 
-                  key={track.id} 
-                  index={i + 1} 
-                  track={track} 
-                  showAlbum={false} 
+                <TrackRow
+                  key={track.id}
+                  index={i + 1}
+                  track={track}
+                  showAlbum={false}
                 />
               ))}
             </div>
           </GlassPanel>
-          
+
           <p className="text-[11px] text-white/20 px-4">
             &copy; {year} {artist}. Cung cấp bởi iTunes Music.
           </p>
@@ -258,7 +252,7 @@ export default function AlbumDetailPage({
               <AccentBar color="blue" />
               <h2 className="text-xl font-display font-bold text-white/90">Nghệ sĩ</h2>
             </div>
-            
+
             <GlassPanel className="p-6 text-center space-y-4 group">
               <div className="relative mx-auto w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-purple-500/50 transition-colors">
                 {albumArt ? (
@@ -291,8 +285,8 @@ export default function AlbumDetailPage({
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {moreFromArtist.map((item) => (
-                  <Link 
-                    key={item.id} 
+                  <Link
+                    key={item.id}
                     href={`/album/${item.id}`}
                     className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-vw group"
                   >

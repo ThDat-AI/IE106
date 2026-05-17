@@ -1,5 +1,6 @@
 import AppShell from '@/components/layout/app-shell'
 import LegalCombinedPage from '@/components/pages/legal-combined-page'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'Legal — VibeWave',
@@ -8,7 +9,9 @@ export const metadata = {
 export default function Page() {
   return (
     <AppShell>
-      <LegalCombinedPage />
+      <Suspense fallback={<div className="p-8 text-white/50">Đang tải điều khoản...</div>}>
+        <LegalCombinedPage />
+      </Suspense>
     </AppShell>
   )
 }

@@ -6,6 +6,7 @@ import { usePlayerStore, SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import { useState, useEffect } from 'react'
 import { searchMusic, searchAlbums } from '@/lib/music-api'
+import { ChevronDown } from 'lucide-react'
 import {
   SectionHeader,
   AiBadge,
@@ -33,6 +34,7 @@ export default function HomePage({
   const [madeForYou, setMadeForYou] = useState<any[]>([])
   const [topAlbums, setTopAlbums] = useState<any[]>(initialTopAlbums)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
+  const [visibleCount, setVisibleCount] = useState(10)
 
   useEffect(() => {
     async function loadMusic() {
@@ -42,7 +44,7 @@ export default function HomePage({
       }
 
       if (initialQuickPicks.length === 0) {
-        const picksData = await searchMusic('V-Pop Hits 2024', 10)
+        const picksData = await searchMusic('V-Pop Hits 2024', 25)
         if (picksData.length > 0) setQuickPicks(picksData)
       }
 
@@ -174,7 +176,7 @@ export default function HomePage({
 
       {/* Quick Picks — track list */}
       <section aria-labelledby="quick-picks-heading">
-        <SectionHeader title={t.yourVibe} href="/your-vibe" />
+        <SectionHeader title="Giai điệu theo tâm trạng" />
 
         {/* Filter Labels */}
         <div className="mb-6">
@@ -203,17 +205,57 @@ export default function HomePage({
             <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
           </div>
           <div className="py-2">
-            {quickPicks.map((track, i) => (
+            {quickPicks.slice(0, visibleCount).map((track, i) => (
               <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
             ))}
           </div>
         </div>
+
+        {/* Show more button */}
+        {visibleCount < 25 && quickPicks.length > visibleCount && (
+          <div className="flex justify-center mt-8">
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes pulse-glow {
+                0%, 100% { box-shadow: 0 8px 32px rgba(10,7,18,0.5), 0 0 15px rgba(155,77,224,0.3); }
+                50% { box-shadow: 0 8px 32px rgba(10,7,18,0.5), 0 0 25px rgba(155,77,224,0.6); }
+              }
+              .glow-button:hover {
+                animation: pulse-glow 2s infinite;
+                border-color: rgba(155,77,224,0.7) !important;
+              }
+            `}} />
+            <button
+              onClick={() => setVisibleCount(prev => Math.min(prev + 5, 25))}
+              className="group glow-button flex items-center gap-2.5 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 backdrop-blur-xl active:scale-95 cursor-pointer relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(155,77,224,0.18) 0%, rgba(22,17,30,0.8) 100%)',
+                border: '1px solid rgba(155,77,224,0.35)',
+                color: '#ffffff',
+                boxShadow: '0 8px 32px rgba(10, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+              }}
+            >
+              {/* Subtle hover background highlight effect */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+              />
+              
+              <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
+                Xem thêm
+              </span>
+              
+              <ChevronDown 
+                size={16} 
+                className="relative z-10 text-purple-300 transition-transform duration-500 group-hover:translate-y-0.5 ease-out" 
+              />
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Trending — Podium-style cards matching Charts Top 3 */}
       <section aria-labelledby="trending-heading">
         <SectionHeader title={t.trendingNow} href="/charts" />
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {trending.map((item, i) => (
             <PodiumCard key={item.id} track={item} index={i} />
           ))}

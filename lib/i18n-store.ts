@@ -340,6 +340,51 @@ export const translations = {
       quality: 'Quality',
       offline: 'Offline'
     },
+    faqHeroTitle: 'How can we help you?',
+    faqHeroSub: 'Find answers to frequently asked questions, or reach out to our dedicated support team.',
+    searchFaqPlaceholder: 'Search questions, keywords, or topics...',
+    searchResultsFound: 'Found {count} results',
+    noResultsFound: 'No results found',
+    noResultsDesc: 'Try adjusting your search terms or browse the categories below.',
+    clearSearch: 'Clear search',
+    categories: 'Categories',
+    directSupport: 'Direct Support',
+    directSupportDesc: 'Could not find what you are looking for? Our team is always here.',
+    faqData: [
+      {
+        name: 'Account',
+        questions: [
+          { q: 'How do I create a VibeWave account?', a: 'Visit vibewave.fm and click "Sign Up". Enter your name, email, and password. No credit card is required to start with the free plan.' },
+          { q: 'How do I reset my password?', a: 'On the Sign In page, click "Forgot password?" and enter your email. You will receive a reset link within a few minutes. Check your spam folder if you do not see it.' },
+          { q: 'Can I change my username?', a: 'Yes. Go to Profile > Settings > Profile and update your Display Name. Changes take effect immediately.' },
+          { q: 'How do I delete my account?', a: 'Go to Profile > Settings > Profile > Danger Zone and click "Delete Account". This action cannot be undone and will delete all your data within 30 days.' },
+          { q: 'Can I have multiple accounts?', a: 'Each email address supports one VibeWave account. You can switch between accounts on the same device by logging out via the profile menu.' },
+          { q: 'What happens to my data when I delete my account?', a: 'We permanently delete your personal data, listening history, and playlists within 30 days of account deletion, in compliance with applicable privacy laws.' },
+        ],
+      },
+      {
+        name: 'Playback',
+        questions: [
+          { q: 'Why is my music buffering?', a: 'Buffering is usually caused by a slow or unstable internet connection. Try switching to a lower audio quality in Settings > Playback > Audio Quality or connect to a stronger network.' },
+          { q: 'How does the Crossfade feature work?', a: 'Crossfade transitions smoothly between songs by overlapping the end of one and the start of the next. Enable it in Settings > Playback > Crossfade and choose a duration from 2 to 10 seconds.' },
+          { q: 'Can I play music in the background?', a: 'Yes. VibeWave is designed for background listening. Audio will continue to play when you switch apps or lock your screen on your device.' },
+          { q: 'What is normalize volume?', a: 'Normalizing volume keeps the perceived loudness consistent across all tracks so you do not have to adjust the volume constantly. Enable it in Settings > Playback.' },
+          { q: 'How do I control playback with shortcuts?', a: 'Press Space to play or pause, arrow keys to skip, and M to mute. A full list of shortcuts is available in Settings > Shortcuts.' },
+          { q: 'Why does the audio quality change automatically?', a: 'VibeWave adjusts audio quality based on your connection speed by default. You can lock the quality at a specific level in Settings > Playback > Audio Quality.' },
+        ],
+      },
+      {
+        name: 'Technical',
+        questions: [
+          { q: 'Which browsers does VibeWave support?', a: 'VibeWave works best on the latest versions of Chrome, Safari, Firefox, and Edge. Internet Explorer is not supported.' },
+          { q: 'Is there a desktop app?', a: 'Native apps for macOS and Windows are under development. Sign up for early access at vibewave.fm/desktop.' },
+          { q: 'How do I report a bug?', a: 'Use our Contact Us form, select "Technical Support" or "Bug Report", and describe what happened. A screenshot or screen recording will help us resolve the issue faster.' },
+          { q: 'Why is the player not showing on some pages?', a: 'The bottom player requires JavaScript. Ensure your browser has JavaScript enabled and no extensions are blocking scripts on vibewave.fm.' },
+          { q: 'How do I clear my cache?', a: 'Press Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac) in your browser, select cached images and files, then click Clear Data. Then reload VibeWave.' },
+          { q: 'Does VibeWave work offline?', a: 'Offline listening is for Premium users. Enable Offline Sync in Settings > Playback to automatically pre-load your playlist over Wi-Fi.' },
+        ],
+      },
+    ],
 
     // Notifications Page & Dropdown
     viewAllNotifications: 'View All Notifications',

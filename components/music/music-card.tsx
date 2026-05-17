@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Play, Heart } from 'lucide-react'
-import { usePlayerStore, type Track } from '@/lib/player-store'
+import { Play, Heart, Trash2 } from 'lucide-react'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
 import { cn } from '@/lib/utils'
 
 interface MusicCardProps {
@@ -17,6 +17,8 @@ interface MusicCardProps {
   track?: Track
   image?: string
   variant?: 'default' | 'compact'
+  onDelete?: (id: string) => void
+  deleteLabel?: string
 }
 
 const GRADIENT_PAIRS = [
@@ -39,15 +41,34 @@ export default function MusicCard({
   track,
   image,
   variant = 'default',
+  onDelete,
+  deleteLabel,
 }: MusicCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
 
+  useEffect(() => {
+    if (!track) return
+
+    setIsLiked(isTrackLiked(track.id))
+
+    const handleLikesUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: string; isLiked: boolean }>
+      if (customEvent.detail && customEvent.detail.trackId === track.id) {
+        setIsLiked(customEvent.detail.isLiked)
+      }
+    }
+
+    window.addEventListener('vw_likes_updated', handleLikesUpdated)
+    return () => window.removeEventListener('vw_likes_updated', handleLikesUpdated)
+  }, [track])
+
   const gradientIdx = Math.abs(title.charCodeAt(0) + title.charCodeAt(title.length - 1)) % GRADIENT_PAIRS.length
   const [c1, c2] = GRADIENT_PAIRS[gradientIdx]
 
   const isCurrentlyPlaying = currentTrack?.id === id && isPlaying
+  const shouldScroll = title.length > 18
 
   function handlePlay(e: React.MouseEvent) {
     e.preventDefault()
@@ -64,7 +85,18 @@ export default function MusicCard({
   function handleLike(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    setIsLiked(!isLiked)
+    if (track) {
+      const newLikedState = toggleLikeTrack(track)
+      setIsLiked(newLikedState)
+
+      // Sync player store if this track is currently loaded
+      const playerStore = usePlayerStore.getState()
+      if (playerStore.currentTrack?.id === track.id) {
+        usePlayerStore.setState({ isLiked: newLikedState })
+      }
+    } else {
+      setIsLiked(!isLiked)
+    }
   }
 
   const displayImage = track?.albumArt || image
@@ -97,6 +129,20 @@ export default function MusicCard({
         <p className="text-sm font-bold text-white/90 truncate group-hover:text-purple-400 transition-colors">{title}</p>
         <p className="text-xs text-white/40 truncate">{subtitle}</p>
       </div>
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onDelete(id)
+          }}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 text-white/40 cursor-pointer shrink-0"
+          title={deleteLabel || "Xóa"}
+          aria-label={deleteLabel || "Xóa"}
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
     </div>
   ) : (
     <div
@@ -156,19 +202,41 @@ export default function MusicCard({
           </button>
         </div>
 
+        {/* Delete button */}
+        {onDelete && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onDelete(id)
+            }}
+            className="absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-red-500 hover:text-white cursor-pointer z-10"
+            style={{
+              backgroundColor: 'rgba(23,15,35,0.7)',
+              opacity: isHovered ? 1 : 0,
+              color: 'rgba(255,255,255,0.6)',
+              transform: isHovered ? 'scale(1)' : 'scale(0.8)',
+            }}
+            title={deleteLabel || "Xóa"}
+            aria-label={deleteLabel || "Xóa"}
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
+
         {/* Like button */}
         <button
           onClick={handleLike}
-          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-vw"
+          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-vw cursor-pointer"
           style={{
             backgroundColor: 'rgba(23,15,35,0.7)',
             opacity: isHovered ? 1 : 0,
-            color: isLiked ? '#9B4DE0' : 'var(--vw-text-secondary)',
+            color: isLiked ? '#F43F5E' : 'var(--vw-text-secondary)',
           }}
           aria-label={isLiked ? `Unlike ${title}` : `Like ${title}`}
           aria-pressed={isLiked}
         >
-          <Heart size={14} fill={isLiked ? '#9B4DE0' : 'none'} />
+          <Heart size={14} fill={isLiked ? '#F43F5E' : 'none'} />
         </button>
 
         {/* Now playing indicator */}
@@ -191,9 +259,29 @@ export default function MusicCard({
 
       {/* Info */}
       <div className="p-3">
-        <div className="h-9 mb-1">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes marquee-scroll {
+            0%, 15% { transform: translateX(0); }
+            85%, 100% { transform: translateX(-50%); }
+          }
+        `}} />
+        {shouldScroll && isHovered ? (
+          <div className="w-full overflow-hidden whitespace-nowrap mb-1">
+            <span
+              className="text-sm font-semibold leading-tight inline-block"
+              style={{
+                color: 'var(--vw-text-primary)',
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.3px',
+                animation: 'marquee-scroll 6s linear infinite alternate',
+              }}
+            >
+              {title}
+            </span>
+          </div>
+        ) : (
           <p
-            className="text-sm font-semibold leading-tight line-clamp-2"
+            className="text-sm font-semibold leading-tight truncate mb-1"
             style={{
               color: 'var(--vw-text-primary)',
               fontFamily: 'var(--font-display)',
@@ -202,7 +290,7 @@ export default function MusicCard({
           >
             {title}
           </p>
-        </div>
+        )}
         <p
           className="text-xs truncate"
           style={{ color: 'var(--vw-text-secondary)' }}

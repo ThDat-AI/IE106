@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Header from './header'
 import Sidebar from './sidebar'
 import BottomPlayer from './bottom-player'
@@ -26,7 +26,9 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
 
       <div className="relative z-10">
         <Header />
-        <Sidebar collapsed={sidebarCollapsed} onToggle={setSidebarCollapsed} />
+        <Suspense fallback={null}>
+          <Sidebar collapsed={sidebarCollapsed} onToggle={setSidebarCollapsed} />
+        </Suspense>
 
         <main
           className="pt-16 pb-20 min-h-screen"

@@ -73,38 +73,90 @@ export const SAMPLE_TRACKS: Track[] = [
   },
 ]
 
-export const usePlayerStore = create<PlayerState>((set, get) => ({
-  currentTrack: SAMPLE_TRACKS[0],
-  isPlaying: false,
-  progress: 32,
-  volume: 75,
-  isMuted: false,
-  isFullPlayer: false,
-  queue: SAMPLE_TRACKS,
-  isLiked: false,
+export function getLikedTracks(): Track[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_liked_tracks')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
 
-  setTrack: (track) => set({ currentTrack: track, isPlaying: true, progress: 0 }),
-  togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
-  setProgress: (progress) => set({ progress }),
-  setVolume: (volume) => set({ volume, isMuted: volume === 0 }),
-  toggleMute: () => set((s) => ({ isMuted: !s.isMuted })),
-  toggleFullPlayer: () => set((s) => ({ isFullPlayer: !s.isFullPlayer })),
-  toggleLike: () => set((s) => ({ isLiked: !s.isLiked })),
-  setQueue: (queue) => set({ queue }),
+export function toggleLikeTrack(track: Track): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const liked = getLikedTracks()
+    const index = liked.findIndex(t => t.id === track.id)
+    let isLikedNow = false
+    if (index > -1) {
+      liked.splice(index, 1)
+    } else {
+      liked.push(track)
+      isLikedNow = true
+    }
+    localStorage.setItem('vw_liked_tracks', JSON.stringify(liked))
+    // Trigger global event for components to sync instantly
+    window.dispatchEvent(new CustomEvent('vw_likes_updated', { detail: { trackId: track.id, isLiked: isLikedNow } }))
+    return isLikedNow
+  } catch (e) {
+    return false
+  }
+}
 
-  nextTrack: () => {
-    const { queue, currentTrack } = get()
-    if (!currentTrack) return
-    const idx = queue.findIndex((t) => t.id === currentTrack.id)
-    const next = queue[(idx + 1) % queue.length]
-    set({ currentTrack: next, isPlaying: true, progress: 0 })
-  },
+export function isTrackLiked(trackId: string): boolean {
+  if (typeof window === 'undefined') return false
+  const liked = getLikedTracks()
+  return liked.some(t => t.id === trackId)
+}
 
-  prevTrack: () => {
-    const { queue, currentTrack } = get()
-    if (!currentTrack) return
-    const idx = queue.findIndex((t) => t.id === currentTrack.id)
-    const prev = queue[(idx - 1 + queue.length) % queue.length]
-    set({ currentTrack: prev, isPlaying: true, progress: 0 })
-  },
-}))
+export const usePlayerStore = create<PlayerState>((set, get) => {
+  const initialTrack = SAMPLE_TRACKS[0]
+  const initialLiked = initialTrack ? isTrackLiked(initialTrack.id) : false
+
+  return {
+    currentTrack: initialTrack,
+    isPlaying: false,
+    progress: 32,
+    volume: 75,
+    isMuted: false,
+    isFullPlayer: false,
+    queue: SAMPLE_TRACKS,
+    isLiked: initialLiked,
+
+    setTrack: (track) => set({ 
+      currentTrack: track, 
+      isPlaying: true, 
+      progress: 0,
+      isLiked: isTrackLiked(track.id)
+    }),
+    togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
+    setProgress: (progress) => set({ progress }),
+    setVolume: (volume) => set({ volume, isMuted: volume === 0 }),
+    toggleMute: () => set((s) => ({ isMuted: !s.isMuted })),
+    toggleFullPlayer: () => set((s) => ({ isFullPlayer: !s.isFullPlayer })),
+    toggleLike: () => {
+      const { currentTrack } = get()
+      if (!currentTrack) return
+      const isLikedNow = toggleLikeTrack(currentTrack)
+      set({ isLiked: isLikedNow })
+    },
+    setQueue: (queue) => set({ queue }),
+
+    nextTrack: () => {
+      const { queue, currentTrack } = get()
+      if (!currentTrack) return
+      const idx = queue.findIndex((t) => t.id === currentTrack.id)
+      const next = queue[(idx + 1) % queue.length]
+      set({ currentTrack: next, isPlaying: true, progress: 0, isLiked: isTrackLiked(next.id) })
+    },
+
+    prevTrack: () => {
+      const { queue, currentTrack } = get()
+      if (!currentTrack) return
+      const idx = queue.findIndex((t) => t.id === currentTrack.id)
+      const prev = queue[(idx - 1 + queue.length) % queue.length]
+      set({ currentTrack: prev, isPlaying: true, progress: 0, isLiked: isTrackLiked(prev.id) })
+    },
+  }
+})
