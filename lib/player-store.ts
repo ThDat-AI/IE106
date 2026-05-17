@@ -6,6 +6,7 @@ export interface Track {
   id: string
   title: string
   artist: string
+  artistId?: string
   album: string
   albumArt: string
   duration: number // seconds

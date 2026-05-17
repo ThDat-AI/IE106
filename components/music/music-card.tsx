@@ -101,6 +101,84 @@ export default function MusicCard({
 
   const displayImage = track?.albumArt || image
 
+  if (type === 'artist') {
+    const artistCard = (
+      <div
+        className={cn('relative flex flex-col items-center text-center cursor-pointer group w-full', className)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          transition: 'transform 0.2s ease',
+          transform: isHovered ? 'scale(1.04)' : 'scale(1)',
+        }}
+      >
+        {/* Circular Image Container */}
+        <div 
+          className="relative w-full aspect-square rounded-full overflow-hidden mb-3 border border-white/10 shadow-lg"
+          style={{
+            boxShadow: isHovered ? '0 12px 30px rgba(155,77,224,0.25)' : '0 8px 24px rgba(0,0,0,0.5)',
+            transition: 'box-shadow 0.2s ease',
+          }}
+        >
+          {displayImage ? (
+            <img
+              src={displayImage}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div 
+              className="w-full h-full flex items-center justify-center text-4xl font-display font-bold text-white/80"
+              style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` }}
+            >
+              {title.charAt(0).toUpperCase()}
+            </div>
+          )}
+          
+          {/* Hover Play Button Overlay */}
+          <div
+            className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200"
+            style={{ opacity: isHovered ? 1 : 0 }}
+          >
+            <button
+              onClick={handlePlay}
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+              style={{
+                backgroundColor: '#9B4DE0',
+                boxShadow: '0 4px 16px rgba(155,77,224,0.4)',
+              }}
+              aria-label={`Play ${title}`}
+            >
+              {isCurrentlyPlaying ? (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                  <rect x="3" y="2" width="3" height="12" rx="1"/>
+                  <rect x="10" y="2" width="3" height="12" rx="1"/>
+                </svg>
+              ) : (
+                <Play size={16} fill="white" className="text-white ml-0.5" />
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Centered Artist Info */}
+        <div className="px-2 w-full">
+          <p className="text-sm font-semibold truncate text-white group-hover:text-purple-400 transition-colors">
+            {title}
+          </p>
+          <p className="text-xs text-white/40 truncate mt-0.5">
+            {subtitle || 'Nghệ sĩ'}
+          </p>
+        </div>
+      </div>
+    )
+
+    if (href) {
+      return <Link href={href} className="w-full block">{artistCard}</Link>
+    }
+    return artistCard
+  }
+
   const card = variant === 'compact' ? (
     <div
       className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}

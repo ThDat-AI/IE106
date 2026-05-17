@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music } from 'lucide-react'
+import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music, ChevronDown, ChevronUp, Shuffle } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, type Track } from '@/lib/player-store'
@@ -37,6 +37,34 @@ export default function ArtistPage({
   const [relatedArtists, setRelatedArtists] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(initialTracks.length === 0)
   const [isFollowing, setIsFollowing] = useState(false)
+  const [visibleTracks, setVisibleTracks] = useState(5)
+  const [isHeroMenuOpen, setIsHeroMenuOpen] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  function triggerToast(msg: string) {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  function handleShufflePlay() {
+    if (tracks.length === 0) return
+    const shuffled = [...tracks].sort(() => Math.random() - 0.5)
+    setTrack(shuffled[0])
+    usePlayerStore.getState().setQueue(shuffled)
+    triggerToast(`Đang phát ngẫu nhiên các bài hát của ${name}`)
+  }
+
+  function handleShare() {
+    setIsHeroMenuOpen(false)
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href)
+      triggerToast('Đã sao chép liên kết nghệ sĩ vào khay nhớ tạm!')
+    } else {
+      triggerToast('Chia sẻ liên kết nghệ sĩ thành công!')
+    }
+  }
 
   useEffect(() => {
     async function loadArtistData() {
@@ -131,16 +159,27 @@ export default function ArtistPage({
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
               <button
                 onClick={() => tracks.length > 0 && setTrack(tracks[0])}
-                className="flex items-center gap-3 px-8 py-4 rounded-full bg-vw-purple text-white font-bold text-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+                className="flex items-center gap-3 px-8 py-4 rounded-full bg-vw-purple text-white font-bold text-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 cursor-pointer"
               >
                 <Play size={20} fill="currentColor" />
                 {t.playAll || 'Play All'}
               </button>
               
               <button
-                onClick={() => setIsFollowing(!isFollowing)}
+                onClick={handleShufflePlay}
+                className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 border-white/20 text-white hover:bg-white/5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <Shuffle size={18} />
+                Phát ngẫu nhiên
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsFollowing(!isFollowing)
+                  triggerToast(isFollowing ? `Đã bỏ theo dõi nghệ sĩ ${name}` : `Đã theo dõi nghệ sĩ ${name}!`)
+                }}
                 className={cn(
-                  "flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 transition-all duration-300",
+                  "flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 transition-all duration-300 cursor-pointer",
                   isFollowing 
                     ? "bg-white/10 border-white/20 text-white/80" 
                     : "bg-transparent border-white/20 text-white hover:bg-white/5"
@@ -150,9 +189,6 @@ export default function ArtistPage({
                 {isFollowing ? (t.following || 'Following') : (t.follow || 'Follow')}
               </button>
 
-              <button className="p-4 rounded-full bg-white/5 border border-white/10 text-white/50 transition-all duration-300 hover:bg-white/10 hover:text-white">
-                <MoreHorizontal size={20} />
-              </button>
             </div>
           </div>
         </div>
@@ -169,8 +205,8 @@ export default function ArtistPage({
                   <div key={i} className="h-16 w-full animate-pulse bg-white/5 rounded-lg mb-1" />
                 ))
               ) : tracks.length > 0 ? (
-                tracks.map((track, i) => (
-                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
+                tracks.slice(0, visibleTracks).map((track, i) => (
+                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum hideGoToArtist />
                 ))
               ) : (
                 <div className="p-12 text-center text-white/30 italic">
@@ -179,6 +215,53 @@ export default function ArtistPage({
               )}
             </div>
           </GlassPanel>
+
+          {/* Show more/less button */}
+          {!isLoading && tracks.length > 5 && (
+            <div className="flex justify-center mt-8">
+              <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes pulse-glow {
+                  0%, 100% { box-shadow: 0 8px 32px rgba(10,7,18,0.5), 0 0 15px rgba(155,77,224,0.3); }
+                  50% { box-shadow: 0 8px 32px rgba(10,7,18,0.5), 0 0 25px rgba(155,77,224,0.6); }
+                }
+                .glow-button:hover {
+                  animation: pulse-glow 2s infinite;
+                  border-color: rgba(155,77,224,0.7) !important;
+                }
+              `}} />
+              <button
+                onClick={() => setVisibleTracks(prev => prev === 5 ? tracks.length : 5)}
+                className="group glow-button flex items-center gap-2.5 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 backdrop-blur-xl active:scale-95 cursor-pointer relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(155,77,224,0.18) 0%, rgba(22,17,30,0.8) 100%)',
+                  border: '1px solid rgba(155,77,224,0.35)',
+                  color: '#ffffff',
+                  boxShadow: '0 8px 32px rgba(10, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                {/* Subtle hover background highlight effect */}
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                />
+                
+                <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
+                  {visibleTracks === 5 ? 'Xem thêm' : 'Thu gọn'}
+                </span>
+                
+                {visibleTracks === 5 ? (
+                  <ChevronDown 
+                    size={16} 
+                    className="relative z-10 text-purple-300 transition-transform duration-500 group-hover:translate-y-0.5 ease-out" 
+                  />
+                ) : (
+                  <ChevronUp 
+                    size={16} 
+                    className="relative z-10 text-purple-300 transition-transform duration-500 group-hover:-translate-y-0.5 ease-out" 
+                  />
+                )}
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Discography Section */}
@@ -229,6 +312,95 @@ export default function ArtistPage({
               ))}
             </div>
           </section>
+        )}
+
+        {/* About Artist Section */}
+        <section>
+          <SectionHeader title={t.aboutArtist || `Giới thiệu về ${name}`} />
+          <GlassPanel className="p-6 md:p-8 border-white/5 relative overflow-hidden">
+            {/* Ambient background blob behind the about section */}
+            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-vw-purple/10 blur-3xl pointer-events-none -z-10" />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Bio Column */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
+                  <span className="text-xs font-bold text-green-400 uppercase tracking-widest">Đang hoạt động sôi nổi</span>
+                </div>
+                
+                <h3 className="font-display font-bold text-2xl text-white">Câu chuyện âm nhạc</h3>
+                <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line">
+                  {name === 'Sơn Tùng M-TP' ? (
+                    "Nguyễn Thanh Tùng, được biết đến chuyên nghiệp với nghệ danh Sơn Tùng M-TP, là một nam ca sĩ kiêm nhạc sĩ và diễn viên người Việt Nam. Được mệnh danh là 'Hoàng tử V-Pop', anh nổi tiếng với những ca khúc tự sáng tác đạt hàng trăm triệu lượt xem trên YouTube như Lạc Trôi, Chạy Ngay Đi, Hãy Trao Cho Anh, và Chúng Ta Của Tương Lai."
+                  ) : name === 'Đen Vâu' || name === 'Đen' ? (
+                    "Nguyễn Đức Cường, được biết đến với nghệ danh Đen Vâu hay đơn giản là Đen, là một nam nhạc sĩ kiêm rapper người Việt Nam. Đen Vâu là một trong số ít nghệ sĩ nhạc rap gặt hái được nhiều thành công tại thị trường nhạc Việt với các ca khúc mộc mạc, triết lý sống đời thường như Lối Nhỏ, Hai Triệu Năm, Trốn Tìm, và Nấu Ăn Cho Em."
+                  ) : name === 'Hoàng Thùy Linh' ? (
+                    "Hoàng Thùy Linh là một nữ ca sĩ kiêm diễn viên người Việt Nam. Cô nổi tiếng với dòng nhạc Pop điện tử mang âm hưởng văn hóa dân gian Việt Nam vô cùng đặc trưng. Các album 'Hoàng' (2019) và 'LINK' (2022) đạt thành công vang dội với các siêu phẩm quốc tế như See Tình, Gieo Quẻ, và Để Mị Nói Cho Mà Nghe."
+                  ) : name === 'Da LAB' || name === 'Da Lab' ? (
+                    "Da LAB là một ban nhạc rap/hip-hop nổi tiếng của Việt Nam, được thành lập từ năm 2007. Khởi nguồn từ dòng nhạc indie, nhóm đã ghi dấu ấn sâu đậm trong lòng khán giả yêu nhạc qua những bản hit quốc dân mang giai điệu mộc mạc, gần gũi nhưng cực kỳ cuốn hút như Một Nhà, Thanh Xuân, Gác Lại Âu Lo, và Thức Giấc."
+                  ) : (
+                    `${name} là một trong những nghệ sĩ tài năng và được yêu mến hàng đầu tại VibeWave. Với phong cách âm nhạc độc đáo, cá tính nghệ thuật ấn tượng và lượng người hâm mộ vô cùng đông đảo, nghệ sĩ liên tục mang đến những bản hit đứng đầu các bảng xếp hạng và khơi gợi nguồn cảm hứng bất tận cho người yêu âm nhạc Việt Nam.`
+                  )}
+                </p>
+                
+                {/* Visual quote or motto */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 italic text-sm text-purple-200/80">
+                  "Âm nhạc không chỉ là giai điệu, âm nhạc là nhịp đập của tâm hồn, là nơi kết nối những trái tim đồng điệu."
+                </div>
+              </div>
+              
+              {/* Right Stats Column */}
+              <div className="flex flex-col justify-between p-6 rounded-2xl bg-white/[0.03] border border-white/5 space-y-6">
+                <div>
+                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Chỉ số trên VibeWave</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-xs text-white/50 block">Người nghe hàng tháng</span>
+                      <strong className="text-2xl font-bold text-white font-display">3.5M lượt nghe</strong>
+                    </div>
+                    <div>
+                      <span className="text-xs text-white/50 block">Người theo dõi</span>
+                      <strong className="text-2xl font-bold text-white font-display">2.4M người theo dõi</strong>
+                    </div>
+                    <div>
+                      <span className="text-xs text-white/50 block">Xếp hạng thế giới</span>
+                      <strong className="text-2xl font-bold text-purple-400 font-display">Top #12 Việt Nam</strong>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-white/5 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/40">Thể loại</span>
+                    <span className="text-white/80 font-medium">V-Pop, Hip-Hop, Pop-Ballad</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/40">Hoạt động từ</span>
+                    <span className="text-white/80 font-medium">2007 - Hiện tại</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/40">Quốc gia</span>
+                    <span className="text-white/80 font-medium">Việt Nam 🇻🇳</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </GlassPanel>
+        </section>
+
+        {/* Toast Notification */}
+        {showToast && (
+          <div className="fixed bottom-24 right-6 px-5 py-3.5 rounded-2xl text-xs font-semibold text-white z-50 animate-in fade-in slide-in-from-bottom-5 duration-300"
+            style={{
+              background: 'linear-gradient(135deg, rgba(155,77,224,0.95) 0%, rgba(26,20,36,0.97) 100%)',
+              backdropFilter: 'blur(24px)',
+              border: '1px solid rgba(155, 77, 224, 0.4)',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(155,77,224,0.2)',
+            }}
+          >
+            {toastMessage}
+          </div>
         )}
       </div>
     </div>

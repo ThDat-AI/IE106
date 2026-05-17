@@ -10,6 +10,7 @@ interface TrackRowProps {
   showAlbum?: boolean
   onRemove?: () => void
   removeLabel?: string
+  hideGoToArtist?: boolean
 }
 
 function formatTime(secs: number) {
@@ -18,7 +19,7 @@ function formatTime(secs: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function TrackRow({ index, track, showAlbum = true, onRemove, removeLabel }: TrackRowProps) {
+export default function TrackRow({ index, track, showAlbum = true, onRemove, removeLabel, hideGoToArtist }: TrackRowProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -32,7 +33,8 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
   }
 
   function handleGoToArtist() {
-    window.location.href = `/search?q=${encodeURIComponent(track.artist)}`
+    const slug = track.artist.toLowerCase().replace(/\s+/g, '-')
+    window.location.href = `/artist/${encodeURIComponent(slug)}${track.artistId ? `?id=${track.artistId}` : ''}`
   }
 
   useEffect(() => {
@@ -259,16 +261,18 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
                 <div className="h-px bg-white/5 my-1 mx-2" />
 
                 {/* 4. Đi đến Nghệ sĩ */}
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    handleGoToArtist()
-                  }}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98"
-                >
-                  <User size={13} className="text-purple-400" />
-                  <span>Đi đến Nghệ sĩ</span>
-                </button>
+                {!hideGoToArtist && (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      handleGoToArtist()
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98"
+                  >
+                    <User size={13} className="text-purple-400" />
+                    <span>Đi đến Nghệ sĩ</span>
+                  </button>
+                )}
 
                 {/* 5. Không phát bài này nữa */}
                 <button
