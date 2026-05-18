@@ -14,7 +14,7 @@ import {
   Music2,
   Heart,
   Clock,
-  Disc,
+  Play,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +31,6 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
   const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed
 
   const [playlists, setPlaylists] = useState<{ label: string; href: string }[]>([])
-  const [albumsCount, setAlbumsCount] = useState(0)
   const [likedCount, setLikedCount] = useState(0)
 
   useEffect(() => {
@@ -49,18 +48,6 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
       setPlaylists([])
     }
 
-    function loadAlbumsCount() {
-      const stored = localStorage.getItem('vw_saved_albums')
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setAlbumsCount(parsed.length)
-          return
-        } catch (e) {}
-      }
-      setAlbumsCount(0)
-    }
-
     function loadLikedCount() {
       const stored = localStorage.getItem('vw_liked_tracks')
       if (stored) {
@@ -74,15 +61,12 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
     }
 
     loadPlaylists()
-    loadAlbumsCount()
     loadLikedCount()
 
     window.addEventListener('vw_playlists_updated', loadPlaylists)
-    window.addEventListener('vw_albums_updated', loadAlbumsCount)
     window.addEventListener('vw_likes_updated', loadLikedCount)
     return () => {
       window.removeEventListener('vw_playlists_updated', loadPlaylists)
-      window.removeEventListener('vw_albums_updated', loadAlbumsCount)
       window.removeEventListener('vw_likes_updated', loadLikedCount)
     }
   }, [])
@@ -96,7 +80,6 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
 
   const LIBRARY_ITEMS = [
     { icon: Heart, label: t.likedSongs, href: '/library/liked', count: String(likedCount) },
-    { icon: Disc, label: t.albums, href: '/library?tab=albums', count: String(albumsCount) },
     { icon: Clock, label: t.recentlyPlayed, href: '/library/recent', count: null },
   ]
 
@@ -201,7 +184,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           {/* Library section */}
           <nav aria-label="Library" className="mb-8">
             <div className="px-3 pb-3 flex items-center justify-between">
-              <span className="text-[11px] font-righteous uppercase tracking-[0.2em] text-white/50">
+              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/50">
                 {t.library}
               </span>
             </div>
@@ -251,7 +234,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           {/* Playlists */}
           <div className="space-y-1">
             <div className="px-3 pb-3 flex items-center justify-between">
-              <span className="text-[11px] font-righteous uppercase tracking-[0.2em] text-white/50">
+              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/50">
                 {t.playlists}
               </span>
               <button
@@ -269,18 +252,25 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                     key={href}
                     href={href}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl h-10 transition-vw px-3",
+                      "group flex items-center gap-3 rounded-xl h-10 transition-vw px-3 relative",
                       active
                         ? "bg-vw-purple/20 text-white"
                         : "text-white/55 hover:text-white hover:bg-white/10"
                     )}
                   >
-                    <div className={cn(
-                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                      active ? "bg-vw-purple shadow-[0_0_8px_rgba(155,77,224,0.6)]" : "bg-white/10 group-hover:bg-white/30"
-                    )} />
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0 relative">
+                      <Play
+                        size={13}
+                        className="absolute opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 text-purple-400 transition-all duration-200"
+                        fill="currentColor"
+                      />
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full transition-all duration-200 group-hover:opacity-0 group-hover:scale-0",
+                        active ? "bg-vw-purple shadow-[0_0_8px_rgba(155,77,224,0.6)]" : "bg-white/20"
+                      )} />
+                    </div>
                     <span
-                      className="text-sm whitespace-nowrap overflow-hidden text-ellipsis transition-transform group-hover:translate-x-0.5"
+                      className="text-sm whitespace-nowrap overflow-hidden text-ellipsis transition-transform group-hover:translate-x-1"
                     >
                       {label}
                     </span>

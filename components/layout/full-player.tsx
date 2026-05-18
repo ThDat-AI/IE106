@@ -38,7 +38,8 @@ export default function FullPlayer() {
   const {
     currentTrack, isPlaying, progress, volume, isMuted, isLiked,
     togglePlay, setProgress, toggleMute, toggleFullPlayer, toggleLike,
-    nextTrack, prevTrack,
+    nextTrack, prevTrack, isShuffle, toggleShuffle,
+    isRepeat, toggleRepeat,
   } = usePlayerStore()
 
   const [realLyrics, setRealLyrics] = useState<string | null>(null)
@@ -90,7 +91,7 @@ export default function FullPlayer() {
     >
       {/* Dynamic Background Atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 opacity-40 blur-[120px] transition-all duration-1000"
           style={{
             background: `radial-gradient(circle at 20% 30%, #9B4DE0 0%, transparent 50%),
@@ -156,12 +157,15 @@ export default function FullPlayer() {
             <button
               onClick={toggleLike}
               className={cn(
-                "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/5 active:scale-90",
-                isLiked ? "text-red-500" : "text-white/30 hover:text-white/60"
+                "relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/5 active:scale-90",
+                isLiked ? "text-[#EF4444]" : "text-white/30 hover:text-white/60"
               )}
               aria-label={isLiked ? t.unlike : t.like}
             >
               <Heart size={28} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
+              {isLiked && (
+                <span className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
+              )}
             </button>
           </div>
 
@@ -177,7 +181,7 @@ export default function FullPlayer() {
                   boxShadow: '0 0 20px rgba(155,77,224,0.4)'
                 }}
               />
-              <div 
+              <div
                 className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-xl opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200"
                 style={{ left: `calc(${progress}% - 8px)` }}
               />
@@ -196,8 +200,19 @@ export default function FullPlayer() {
 
           {/* Main Controls */}
           <div className="flex items-center gap-10">
-            <button className="text-white/30 hover:text-white/80 transition-colors" aria-label={t.shuffle}>
+            <button
+              onClick={toggleShuffle}
+              className={cn(
+                "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-90",
+                isShuffle ? "text-[#9B4DE0]" : "text-white/30 hover:text-white/80"
+              )}
+              aria-label={t.shuffle}
+              aria-pressed={isShuffle}
+            >
               <Shuffle size={20} />
+              {isShuffle && (
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+              )}
             </button>
             <button onClick={prevTrack} className="text-white/80 hover:text-white transition-all hover:scale-110 active:scale-90" aria-label={t.previous}>
               <SkipBack size={32} fill="currentColor" />
@@ -219,8 +234,18 @@ export default function FullPlayer() {
             <button onClick={nextTrack} className="text-white/80 hover:text-white transition-all hover:scale-110 active:scale-90" aria-label={t.next}>
               <SkipForward size={32} fill="currentColor" />
             </button>
-            <button className="text-white/30 hover:text-white/80 transition-colors" aria-label={t.repeat}>
+            <button
+              onClick={toggleRepeat}
+              className={cn(
+                "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-90",
+                isRepeat ? "text-[#9B4DE0]" : "text-white/30 hover:text-white/80"
+              )}
+              aria-label={t.repeat}
+            >
               <Repeat size={20} />
+              {isRepeat && (
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+              )}
             </button>
           </div>
         </div>
@@ -247,10 +272,10 @@ export default function FullPlayer() {
                       key={i}
                       className={cn(
                         "font-display text-4xl font-bold transition-all duration-500 cursor-default",
-                        isCurrentLine 
-                          ? "text-white scale-105 origin-left drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]" 
-                          : isPastLine 
-                            ? "text-white/30" 
+                        isCurrentLine
+                          ? "text-white scale-105 origin-left drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+                          : isPastLine
+                            ? "text-white/30"
                             : "text-white/10 hover:text-white/30"
                       )}
                       style={{
@@ -295,9 +320,9 @@ export default function FullPlayer() {
         </div>
 
         <div className="flex items-center gap-8">
-           <p className="text-[11px] text-white/20 uppercase tracking-widest font-medium">
-             Audio Quality: Lossless 24-bit / 48kHz
-           </p>
+          <p className="text-[11px] text-white/20 uppercase tracking-widest font-medium">
+            Audio Quality: Lossless 24-bit / 48kHz
+          </p>
         </div>
       </footer>
 

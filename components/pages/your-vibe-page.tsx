@@ -1,12 +1,13 @@
 "use client"
 
-import { Sparkles, RefreshCw, Play, ChevronRight, Loader2 } from 'lucide-react'
+import { Sparkles, RefreshCw, Play, ChevronRight, Loader2, RotateCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
 import { SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { searchMusic, searchArtistImage } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import {
   PageHero,
   AccentBar,
@@ -23,6 +24,7 @@ export default function YourVibePage() {
   const [mixes, setMixes] = useState<Track[]>([])
   const [discovered, setDiscovered] = useState<Track[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMixes, setIsLoadingMixes] = useState(false)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
 
   const INITIAL_ARTISTS = [
@@ -60,6 +62,20 @@ export default function YourVibePage() {
     }
   }
 
+  async function handleRefreshMixes() {
+    setIsLoadingMixes(true)
+    try {
+      const keywords = ['V-Pop Hits', 'V-Pop Hot', 'Nhạc trẻ HOT', 'Nhạc Chill V-Pop', 'Vietnamese Pop', 'Indie Việt', 'Rap Việt Hot']
+      const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)]
+      const mixData = await searchMusic(randomKeyword, 10)
+      setMixes(mixData)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoadingMixes(false)
+    }
+  }
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -74,18 +90,7 @@ export default function YourVibePage() {
           eyebrowLabel={t.aiPowered}
           title={t.yourVibe}
           subtitle={t.yourVibeSub}
-          gradientClass="from-white via-purple-200 to-purple-400"
-          action={
-            <button
-              onClick={fetchData}
-              disabled={isLoading}
-              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 disabled:opacity-50 backdrop-blur-md hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(155,77,224,0.4)]"
-              style={{ backgroundColor: 'rgba(155,77,224,0.1)', color: '#E9D5FF', border: '1px solid rgba(155,77,224,0.3)' }}
-            >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} className="transition-transform group-hover:rotate-180 duration-500" />}
-              {t.refresh}
-            </button>
-          }
+          gradientClass="from-white to-white"
         />
 
         {/* Mood selector */}
@@ -179,6 +184,22 @@ export default function YourVibePage() {
             <AccentBar height={8} color="purple" />
             {t.collectionsForYou}
           </h2>
+
+          {/* Refresh Pill Button on the far right */}
+          <button
+            onClick={handleRefreshMixes}
+            disabled={isLoadingMixes || isLoading}
+            className="group flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+          >
+            <RotateCw
+              size={12}
+              className={cn(
+                "transition-transform duration-700",
+                isLoadingMixes ? "animate-spin text-purple-400" : "group-hover:rotate-180"
+              )}
+            />
+            <span>Làm mới</span>
+          </button>
         </div>
         <MusicShelf>
           {isLoading ? (

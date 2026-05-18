@@ -12,6 +12,7 @@ export interface Track {
   duration: number // seconds
   url: string
   lyrics?: string
+  playedAt?: string
 }
 
 interface PlayerState {
@@ -23,6 +24,8 @@ interface PlayerState {
   isFullPlayer: boolean
   queue: Track[]
   isLiked: boolean
+  isShuffle: boolean
+  isRepeat: boolean
   setTrack: (track: Track) => void
   togglePlay: () => void
   setProgress: (progress: number) => void
@@ -33,6 +36,8 @@ interface PlayerState {
   nextTrack: () => void
   prevTrack: () => void
   setQueue: (queue: Track[]) => void
+  toggleShuffle: () => void
+  toggleRepeat: () => void
 }
 
 export const SAMPLE_TRACKS: Track[] = [
@@ -111,6 +116,62 @@ export function isTrackLiked(trackId: string): boolean {
   return liked.some(t => t.id === trackId)
 }
 
+export interface AlbumItem {
+  id: string
+  title: string
+  subtitle: string
+  image?: string
+  href: string
+  type: string
+}
+
+export function getSavedAlbums(): AlbumItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_saved_albums')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
+
+export function isAlbumSaved(albumId: string): boolean {
+  if (typeof window === 'undefined') return false
+  const albums = getSavedAlbums()
+  return albums.some(a => String(a.id) === String(albumId))
+}
+
+export function toggleSaveAlbum(album: { id: string; title: string; subtitle: string; image?: string; href?: string }): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const albums = getSavedAlbums()
+    const albumIdStr = String(album.id)
+    const index = albums.findIndex(a => String(a.id) === albumIdStr)
+    let isSavedNow = false
+    
+    if (index > -1) {
+      albums.splice(index, 1)
+    } else {
+      albums.push({
+        id: albumIdStr,
+        title: album.title,
+        subtitle: album.subtitle,
+        image: album.image,
+        href: album.href || `/album/${albumIdStr}`,
+        type: 'album'
+      })
+      isSavedNow = true
+    }
+    
+    localStorage.setItem('vw_saved_albums', JSON.stringify(albums))
+    // Trigger global event for components to sync instantly
+    window.dispatchEvent(new Event('vw_albums_updated'))
+    return isSavedNow
+  } catch (e) {
+    return false
+  }
+}
+
 export const usePlayerStore = create<PlayerState>((set, get) => {
   const initialTrack = SAMPLE_TRACKS[0]
   const initialLiked = initialTrack ? isTrackLiked(initialTrack.id) : false
@@ -124,10 +185,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     isFullPlayer: false,
     queue: SAMPLE_TRACKS,
     isLiked: initialLiked,
+    isShuffle: false,
+    isRepeat: false,
 
-    setTrack: (track) => set({ 
-      currentTrack: track, 
-      isPlaying: true, 
+    setTrack: (track) => set({
+      currentTrack: track,
+      isPlaying: true,
       progress: 0,
       isLiked: isTrackLiked(track.id)
     }),
@@ -143,20 +206,42 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       set({ isLiked: isLikedNow })
     },
     setQueue: (queue) => set({ queue }),
+    toggleShuffle: () => set((s) => ({ isShuffle: !s.isShuffle })),
+    toggleRepeat: () => set((s) => ({ isRepeat: !s.isRepeat })),
 
     nextTrack: () => {
-      const { queue, currentTrack } = get()
-      if (!currentTrack) return
-      const idx = queue.findIndex((t) => t.id === currentTrack.id)
-      const next = queue[(idx + 1) % queue.length]
+      const { queue, currentTrack, isShuffle } = get()
+      if (!currentTrack || queue.length === 0) return
+      let next: Track
+      if (isShuffle) {
+        const remaining = queue.filter(t => t.id !== currentTrack.id)
+        if (remaining.length > 0) {
+          next = remaining[Math.floor(Math.random() * remaining.length)]
+        } else {
+          next = currentTrack
+        }
+      } else {
+        const idx = queue.findIndex((t) => t.id === currentTrack.id)
+        next = queue[(idx + 1) % queue.length]
+      }
       set({ currentTrack: next, isPlaying: true, progress: 0, isLiked: isTrackLiked(next.id) })
     },
 
     prevTrack: () => {
-      const { queue, currentTrack } = get()
-      if (!currentTrack) return
-      const idx = queue.findIndex((t) => t.id === currentTrack.id)
-      const prev = queue[(idx - 1 + queue.length) % queue.length]
+      const { queue, currentTrack, isShuffle } = get()
+      if (!currentTrack || queue.length === 0) return
+      let prev: Track
+      if (isShuffle) {
+        const remaining = queue.filter(t => t.id !== currentTrack.id)
+        if (remaining.length > 0) {
+          prev = remaining[Math.floor(Math.random() * remaining.length)]
+        } else {
+          prev = currentTrack
+        }
+      } else {
+        const idx = queue.findIndex((t) => t.id === currentTrack.id)
+        prev = queue[(idx - 1 + queue.length) % queue.length]
+      }
       set({ currentTrack: prev, isPlaying: true, progress: 0, isLiked: isTrackLiked(prev.id) })
     },
   }

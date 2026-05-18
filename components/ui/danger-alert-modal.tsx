@@ -67,7 +67,7 @@ export function DangerAlertModal({ isOpen, onClose, onConfirm, type }: DangerAle
             {t.dangerAction}
           </h2>
 
-          <h3 className="text-lg font-semibold text-white/90 mb-3 leading-snug">
+          <h3 className="text-lg font-display font-semibold text-white/90 mb-3 leading-snug">
             {title}
           </h3>
 

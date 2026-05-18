@@ -30,7 +30,7 @@ export default function ArtistPage({
 }) {
   const name = slugToName(slug)
   const { t } = useTranslation()
-  const { setTrack } = usePlayerStore()
+  const { setTrack, isShuffle } = usePlayerStore()
   const [tracks, setTracks] = useState<Track[]>(initialTracks)
   const [albums, setAlbums] = useState<any[]>(initialAlbums)
   const [artistImage, setArtistImage] = useState<string>(initialImage)
@@ -50,10 +50,15 @@ export default function ArtistPage({
 
   function handleShufflePlay() {
     if (tracks.length === 0) return
-    const shuffled = [...tracks].sort(() => Math.random() - 0.5)
-    setTrack(shuffled[0])
-    usePlayerStore.getState().setQueue(shuffled)
-    triggerToast(`Đang phát ngẫu nhiên các bài hát của ${name}`)
+    if (isShuffle) {
+      usePlayerStore.setState({ isShuffle: false })
+    } else {
+      usePlayerStore.setState({ isShuffle: true })
+      const shuffled = [...tracks].sort(() => Math.random() - 0.5)
+      setTrack(shuffled[0])
+      usePlayerStore.getState().setQueue(shuffled)
+      triggerToast(`Đang phát ngẫu nhiên các bài hát của ${name}`)
+    }
   }
 
   function handleShare() {
@@ -151,7 +156,7 @@ export default function ArtistPage({
                </div>
             </div>
 
-            <h1 className="font-righteous text-5xl md:text-8xl lg:text-9xl mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-purple-400 drop-shadow-sm leading-[0.85]">
+            <h1 className="font-display text-5xl md:text-8xl lg:text-9xl mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-purple-400 drop-shadow-sm leading-[0.85]">
               {name}
             </h1>
 
@@ -167,10 +172,18 @@ export default function ArtistPage({
               
               <button
                 onClick={handleShufflePlay}
-                className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 border-white/20 text-white hover:bg-white/5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                className={cn(
+                  "relative flex items-center justify-center w-[52px] h-[52px] rounded-full border-2 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-sm shrink-0",
+                  isShuffle
+                    ? "border-[#9B4DE0]/40 text-[#9B4DE0] bg-[#9B4DE0]/10 shadow-[0_0_12px_rgba(155,77,224,0.15)] scale-[0.98]"
+                    : "border-white/20 text-white hover:bg-white/5 hover:scale-[1.02]"
+                )}
+                aria-label="Phát ngẫu nhiên"
               >
                 <Shuffle size={18} />
-                Phát ngẫu nhiên
+                {isShuffle && (
+                  <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+                )}
               </button>
 
               <button

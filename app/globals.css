@@ -96,9 +96,6 @@
     font-family: var(--font-montserrat), system-ui, sans-serif;
   }
 
-  .font-righteous {
-    font-family: var(--font-righteous), system-ui, sans-serif;
-  }
 
   .text-primary-text {
     color: rgba(255, 255, 255, 1);
@@ -255,5 +252,121 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* ==========================================================================
+     VIBEWAVE SYNCHRONIZED COMPONENT CLASSES
+     ========================================================================== */
+
+  /* 1. Bài hát (Song Card) */
+  .vw-song-card {
+    position: relative;
+    border-radius: 1rem !important; /* 16px */
+    cursor: pointer;
+    background: linear-gradient(145deg, rgba(35, 27, 47, 0.7) 0%, rgba(22, 17, 30, 0.75) 100%) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
+  }
+
+  .vw-song-card:hover {
+    transform: translateY(-2px) !important;
+    background: linear-gradient(145deg, rgba(155, 77, 224, 0.12) 0%, rgba(22, 17, 30, 0.85) 100%) !important;
+    border-color: rgba(155, 77, 224, 0.3) !important;
+    box-shadow: 0 16px 40px -8px rgba(155, 77, 224, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* 2. Album (Album Card) */
+  .vw-album-card {
+    position: relative;
+    border-radius: 1rem !important; /* 16px */
+    cursor: pointer;
+    background-color: var(--vw-surface) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+  }
+
+  .vw-album-card:hover {
+    transform: scale(1.03) !important;
+    border-color: rgba(155, 77, 224, 0.3) !important;
+    box-shadow: 0 0 20px rgba(155, 77, 224, 0.15) !important;
+  }
+
+  /* 3. Xu hướng hiện nay (Trending Card) */
+  .vw-trending-card {
+    position: relative;
+    border-radius: 1.5rem !important; /* 24px */
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease !important;
+  }
+
+  .vw-trending-card:hover {
+    transform: translateY(-6px) !important;
+  }
+
+  /* 4. Bảng danh sách nhạc (Music Playlist Table / Track List Container) */
+  .vw-playlist-table {
+    border-radius: 1.5rem !important; /* 24px */
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(35, 27, 47, 0.85) 0%, rgba(22, 17, 30, 0.9) 100%) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  /* 5. Danh sách phát (Playlist Card) */
+  .vw-playlist-card {
+    position: relative;
+    border-radius: 1rem !important; /* 16px */
+    cursor: pointer;
+    background: linear-gradient(145deg, rgba(23, 15, 35, 0.65) 0%, rgba(10, 7, 18, 0.8) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
+  }
+
+  .vw-playlist-card:hover {
+    transform: scale(1.03) !important;
+    border-color: rgba(58, 190, 249, 0.3) !important; /* Cyan-blue glow for playlists */
+    box-shadow: 0 12px 30px rgba(58, 190, 249, 0.15) !important;
+  }
+
+  /* ==========================================================================
+     VIBEWAVE SYNCHRONIZED CARD ARTWORK CLASSES
+     ========================================================================== */
+
+  /* Artwork (Art) wrappers on cards */
+  .vw-song-art {
+    border-radius: 0.75rem !important; /* 12px */
+    overflow: hidden;
+    transition: transform 0.3s ease !important;
+  }
+  .vw-song-card:hover .vw-song-art {
+    transform: scale(1.04) !important;
+  }
+
+  .vw-album-art {
+    border-radius: 0.75rem !important; /* 12px */
+    overflow: hidden;
+    transition: transform 0.3s ease !important;
+  }
+  .vw-album-card:hover .vw-album-art {
+    transform: scale(1.04) !important;
+  }
+
+  .vw-playlist-art {
+    border-radius: 0.75rem !important; /* 12px */
+    overflow: hidden;
+    transition: transform 0.3s ease !important;
+  }
+  .vw-playlist-card:hover .vw-playlist-art {
+    transform: scale(1.04) !important;
   }
 }

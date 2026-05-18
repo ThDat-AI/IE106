@@ -484,7 +484,7 @@ export const translations = {
     topPickToday: 'Lựa chọn hàng đầu hôm nay',
     listenNow: 'Nghe ngay',
     viewPlaylist: 'Xem danh sách',
-    collectionsForYou: 'Tuyển tập dành riêng cho bạn',
+    collectionsForYou: 'Các bài hát dành riêng cho bạn',
     recentlyDiscovered: 'Mới khám phá gần đây',
     topArtists: 'Nghệ sĩ bạn nghe nhiều',
     monthlyStats: 'Thống kê tháng này',

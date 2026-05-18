@@ -233,7 +233,7 @@ export default function ProfileSettingsPage() {
                       </button>
                     </div>
                     <div className="text-center sm:text-left">
-                      <h4 className="text-lg font-bold text-white/90 mb-1">{t.profilePhoto}</h4>
+                      <h4 className="text-lg font-display font-bold text-white/90 mb-1">{t.profilePhoto}</h4>
                       <p className="text-sm text-white/40 font-light mb-4">{t.photoDesc}</p>
                       <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                         <button type="button" className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-all">Upload New</button>
@@ -303,7 +303,7 @@ export default function ProfileSettingsPage() {
                       <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
                         <Trash2 size={16} className="text-red-400" />
                       </div>
-                      <h4 className="text-lg font-bold text-red-400/80">{t.dangerZone}</h4>
+                      <h4 className="text-lg font-display font-bold text-red-400/80">{t.dangerZone}</h4>
                     </div>
 
                     <div className="space-y-4">

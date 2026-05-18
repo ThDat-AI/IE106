@@ -170,10 +170,10 @@ export async function searchTracks(term: string, limit = 20, country = 'VN'): Pr
 
 export async function getTopSongsByRegion(region: string = 'vn', limit = 20): Promise<Track[]> {
   const terms: Record<string, string> = {
-    'VN': 'V-Pop',
-    'GLOBAL': 'Top Hits',
-    'USUK': 'Top US UK',
-    'KPOP': 'K-Pop Hits'
+    'VN': 'Xu hướng hiện nay',
+    'GLOBAL': 'Trending Now',
+    'USUK': 'Trending US UK',
+    'KPOP': 'K-Pop Trending'
   }
 
   const countryCodes: Record<string, string> = {
@@ -183,7 +183,7 @@ export async function getTopSongsByRegion(region: string = 'vn', limit = 20): Pr
     'kpop': 'KR'
   }
 
-  return searchMusic(terms[region.toUpperCase()] || 'Top Hits', limit, countryCodes[region.toLowerCase()] || 'US')
+  return searchMusic(terms[region.toUpperCase()] || 'Trending Now', limit, countryCodes[region.toLowerCase()] || 'US')
 }
 
 export async function getArtistTracks(artistName: string, limit = 10): Promise<Track[]> {

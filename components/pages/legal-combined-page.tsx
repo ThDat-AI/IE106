@@ -138,7 +138,7 @@ function LegalContent() {
         {/* Legal content */}
         <div ref={contentRef} className="lg:col-span-3 space-y-12 order-1 lg:order-2">
           <GlassPanel className="p-8 lg:p-12">
-            <h2 className="text-2xl font-bold mb-8" style={{ color: 'rgba(255,255,255,0.95)' }}>
+            <h2 className="text-2xl font-display font-bold mb-8" style={{ color: 'rgba(255,255,255,0.95)' }}>
               {activeTabData.title}
             </h2>
             

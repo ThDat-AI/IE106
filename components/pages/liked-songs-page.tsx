@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Clock, Heart, Shuffle, Play, MoreHorizontal, Music2 } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
-import { type Track, getLikedTracks, toggleLikeTrack, usePlayerStore } from '@/lib/player-store'
+import { type Track, getLikedTracks, toggleLikeTrack, usePlayerStore, isTrackLiked } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import {
   PageHero,
@@ -11,24 +11,41 @@ import {
   GlassPanel,
   AmbientOrbs,
 } from '@/components/ui/vibewave'
+import { cn } from '@/lib/utils'
 
 export default function LikedSongsPage({ 
   initialTracks = [] 
-}: { 
-  initialTracks?: Track[] 
-}) {
-  const { t } = useTranslation()
-  const { setTrack } = usePlayerStore()
+  }: { 
+    initialTracks?: Track[] 
+  }) {
+  const { t, language } = useTranslation()
+  const { setTrack, setQueue, isShuffle } = usePlayerStore()
   const [searchQ, setSearchQ] = useState('')
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [tracks, setTracks] = useState<Track[]>(initialTracks)
+  const [isShuffled, setIsShuffled] = useState(false)
 
   useEffect(() => {
     // Initial load from localStorage
     setTracks(getLikedTracks())
 
-    const handleLikesUpdated = () => {
-      setTracks(getLikedTracks())
+    const handleLikesUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: string; isLiked: boolean }>
+      if (customEvent.detail) {
+        const { trackId, isLiked } = customEvent.detail
+        if (isLiked) {
+          // Add the newly liked song to the list
+          const currentLiked = getLikedTracks()
+          const found = currentLiked.find(t => t.id === trackId)
+          if (found) {
+            setTracks(prev => {
+              if (prev.some(t => t.id === trackId)) return prev
+              return [found, ...prev]
+            })
+          }
+        }
+        // If isLiked is false, we DO NOT remove it immediately to prevent jarring UI shifts
+        // (as per the user's request). The TrackRow itself will handle visual heart toggle.
+      }
     }
 
     window.addEventListener('vw_likes_updated', handleLikesUpdated)
@@ -59,42 +76,55 @@ export default function LikedSongsPage({
           eyebrowLabel={t.likedSongs}
           title={t.likedSongs}
           subtitle={`${tracks.length} ${t.songsSaved}`}
-          gradientClass="from-white via-pink-100 to-rose-400"
+          gradientClass="from-white to-white"
           action={
             /* Controls row */
             <div className="flex items-center gap-3">
               {/* Shuffle button */}
               <button
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(244,63,94,0.2) 0%, rgba(244,63,94,0.06) 100%)',
-                  border: '1px solid rgba(244,63,94,0.35)',
-                  color: '#FB7185',
-                  boxShadow: '0 0 16px rgba(244,63,94,0.15)',
-                }}
+                className={cn(
+                  "relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 cursor-pointer shadow-sm shrink-0",
+                  isShuffle 
+                    ? "text-[#9B4DE0] bg-[#9B4DE0]/10 border border-[#9B4DE0]/30 shadow-[0_0_12px_rgba(155,77,224,0.15)] scale-[0.98]" 
+                    : "text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]"
+                )}
                 onClick={() => {
-                  const random = filtered[Math.floor(Math.random() * filtered.length)]
-                  if (random) setTrack(random)
+                  const activeFiltered = filtered.filter(t => isTrackLiked(t.id))
+                  if (activeFiltered.length > 0) {
+                    if (isShuffle) {
+                      usePlayerStore.setState({ isShuffle: false })
+                    } else {
+                      usePlayerStore.setState({ isShuffle: true })
+                      const shuffled = [...activeFiltered].sort(() => Math.random() - 0.5)
+                      setQueue(shuffled)
+                      setTrack(shuffled[0])
+                    }
+                  }
                 }}
                 aria-label="Shuffle liked songs"
               >
-                <Shuffle size={14} />
-                Shuffle
+                <Shuffle size={18} />
+                {isShuffle && (
+                  <span className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+                )}
               </button>
 
               {/* Play all button */}
               <button
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #9B4DE0 0%, #6B21A8 100%)',
-                  color: 'rgba(255,255,255,0.95)',
-                  boxShadow: '0 0 20px rgba(155,77,224,0.4)',
+                className="group relative flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-white overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/20 cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7C3AED 100%)' }}
+                onClick={() => {
+                  const activeFiltered = filtered.filter(t => isTrackLiked(t.id))
+                  if (activeFiltered.length > 0) {
+                    setQueue(activeFiltered)
+                    setTrack(activeFiltered[0])
+                  }
                 }}
-                onClick={() => { if (filtered[0]) setTrack(filtered[0]) }}
                 aria-label="Play all liked songs"
               >
-                <Play size={14} fill="white" className="ml-0.5" />
-                Play All
+                <Play size={20} fill="white" className="text-white" />
+                <span>{language === 'vi' ? 'Phát tất cả' : 'Play All'}</span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </button>
             </div>
           }
@@ -162,148 +192,43 @@ export default function LikedSongsPage({
           {searchQ ? `Kết quả tìm kiếm` : 'Tất cả bài hát'}
         </h2>
 
-        <GlassPanel variant="dark">
+        <GlassPanel variant="dark" className="vw-playlist-table">
           {/* Table header */}
           <div
-            className="grid gap-3 px-5 py-3"
-            style={{
-              gridTemplateColumns: '3rem 1fr 8rem 5rem',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}
+            className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>#</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.titleLabel}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest hidden md:block" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.albumLabel}</span>
-            <div className="flex items-center justify-end">
-              <Clock size={12} style={{ color: 'rgba(255,255,255,0.2)' }} />
-            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+            <span className="hidden md:block text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-right pr-2" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
           </div>
 
           {/* Track rows */}
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}
-              >
-                <Music2 size={28} style={{ color: 'rgba(244,63,94,0.6)' }} />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                  {searchQ ? `${t.noResults} "${searchQ}"` : 'Chưa có bài hát nào được thích'}
-                </p>
-                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                  {searchQ ? 'Thử từ khóa khác' : 'Khám phá và thêm bài hát yêu thích của bạn'}
-                </p>
-              </div>
-            </div>
-          ) : (
-            filtered.map((track, index) => (
-              <div
-                key={track.id}
-                className="grid gap-3 px-5 py-3.5 transition-all duration-200 cursor-pointer group/row"
-                style={{
-                  gridTemplateColumns: '3rem 1fr 8rem 5rem',
-                  borderBottom: index < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  backgroundColor: hoveredRow === track.id ? 'rgba(244,63,94,0.06)' : 'transparent',
-                }}
-                onMouseEnter={() => setHoveredRow(track.id)}
-                onMouseLeave={() => setHoveredRow(null)}
-                onClick={() => setTrack(track)}
-              >
-                {/* Rank / Play toggle */}
-                <div className="flex items-center justify-center">
-                  {hoveredRow === track.id ? (
-                    <button
-                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
-                      style={{
-                        background: 'linear-gradient(135deg, #F43F5E, #9F1239)',
-                        boxShadow: '0 0 14px rgba(244,63,94,0.5)',
-                      }}
-                      aria-label={`Play ${track.title}`}
-                    >
-                      <Play size={12} fill="white" className="text-white ml-0.5" />
-                    </button>
-                  ) : (
-                    <span
-                      className="text-sm font-semibold tabular-nums"
-                      style={{ color: 'rgba(255,255,255,0.3)' }}
-                    >
-                      {index + 1}
-                    </span>
-                  )}
+          <div className="py-2">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}
+                >
+                  <Music2 size={28} style={{ color: 'rgba(244,63,94,0.6)' }} />
                 </div>
-
-                {/* Cover + title + artist */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative shrink-0">
-                    {track.albumArt ? (
-                      <img
-                        src={track.albumArt}
-                        alt={track.title}
-                        className="w-10 h-10 rounded-xl object-cover transition-transform duration-300 group-hover/row:scale-105"
-                        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
-                      />
-                    ) : (
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold"
-                        style={{ background: 'linear-gradient(135deg, #F43F5E33 0%, #16111E 100%)', color: '#FB7185' }}
-                      >
-                        {track.title.charAt(0)}
-                      </div>
-                    )}
-                    {/* Heart indicator on hover (Interactive) */}
-                    <button
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 cursor-pointer z-10"
-                      style={{
-                        backgroundColor: '#F43F5E',
-                        opacity: hoveredRow === track.id ? 1 : 0.8,
-                        boxShadow: '0 0 8px rgba(244,63,94,0.6)',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleLikeTrack(track)
-                      }}
-                      title="Bỏ thích"
-                    >
-                      <Heart size={9} fill="white" className="text-white" />
-                    </button>
-                  </div>
-                  <div className="min-w-0">
-                    <p
-                      className="text-sm font-semibold truncate transition-colors group-hover/row:text-white"
-                      style={{ color: 'rgba(255,255,255,0.9)' }}
-                    >
-                      {track.title}
-                    </p>
-                    <p className="text-xs truncate mt-0.5 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      {track.artist}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Album */}
-                <p className="text-xs text-right truncate self-center hidden md:block" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  {track.album}
-                </p>
-
-                {/* Duration + more */}
-                <div className="flex items-center justify-end gap-3">
-                  <button
-                    className="transition-opacity duration-200"
-                    style={{ color: 'rgba(255,255,255,0.35)', opacity: hoveredRow === track.id ? 1 : 0 }}
-                    aria-label="More options"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal size={14} />
-                  </button>
-                  <span className="text-xs tabular-nums shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    {formatTime(track.duration)}
-                  </span>
+                <div className="text-center">
+                  <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    {searchQ ? `${t.noResults} "${searchQ}"` : 'Chưa có bài hát nào được thích'}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    {searchQ ? 'Thử từ khóa khác' : 'Khám phá và thêm bài hát yêu thích của bạn'}
+                  </p>
                 </div>
               </div>
-            ))
-          )}
+            ) : (
+              filtered.map((track, index) => (
+                <TrackRow key={track.id} index={index + 1} track={track} showAlbum variant="rose" />
+              ))
+            )}
+          </div>
         </GlassPanel>
       </section>
     </div>

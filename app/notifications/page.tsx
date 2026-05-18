@@ -110,7 +110,7 @@ export default function NotificationsPage() {
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-medium uppercase tracking-widest">{t.backToHome || 'Back to Home'}</span>
             </Link>
-            <h1 className="font-righteous text-5xl md:text-6xl tracking-tighter text-white mb-2">
+            <h1 className="font-display text-5xl md:text-6xl tracking-tighter text-white mb-2">
               {t.notifications || 'Notifications'}
             </h1>
             <p className="text-white/40 text-lg max-w-xl">

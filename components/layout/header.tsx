@@ -211,7 +211,7 @@ export default function Header() {
             }}
           >
             <div className="p-4 border-b border-white/5 flex items-center justify-between">
-              <h3 className="font-righteous text-sm tracking-widest text-white/90 uppercase">
+              <h3 className="font-display text-sm tracking-widest text-white/90 uppercase">
                 {t.notifications || 'Notifications'}
               </h3>
               <button

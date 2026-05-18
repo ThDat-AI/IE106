@@ -143,22 +143,21 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
   /* No results */
   if (!isLoading && query && results.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-center">
-        <div className="relative mb-10">
-          <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
-          <div
-            className="relative w-28 h-28 rounded-[2rem] flex items-center justify-center border border-white/10"
-            style={{ background: 'linear-gradient(135deg, rgba(35,27,47,0.8) 0%, rgba(22,17,30,0.9) 100%)' }}
-          >
-            <Search size={44} className="text-purple-400 opacity-80" />
-          </div>
-          <X size={24} className="absolute -bottom-2 -right-2 text-red-500" />
+      <div className="py-20 text-center flex flex-col items-center justify-center p-8 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] relative overflow-hidden group/empty transition-all duration-500 hover:border-purple-500/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),0_0_30px_rgba(155,77,224,0.03)] max-w-2xl mx-auto mt-6">
+        {/* Backing Ambient Purple Light */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-500/[0.04] rounded-full blur-[80px] pointer-events-none" />
+        
+        {/* Floating Glowing Icon Bubble */}
+        <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] backdrop-blur-md flex items-center justify-center mb-4 text-purple-400 border border-white/10 shadow-lg shadow-purple-500/5 group-hover/empty:scale-110 group-hover/empty:border-purple-500/30 group-hover/empty:shadow-purple-500/10 group-hover/empty:text-purple-300 transition-all duration-500">
+          <Search size={24} className="animate-pulse" />
         </div>
-        <h2 className="text-3xl font-display font-bold mb-4 text-white/95">
-          {t.noResults || "Không tìm thấy kết quả"} &ldquo;{query}&rdquo;
-        </h2>
-        <p className="text-white/50 max-w-md mx-auto leading-relaxed">
-          {t.noResultsDesc || "Thử điều chỉnh cụm từ tìm kiếm của bạn hoặc duyệt qua các danh mục khám phá của chúng tôi."}
+        
+        <h3 className="relative z-10 text-base font-semibold text-white tracking-tight">
+          {t.noResults || "Không tìm thấy kết quả"}
+        </h3>
+        
+        <p className="relative z-10 text-xs text-white/50 mt-2 max-w-md leading-relaxed">
+          Không có kết quả nào phù hợp với từ khóa &ldquo;<span className="text-purple-350 font-semibold">{query}</span>&rdquo;. {t.noResultsDesc || "Hãy thử điều chỉnh cụm từ tìm kiếm của bạn hoặc duyệt qua các danh mục khám phá khác."}
         </p>
       </div>
     )

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play } from 'lucide-react'
-import { usePlayerStore, type Track } from '@/lib/player-store'
+import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User } from 'lucide-react'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
 import { getTopSongsByRegion, searchMusic } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import {
@@ -12,8 +12,13 @@ import {
   AmbientOrbs,
   RANK_COLORS,
   RankBadge,
-  PodiumCard,
 } from '@/components/ui/vibewave'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 
 type Region = 'global' | 'usuk' | 'kpop' | 'vn'
 
@@ -52,13 +57,225 @@ function SkeletonRow({ cols }: { cols: number }) {
   )
 }
 
+interface ChartRowProps {
+  item: Track
+  index: number
+  hoveredRow: string | null
+  setHoveredRow: (id: string | null) => void
+  onPlay: (track: Track) => void
+}
+
+function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowProps) {
+  const [isLiked, setIsLiked] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const rc = RANK_COLORS[index] ?? null
+  const trend = index % 3 === 0 ? 'up' : index % 5 === 0 ? 'down' : 'same'
+
+  useEffect(() => {
+    setIsLiked(isTrackLiked(item.id))
+
+    const handleLikesUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: string; isLiked: boolean }>
+      if (customEvent.detail && customEvent.detail.trackId === item.id) {
+        setIsLiked(customEvent.detail.isLiked)
+      }
+    }
+
+    window.addEventListener('vw_likes_updated', handleLikesUpdated)
+    return () => window.removeEventListener('vw_likes_updated', handleLikesUpdated)
+  }, [item.id])
+
+  function handleLikeClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const newLikedState = toggleLikeTrack(item)
+    setIsLiked(newLikedState)
+
+    const playerStore = usePlayerStore.getState()
+    if (playerStore.currentTrack?.id === item.id) {
+      usePlayerStore.setState({ isLiked: newLikedState })
+    }
+  }
+
+  function handleGoToArtist() {
+    if (item.artist) {
+      const slug = item.artist.toLowerCase().replace(/\s+/g, '-')
+      window.location.href = `/artist/${encodeURIComponent(slug)}${item.artistId ? `?id=${item.artistId}` : ''}`
+    }
+  }
+
+  const isHovered = hoveredRow === item.id || isMenuOpen
+
+  return (
+    <div
+      className="grid gap-3 px-5 py-3.5 transition-all duration-200 cursor-pointer group/row animate-in fade-in duration-300"
+      style={{
+        gridTemplateColumns: '3.5rem 0.75rem 1fr 6rem 4.5rem 5.5rem',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        backgroundColor: hoveredRow === item.id ? 'rgba(155,77,224,0.07)' : 'transparent',
+      }}
+      onMouseEnter={() => setHoveredRow(item.id)}
+      onMouseLeave={() => setHoveredRow(null)}
+      onClick={() => onPlay(item)}
+    >
+      {/* Rank */}
+      <div className="flex items-center justify-center">
+        {hoveredRow === item.id ? (
+          <button
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #9B4DE0, #6B21A8)', boxShadow: '0 0 16px rgba(155,77,224,0.5)' }}
+            aria-label={`Play ${item.title}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              onPlay(item)
+            }}
+          >
+            <Play size={13} fill="white" className="text-white ml-0.5" />
+          </button>
+        ) : (
+          <RankBadge index={index} size="md" />
+        )}
+      </div>
+
+      {/* Trend arrow */}
+      <div className="flex items-center">
+        <TrendIcon change={trend} />
+      </div>
+
+      {/* Cover + title */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="relative shrink-0">
+          <img
+            src={item.albumArt} alt={item.title}
+            className="w-10 h-10 rounded-xl object-cover transition-transform duration-300 group-hover/row:scale-105"
+            style={{ boxShadow: rc ? `0 0 16px ${rc.glow}` : '0 4px 12px rgba(0,0,0,0.4)', border: rc ? `1.5px solid ${rc.border}` : '1px solid rgba(255,255,255,0.08)' }}
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold truncate transition-colors group-hover/row:text-white" style={{ color: 'rgba(255,255,255,0.9)' }}>
+            {item.title}
+          </p>
+          <p className="text-xs truncate mt-0.5 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {item.artist}
+          </p>
+        </div>
+      </div>
+
+      {/* Album */}
+      <p className="text-xs text-right truncate self-center" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.album}</p>
+
+      {/* Trend text */}
+      <p
+        className="text-xs text-right self-center font-semibold"
+        style={{ color: trend === 'up' ? '#4ade80' : trend === 'down' ? '#f87171' : 'rgba(255,255,255,0.2)' }}
+      >
+        {trend === 'up' ? '↑ 1' : trend === 'down' ? '↓ 2' : '—'}
+      </p>
+
+      {/* Actions (Heart & 3-dots) */}
+      <div className="flex items-center justify-end gap-3 self-center relative z-10" onClick={(e) => e.stopPropagation()}>
+        {/* Heart icon */}
+        <button
+          onClick={handleLikeClick}
+          aria-label={isLiked ? 'Unlike' : 'Like'}
+          aria-pressed={isLiked}
+          className="relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-all duration-200 cursor-pointer hover:bg-white/5 rounded-full"
+          style={{
+            color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.4)',
+            opacity: isHovered || isLiked ? 1 : 0,
+          }}
+        >
+          <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
+          {isLiked && (
+            <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
+          )}
+        </button>
+
+        {/* 3-dots dropdown */}
+        <DropdownMenu onOpenChange={setIsMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label="More options"
+              className="flex items-center justify-center p-1.5 transition-all duration-200 cursor-pointer text-white/40 hover:text-white rounded-full hover:bg-white/5"
+              style={{ opacity: isHovered ? 1 : 0 }}
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            side="bottom"
+            className="w-52 rounded-2xl overflow-hidden border-0 p-0 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+            style={{
+              background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            <div className="py-2 px-2 flex flex-col gap-1 text-left">
+              {/* 1. Phát tiếp theo */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <SkipForward size={13} className="text-purple-400" />
+                <span>Phát tiếp theo</span>
+              </DropdownMenuItem>
+
+              {/* 2. Thêm vào hàng chờ */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <ListPlus size={13} className="text-purple-400" />
+                <span>Thêm vào hàng chờ</span>
+              </DropdownMenuItem>
+
+              {/* 3. Thêm vào Playlist */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <Plus size={13} className="text-purple-400" />
+                <span>Thêm vào Playlist</span>
+              </DropdownMenuItem>
+
+              {/* Divider */}
+              <div className="h-px bg-white/5 my-1 mx-2" />
+
+              {/* 4. Đi đến Nghệ sĩ */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleGoToArtist()
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <User size={13} className="text-purple-400" />
+                <span>Đi đến Nghệ sĩ</span>
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+}
+
 export default function ChartsPage() {
   const { t } = useTranslation()
   const [region, setRegion] = useState<Region>('global')
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [topTracks, setTopTracks] = useState<Track[]>([])
-  const [viralTracks, setViralTracks] = useState<Track[]>([])
-  const [newReleases, setNewReleases] = useState<Track[]>([])
   const [loading, setLoading] = useState(true)
   const { setTrack } = usePlayerStore()
 
@@ -73,16 +290,8 @@ export default function ChartsPage() {
     async function load() {
       setLoading(true)
       try {
-        const top = await getTopSongsByRegion(region, 20)
+        const top = await getTopSongsByRegion(region, 100)
         setTopTracks(top)
-        const viralTerm = region === 'vn' ? 'TikTok Việt' : region === 'kpop' ? 'K-Pop Viral' : region === 'usuk' ? 'Viral Hits US UK' : 'Viral Hits'
-        const viralCountry = region === 'vn' ? 'VN' : region === 'kpop' ? 'KR' : 'US'
-        const [viral, releases] = await Promise.all([
-          searchMusic(viralTerm, 5, viralCountry),
-          searchMusic(region === 'vn' ? 'Mới phát hành' : 'New Music', 6, region === 'vn' ? 'VN' : 'US'),
-        ])
-        setViralTracks(viral)
-        setNewReleases(releases)
       } catch (e) {
         console.error(e)
       } finally {
@@ -105,7 +314,7 @@ export default function ChartsPage() {
           eyebrowLabel={t.charts}
           title="Bảng Xếp Hạng"
           subtitle={t.chartsSub}
-          gradientClass="from-white via-purple-100 to-purple-400"
+          gradientClass="from-white to-white"
           action={
             /* Region selector */
             <div
@@ -137,217 +346,52 @@ export default function ChartsPage() {
         />
       </section>
 
-      {/* ── Main grid: Top 20 (left 2/3) + Sidebar (right 1/3) ── */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Main content: Top Songs Table (Full Width) ── */}
+      <section className="flex flex-col gap-4">
+        {/* Section label */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #3d1f5c 100%)', boxShadow: '0 0 16px rgba(155,77,224,0.4)' }}
+          >
+            <Trophy size={18} className="text-white" />
+          </div>
+          <div>
+            <h2 className="font-display font-semibold" style={{ fontSize: 20, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
+              {t.topSongs} — {REGIONS.find(r => r.id === region)?.label}
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.updatedDate}</p>
+          </div>
+        </div>
 
-        {/* ─── Top 20 Table ─── */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          {/* Section label */}
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #3d1f5c 100%)', boxShadow: '0 0 16px rgba(155,77,224,0.4)' }}
-            >
-              <Trophy size={18} className="text-white" />
-            </div>
-            <div>
-              <h2 className="font-display font-semibold" style={{ fontSize: 20, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
-                {t.topSongs} — {REGIONS.find(r => r.id === region)?.label}
-              </h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.updatedDate}</p>
-            </div>
+        {/* Table */}
+        <GlassPanel variant="dark" className="vw-playlist-table">
+          {/* Table header */}
+          <div
+            className="grid gap-3 px-5 py-3"
+            style={{ gridTemplateColumns: '3.5rem 0.75rem 1fr 6rem 4.5rem 5.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>#</span>
+            <span />
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.titleLabel}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.albumLabel}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.trendLabel}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}></span>
           </div>
 
-          {/* Table */}
-          <GlassPanel variant="dark">
-            {/* Table header */}
-            <div
-              className="grid gap-3 px-5 py-3"
-              style={{ gridTemplateColumns: '3.5rem 0.75rem 1fr 6rem 4.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>#</span>
-              <span />
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.titleLabel}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.albumLabel}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.trendLabel}</span>
-            </div>
-
-            {loading ? (
-              <SkeletonRow cols={10} />
-            ) : topTracks.map((item, index) => {
-              const rc = RANK_COLORS[index] ?? null
-              const trend = index % 3 === 0 ? 'up' : index % 5 === 0 ? 'down' : 'same'
-
-              return (
-                <div
-                  key={item.id}
-                  className="grid gap-3 px-5 py-3.5 transition-all duration-200 cursor-pointer group/row"
-                  style={{
-                    gridTemplateColumns: '3.5rem 0.75rem 1fr 6rem 4.5rem',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                    backgroundColor: hoveredRow === item.id ? 'rgba(155,77,224,0.07)' : 'transparent',
-                  }}
-                  onMouseEnter={() => setHoveredRow(item.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                  onClick={() => setTrack(item)}
-                >
-                  {/* Rank */}
-                  <div className="flex items-center justify-center">
-                    {hoveredRow === item.id ? (
-                      <button
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
-                        style={{ background: 'linear-gradient(135deg, #9B4DE0, #6B21A8)', boxShadow: '0 0 16px rgba(155,77,224,0.5)' }}
-                        aria-label={`Play ${item.title}`}
-                      >
-                        <Play size={13} fill="white" className="text-white ml-0.5" />
-                      </button>
-                    ) : (
-                      <RankBadge index={index} size="md" />
-                    )}
-                  </div>
-
-                  {/* Trend arrow */}
-                  <div className="flex items-center">
-                    <TrendIcon change={trend} />
-                  </div>
-
-                  {/* Cover + title */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative shrink-0">
-                      <img
-                        src={item.albumArt} alt={item.title}
-                        className="w-10 h-10 rounded-xl object-cover transition-transform duration-300 group-hover/row:scale-105"
-                        style={{ boxShadow: rc ? `0 0 16px ${rc.glow}` : '0 4px 12px rgba(0,0,0,0.4)', border: rc ? `1.5px solid ${rc.border}` : '1px solid rgba(255,255,255,0.08)' }}
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate transition-colors group-hover/row:text-white" style={{ color: 'rgba(255,255,255,0.9)' }}>
-                        {item.title}
-                      </p>
-                      <p className="text-xs truncate mt-0.5 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        {item.artist}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Album */}
-                  <p className="text-xs text-right truncate self-center" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.album}</p>
-
-                  {/* Trend text */}
-                  <p
-                    className="text-xs text-right self-center font-semibold"
-                    style={{ color: trend === 'up' ? '#4ade80' : trend === 'down' ? '#f87171' : 'rgba(255,255,255,0.2)' }}
-                  >
-                    {trend === 'up' ? '↑ 1' : trend === 'down' ? '↓ 2' : '—'}
-                  </p>
-                </div>
-              )
-            })}
-          </GlassPanel>
-        </div>
-
-        {/* ─── Sidebar: Viral + New Releases ─── */}
-        <div className="flex flex-col gap-6">
-
-          {/* Viral Hits */}
-          <GlassPanel variant="dark">
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #F73859 0%, #7f1d1d 100%)', boxShadow: '0 0 12px rgba(247,56,89,0.4)' }}>
-                <Flame size={14} className="text-white" />
-              </div>
-              <h2 className="font-display font-semibold" style={{ fontSize: 16, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.2px' }}>
-                {t.viralHits}
-              </h2>
-            </div>
-
-            {loading ? (
-              <SkeletonRow cols={5} />
-            ) : viralTracks.map((item, i) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 px-5 py-3.5 transition-all duration-200 cursor-pointer group/viral hover:bg-white/[0.03]"
-                style={{ borderBottom: i < viralTracks.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
-                onClick={() => setTrack(item)}
-              >
-                <RankBadge index={i} size="sm" />
-                <TrendIcon change={i % 2 === 0 ? 'up' : 'same'} />
-                <img src={item.albumArt} alt={item.title}
-                  className="w-10 h-10 rounded-xl object-cover shrink-0 transition-transform duration-300 group-hover/viral:scale-105"
-                  style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{item.title}</p>
-                  <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.artist}</p>
-                </div>
-                <ChevronRight size={14} className="shrink-0 opacity-0 group-hover/viral:opacity-100 transition-opacity duration-200" style={{ color: 'rgba(255,255,255,0.3)' }} />
-              </div>
-            ))}
-          </GlassPanel>
-
-          {/* New Releases */}
-          <GlassPanel variant="dark">
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #05D69E 0%, #064e3b 100%)', boxShadow: '0 0 12px rgba(5,214,158,0.4)' }}>
-                <Sparkles size={14} className="text-white" />
-              </div>
-              <h2 className="font-display font-semibold" style={{ fontSize: 16, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.2px' }}>
-                {t.newReleasesTitle}
-              </h2>
-            </div>
-
-            <div className="p-4 space-y-2">
-              {loading ? (
-                Array(4).fill(0).map((_, i) => (
-                  <div key={i} className="h-16 rounded-2xl bg-white/[0.04] animate-pulse" />
-                ))
-              ) : newReleases.map((track, i) => (
-                <div
-                  key={track.id}
-                  className="group/new flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 cursor-pointer hover:-translate-y-0.5"
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                  }}
-                  onClick={() => setTrack(track)}
-                >
-                  <img src={track.albumArt} alt={track.title}
-                    className="w-11 h-11 rounded-xl object-cover shrink-0 transition-transform duration-300 group-hover/new:scale-105"
-                    style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{track.title}</p>
-                    <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{track.artist}</p>
-                  </div>
-                  <span
-                    className="text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wide shrink-0"
-                    style={{ backgroundColor: 'rgba(5,214,158,0.15)', color: '#05D69E', border: '1px solid rgba(5,214,158,0.25)' }}
-                  >
-                    New
-                  </span>
-                </div>
-              ))}
-            </div>
-          </GlassPanel>
-        </div>
-      </section>
-
-      {/* ── Podium: Top 3 highlight cards ── */}
-      <section>
-        <h2 className="font-display font-bold flex items-center gap-3 mb-6" style={{ fontSize: 26, color: '#ffffff', letterSpacing: '-0.4px' }}>
-          <AccentBar height={7} color="yellow" />
-          Top 3 hôm nay
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {loading
-            ? Array(3).fill(0).map((_, i) => (
-              <div key={i} className="h-80 rounded-3xl bg-white/[0.04] animate-pulse" />
-            ))
-            : topTracks.slice(0, 3).map((track, i) => (
-              <PodiumCard key={track.id} track={track} index={i} />
-            ))}
-        </div>
+          {loading ? (
+            <SkeletonRow cols={10} />
+          ) : topTracks.map((item, index) => (
+            <ChartRow
+              key={item.id}
+              item={item}
+              index={index}
+              hoveredRow={hoveredRow}
+              setHoveredRow={setHoveredRow}
+              onPlay={setTrack}
+            />
+          ))}
+        </GlassPanel>
       </section>
 
     </div>

@@ -1,15 +1,18 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Clock, X, Loader2, Music, Check, Trash2 } from 'lucide-react'
+import { Plus, Search, Clock, X, Loader2, Music, Check, Trash2, RotateCw } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import { type Track } from '@/lib/player-store'
+import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n-store'
 import { useSearchParams } from 'next/navigation'
 import { searchAlbums } from '@/lib/music-api'
+import { useToast } from '@/components/ui/use-toast'
 import {
   PageHero,
   AmbientOrbs,
+  MusicShelf,
 } from '@/components/ui/vibewave'
 import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
 
@@ -31,6 +34,7 @@ export default function LibraryPage({
 }) {
   const { t } = useTranslation()
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('albums')
 
   useEffect(() => {
@@ -71,23 +75,141 @@ export default function LibraryPage({
   const [albums, setAlbums] = useState<LibraryItem[]>([])
 
   useEffect(() => {
-    const storedAlbums = localStorage.getItem('vw_saved_albums')
-    if (storedAlbums) {
-      try {
-        const parsed = JSON.parse(storedAlbums)
-        // Merge initialAlbums and parsed, filter duplicates by id
-        const allAlbums = [...parsed, ...initialAlbums]
-        const uniqueAlbums = allAlbums.filter((album, index, self) =>
-          self.findIndex(a => a.id === album.id) === index
-        )
-        setAlbums(uniqueAlbums)
-      } catch (e) {
+    const loadAlbums = () => {
+      const storedAlbums = localStorage.getItem('vw_saved_albums')
+      if (storedAlbums) {
+        try {
+          const parsed = JSON.parse(storedAlbums)
+          // Merge initialAlbums and parsed, filter duplicates by id
+          const allAlbums = [...parsed, ...initialAlbums]
+          const uniqueAlbums = allAlbums.filter((album, index, self) =>
+            self.findIndex(a => a.id === album.id) === index
+          )
+          setAlbums(uniqueAlbums)
+        } catch (e) {
+          setAlbums(initialAlbums)
+        }
+      } else {
         setAlbums(initialAlbums)
       }
-    } else {
-      setAlbums(initialAlbums)
     }
+
+    loadAlbums()
+
+    window.addEventListener('vw_albums_updated', loadAlbums)
+    return () => window.removeEventListener('vw_albums_updated', loadAlbums)
   }, [initialAlbums])
+
+  // Suggested Albums State
+  const [suggestedAlbums, setSuggestedAlbums] = useState<LibraryItem[]>([])
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+
+  const handleRefreshSuggestions = async (force = false) => {
+    if (activeTab !== 'albums' && !force) return
+    if (suggestedAlbums.length > 0 && !force) return
+
+    setIsLoadingSuggestions(true)
+    try {
+      // Query dynamic albums with standard Vietnamese pop/indie/rap and international keywords
+      const terms = ['Hoang Thuy Linh', 'Den Vau', 'Vu.', 'Son Tung M-TP', 'Wren Evans', 'MCK', 'tlinh', 'Grey D', 'Obito', 'Lo-fi', 'Indie', 'Chill']
+      const randomTerm = terms[Math.floor(Math.random() * terms.length)]
+      const results = await searchAlbums(randomTerm, 12)
+      
+      // Beautiful real fallback albums with high quality artwork
+      const fallbackAlbums = [
+        {
+          id: '1720847926',
+          title: 'Loi Choi (The Album)',
+          subtitle: 'Wren Evans',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/bf/25/a4/bf25a407-7a54-61c0-eb88-06ad048e89f8/cover.jpg/600x600bb.jpg',
+          href: '/album/1720847926',
+          type: 'album'
+        },
+        {
+          id: '1676906206',
+          title: '99%',
+          subtitle: 'MCK',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/5b/7e/15/5b7e15d8-c923-d6c1-a534-7221d6fb8fa8/197187978250.jpg/600x600bb.jpg',
+          href: '/album/1676906206',
+          type: 'album'
+        },
+        {
+          id: '1644781489',
+          title: 'Một Vạn Năm',
+          subtitle: 'Vũ.',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/4a/1b/ec/4a1becf6-281b-5e6a-72ef-7ff53f5df314/196871358988.jpg/600x600bb.jpg',
+          href: '/album/1644781489',
+          type: 'album'
+        },
+        {
+          id: '1483863489',
+          title: 'Hoàng',
+          subtitle: 'Hoàng Thùy Linh',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/42/fa/b9/42fab960-9dc6-bdf8-6c84-a15d789bd072/cover.jpg/600x600bb.jpg',
+          href: '/album/1483863489',
+          type: 'album'
+        },
+        {
+          id: '1504780229',
+          title: 'After Hours',
+          subtitle: 'The Weeknd',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/3d/bf/db/3dbfdb86-444c-35d2-f673-c15c2ec4df37/20UMGIM15525.rgb.jpg/600x600bb.jpg',
+          href: '/album/1504780229',
+          type: 'album'
+        },
+        {
+          id: '1480000000',
+          title: 'Fine Line',
+          subtitle: 'Harry Styles',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/e5/26/1b/e5261bf3-8686-ad99-b1be-e81a0b38a48b/886448107937.jpg/600x600bb.jpg',
+          href: '/album/1480000000',
+          type: 'album'
+        },
+        {
+          id: '1589333333',
+          title: 'Đánh Đổi',
+          subtitle: 'Obito',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/91/ab/b8/91abb847-2cb6-a664-07d0-14e30fcb21db/859777977469_cover.jpg/600x600bb.jpg',
+          href: '/album/1589333333',
+          type: 'album'
+        },
+        {
+          id: '1690000000',
+          title: 'Ái',
+          subtitle: 'tlinh',
+          image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/a5/d2/88/a5d288b8-2a28-6622-4822-7935de98c9f5/197188732684.jpg/600x600bb.jpg',
+          href: '/album/1690000000',
+          type: 'album'
+        }
+      ]
+
+      if (results && results.length >= 4) {
+        const formattedResults = results.map(r => ({
+          id: String(r.id),
+          title: r.title,
+          subtitle: r.artist,
+          image: r.albumArt,
+          href: `/album/${r.id}`,
+          type: 'album'
+        }))
+        const combined = [...formattedResults, ...fallbackAlbums]
+        const unique = combined.filter((album, index, self) =>
+          self.findIndex(a => a.id === album.id) === index
+        )
+        setSuggestedAlbums(unique.slice(0, 10))
+      } else {
+        setSuggestedAlbums(fallbackAlbums)
+      }
+    } catch (err) {
+      console.error('Failed to load suggestions:', err)
+    } finally {
+      setIsLoadingSuggestions(false)
+    }
+  }
+
+  useEffect(() => {
+    handleRefreshSuggestions()
+  }, [activeTab])
 
   const DEFAULT_PLAYLISTS: LibraryItem[] = []
 
@@ -95,37 +217,31 @@ export default function LibraryPage({
   const [playlists, setPlaylists] = useState<LibraryItem[]>([])
 
   useEffect(() => {
-    const storedPlaylists = localStorage.getItem('vw_saved_playlists')
-    if (storedPlaylists) {
-      try {
-        const parsed = JSON.parse(storedPlaylists) as LibraryItem[]
-        // Clean out any default mockup playlists (id matches p1-p8)
-        const customPlaylists = parsed.filter(p => !/^p\d+$/.test(p.id))
-        setPlaylists(customPlaylists)
-        if (parsed.length !== customPlaylists.length) {
-          localStorage.setItem('vw_saved_playlists', JSON.stringify(customPlaylists))
+    const loadPlaylists = () => {
+      const storedPlaylists = localStorage.getItem('vw_saved_playlists')
+      if (storedPlaylists) {
+        try {
+          const parsed = JSON.parse(storedPlaylists) as LibraryItem[]
+          // Clean out any default mockup playlists (id matches p1-p8)
+          const customPlaylists = parsed.filter(p => !/^p\d+$/.test(p.id))
+          setPlaylists(customPlaylists)
+          if (parsed.length !== customPlaylists.length) {
+            localStorage.setItem('vw_saved_playlists', JSON.stringify(customPlaylists))
+          }
+        } catch (e) {
+          setPlaylists([])
         }
-      } catch (e) {
+      } else {
         setPlaylists([])
+        localStorage.setItem('vw_saved_playlists', JSON.stringify([]))
       }
-    } else {
-      setPlaylists([])
-      localStorage.setItem('vw_saved_playlists', JSON.stringify([]))
     }
+
+    loadPlaylists()
+
+    window.addEventListener('vw_playlists_updated', loadPlaylists)
+    return () => window.removeEventListener('vw_playlists_updated', loadPlaylists)
   }, [t.songsLabel])
-
-  // Sync custom event listeners or state updates
-  useEffect(() => {
-    if (albums.length > 0) {
-      window.dispatchEvent(new Event('vw_albums_updated'))
-    }
-  }, [albums])
-
-  useEffect(() => {
-    if (playlists.length > 0) {
-      window.dispatchEvent(new Event('vw_playlists_updated'))
-    }
-  }, [playlists])
 
   // Debounced search for album search in Modal
   useEffect(() => {
@@ -184,9 +300,9 @@ export default function LibraryPage({
     const newItem: LibraryItem = {
       id: album.id,
       title: album.title,
-      subtitle: album.artist,
-      image: album.albumArt,
-      href: `/album/${album.id}`,
+      subtitle: album.artist || album.subtitle,
+      image: album.albumArt || album.image,
+      href: album.href || `/album/${album.id}`,
       type: 'album'
     }
 
@@ -280,7 +396,7 @@ export default function LibraryPage({
           eyebrowLabel="Bộ Sưu Tập"
           title="Thư viện"
           subtitle="Lưu trữ và quản lý những giai điệu yêu thích, playlist cá nhân và album mà bạn không thể sống thiếu."
-          gradientClass="from-white via-white/90 to-white/60"
+          gradientClass="from-white to-white"
           action={
             <button
               onClick={() => {
@@ -369,22 +485,99 @@ export default function LibraryPage({
                 }
               }}
               deleteLabel={activeTab === 'playlists' ? "Xóa danh sách phát" : "Xóa album"}
+              isLibraryPage={true}
             />
           ))}
         </div>
 
         {filtered.length === 0 && (
-          <div className="col-span-full py-24 flex flex-col items-center justify-center text-center bg-white/[0.02] border border-white/[0.05] rounded-3xl backdrop-blur-sm mt-6">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
-              <Search size={24} className="text-white/30" />
+          <div className="col-span-full py-20 text-center flex flex-col items-center justify-center p-8 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] relative overflow-hidden group/empty transition-all duration-500 hover:border-purple-500/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),0_0_30px_rgba(155,77,224,0.03)] mt-6">
+            {/* Backing Ambient Purple Light */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-500/[0.04] rounded-full blur-[80px] pointer-events-none" />
+            
+            {/* Floating Glowing Icon Bubble */}
+            <div className="relative w-16 h-16 rounded-2xl bg-white/[0.06] backdrop-blur-md flex items-center justify-center mb-4 text-purple-400 border border-white/10 shadow-lg shadow-purple-500/5 group-hover/empty:scale-110 group-hover/empty:border-purple-500/30 group-hover/empty:shadow-purple-500/10 group-hover/empty:text-purple-300 transition-all duration-500">
+              <Search size={24} className="animate-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-white/90 mb-2">Không tìm thấy kết quả</h3>
-            <p className="text-sm text-white/40 max-w-md">
-              Không có kết quả nào cho &ldquo;<span className="text-white/70">{searchQ}</span>&rdquo;. Hãy thử tìm kiếm với từ khóa khác.
+            
+            <h3 className="relative z-10 text-base font-semibold text-white tracking-tight">
+              Không tìm thấy kết quả
+            </h3>
+            
+            <p className="relative z-10 text-xs text-white/50 mt-2 max-w-md leading-relaxed">
+              Không có kết quả nào cho &ldquo;<span className="text-purple-300 font-semibold">{searchQ}</span>&rdquo;. Hãy thử tìm kiếm với từ khóa khác hoặc thêm nội dung mới.
             </p>
           </div>
         )}
       </div>
+
+      {/* Suggested Albums Section */}
+      {activeTab === 'albums' && (
+        <div className="mt-16 pt-10 border-t border-white/5 relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-xl bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                  Gợi ý hàng đầu
+                </span>
+              </div>
+              <h2 
+                className="font-display font-semibold text-2xl text-white tracking-tight"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Album gợi ý cho bạn
+              </h2>
+              <p className="text-sm text-white/40 mt-1">
+                Khám phá các album đang được yêu thích và đề xuất dựa trên sở thích âm nhạc của bạn.
+              </p>
+            </div>
+
+            {/* Refresh Pill Button on the far right */}
+            <button
+              onClick={() => handleRefreshSuggestions(true)}
+              disabled={isLoadingSuggestions}
+              className="group flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+            >
+              <RotateCw
+                size={12}
+                className={cn(
+                  "transition-transform duration-700",
+                  isLoadingSuggestions ? "animate-spin text-purple-400" : "group-hover:rotate-180"
+                )}
+              />
+              <span>Làm mới</span>
+            </button>
+          </div>
+
+          {isLoadingSuggestions && suggestedAlbums.length === 0 ? (
+            <div className="py-12 flex flex-col items-center justify-center text-center">
+              <Loader2 size={32} className="text-purple-500 animate-spin mb-3" />
+              <p className="text-sm text-white/50">Đang tìm kiếm gợi ý tốt nhất cho bạn...</p>
+            </div>
+          ) : (
+            <MusicShelf>
+              {suggestedAlbums.map((album) => (
+                <MusicCard
+                  key={album.id}
+                  id={album.id}
+                  title={album.title}
+                  subtitle={album.subtitle}
+                  image={album.image}
+                  href={album.href}
+                  type="album"
+                  onHideSuggestion={(id) => {
+                    setSuggestedAlbums((prev) => prev.filter((a) => a.id !== id))
+                    toast({
+                      title: "Đã ẩn gợi ý",
+                      description: `Chúng tôi sẽ không gợi ý album "${album.title}" nữa.`,
+                    })
+                  }}
+                />
+              ))}
+            </MusicShelf>
+          )}
+        </div>
+      )}
 
       {/* Add Album Modal */}
       {isAddAlbumOpen && (
@@ -476,7 +669,7 @@ export default function LibraryPage({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="text-sm font-semibold text-white/95 truncate" title={album.title}>
+                            <h4 className="text-sm font-display font-semibold text-white/95 truncate" title={album.title}>
                               {album.title}
                             </h4>
                             <p className="text-xs text-white/40 truncate mt-0.5">
@@ -513,7 +706,7 @@ export default function LibraryPage({
               ) : modalSearchQ ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center bg-white/[0.01] border border-dashed border-white/10 rounded-2xl">
                   <Search size={24} className="text-white/20 mb-2" />
-                  <h5 className="text-sm font-bold text-white/80">Không tìm thấy album</h5>
+                  <h5 className="text-sm font-display font-bold text-white/80">Không tìm thấy album</h5>
                   <p className="text-xs text-white/40 max-w-xs mt-1">
                     Chúng tôi không tìm thấy kết quả nào phù hợp với &ldquo;{modalSearchQ}&rdquo;.
                   </p>
@@ -523,7 +716,7 @@ export default function LibraryPage({
                   <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-3">
                     <Search size={20} className="text-purple-400" />
                   </div>
-                  <h5 className="text-sm font-bold text-white/80">Nhập từ khóa tìm kiếm</h5>
+                  <h5 className="text-sm font-display font-bold text-white/80">Nhập từ khóa tìm kiếm</h5>
                   <p className="text-xs text-white/40 max-w-xs mt-1 px-4">
                     Nhập tên album hoặc nghệ sĩ để bắt đầu tìm kiếm những tác phẩm âm nhạc đỉnh cao.
                   </p>

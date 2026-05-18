@@ -24,11 +24,12 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const {
     currentTrack, isPlaying, progress, volume, isMuted, isLiked,
     togglePlay, setProgress, setVolume, toggleMute, toggleFullPlayer, toggleLike,
-    nextTrack, prevTrack, isFullPlayer,
+    nextTrack, prevTrack, isFullPlayer, isShuffle, toggleShuffle,
+    isRepeat, toggleRepeat,
   } = usePlayerStore()
 
   // Sync audio element with state
@@ -77,7 +78,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
         autoPlay={isPlaying}
       />
       {isFullPlayer && <FullPlayer />}
-      
+
       <div
         className="fixed bottom-0 right-0 z-50 px-4 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all"
         style={{
@@ -140,11 +141,14 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
               aria-label={isLiked ? t.unlikeSong : t.likeSong}
               aria-pressed={isLiked}
               className={cn(
-                "p-2 rounded-full transition-all duration-300 hover:bg-white/5 active:scale-90",
-                isLiked ? "text-red-500" : "text-white/40 hover:text-white/70"
+                "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 hover:bg-white/5 active:scale-90",
+                isLiked ? "text-[#EF4444]" : "text-white/40 hover:text-white/70"
               )}
             >
               <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
+              {isLiked && (
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
+              )}
             </button>
           </div>
 
@@ -153,10 +157,18 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
             {/* Controls */}
             <div className="flex items-center gap-6">
               <button
-                className="text-white/40 hover:text-white/90 transition-colors duration-300 active:scale-90"
+                onClick={toggleShuffle}
+                className={cn(
+                  "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-90",
+                  isShuffle ? "text-[#9B4DE0]" : "text-white/40 hover:text-white/90"
+                )}
                 aria-label={t.shuffle}
+                aria-pressed={isShuffle}
               >
                 <Shuffle size={18} strokeWidth={2} />
+                {isShuffle && (
+                  <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+                )}
               </button>
 
               <button
@@ -191,10 +203,17 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
               </button>
 
               <button
-                className="text-white/40 hover:text-white/90 transition-colors duration-300 active:scale-90"
+                onClick={toggleRepeat}
+                className={cn(
+                  "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-90",
+                  isRepeat ? "text-[#9B4DE0]" : "text-white/40 hover:text-white/90"
+                )}
                 aria-label={t.repeat}
               >
                 <Repeat size={18} strokeWidth={2} />
+                {isRepeat && (
+                  <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+                )}
               </button>
             </div>
 
@@ -214,9 +233,9 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
                     boxShadow: '0 0 10px rgba(155,77,224,0.3)'
                   }}
                 />
-                
+
                 {/* Progress Knob */}
-                <div 
+                <div
                   className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200"
                   style={{ left: `calc(${progress}% - 6px)` }}
                 />

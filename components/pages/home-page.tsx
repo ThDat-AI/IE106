@@ -4,9 +4,10 @@ import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { searchMusic, searchAlbums } from '@/lib/music-api'
-import { ChevronDown } from 'lucide-react'
+import { useToast } from '@/components/ui/use-toast'
+import { ChevronDown, ChevronRight, RotateCw } from 'lucide-react'
 import {
   SectionHeader,
   AiBadge,
@@ -18,6 +19,15 @@ import {
 
 const GENRE_LABELS = ['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn']
 
+const GENRE_SEARCH_TERMS: Record<string, string[]> = {
+  'Tất cả': ['V-Pop Hits 2024', 'Nhạc Trẻ Hot 2024', 'Sơn Tùng M-TP', 'Đen Vâu', 'Hoàng Thùy Linh', 'Vũ.', 'Indie Việt', 'V-Pop Hot'],
+  'Pop': ['V-Pop', 'Pop Việt', 'US-UK Pop', 'Mỹ Tâm', 'Amee', 'Sơn Tùng M-TP', 'Tlinh', 'GREY D'],
+  'Hip-hop': ['Rap Việt', 'Hip-hop Việt', 'Low G', 'tlinh', 'MCK', 'Đen Vâu', 'Obito', '16 Typh'],
+  'EDM': ['EDM Việt', 'Vinahouse', 'Electronic', 'K-391', 'Alan Walker', 'Hoaprox', 'EDM Hot'],
+  'Tập trung': ['Lofi Chill', 'Lofi Việt', 'Acoustic Guitar', 'Instrumental Pop', 'Rain Lofi', 'Piano Thư Giãn'],
+  'Thư giãn': ['Chill nhẹ nhàng', 'Nhạc Trịnh Lofi', 'Thư giãn đầu óc', 'Nhạc không lời nhẹ nhàng', 'Acoustic Việt']
+}
+
 export default function HomePage({
   initialTrending = [],
   initialQuickPicks = [],
@@ -28,6 +38,7 @@ export default function HomePage({
   initialTopAlbums?: any[]
 }) {
   const { t } = useTranslation()
+  const { toast } = useToast()
   const [trending, setTrending] = useState<Track[]>(initialTrending)
   const [quickPicks, setQuickPicks] = useState<Track[]>(initialQuickPicks.length > 0 ? initialQuickPicks : SAMPLE_TRACKS)
   const [continueListening, setContinueListening] = useState<any[]>([])
@@ -35,6 +46,33 @@ export default function HomePage({
   const [topAlbums, setTopAlbums] = useState<any[]>(initialTopAlbums)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
   const [visibleCount, setVisibleCount] = useState(10)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const isFirstRender = useRef(true)
+
+  const handleRefreshQuickPicks = async (genre: string) => {
+    setIsRefreshing(true)
+    try {
+      const terms = GENRE_SEARCH_TERMS[genre] || GENRE_SEARCH_TERMS['Tất cả']
+      const randomTerm = terms[Math.floor(Math.random() * terms.length)]
+      const picksData = await searchMusic(randomTerm, 25)
+      if (picksData.length > 0) {
+        setQuickPicks(picksData)
+        setVisibleCount(10) // Reset expanded list when new music is loaded
+      }
+    } catch (error) {
+      console.error('Error refreshing quick picks:', error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    handleRefreshQuickPicks(activeGenre)
+  }, [activeGenre])
 
   useEffect(() => {
     async function loadMusic() {
@@ -136,6 +174,13 @@ export default function HomePage({
               image={album.albumArt}
               href={`/album/${album.id}`}
               type="album"
+              onHideSuggestion={(id) => {
+                setTopAlbums((prev) => prev.filter((a) => a.id !== id))
+                toast({
+                  title: "Đã ẩn gợi ý",
+                  description: `Chúng tôi sẽ không gợi ý album "${album.title}" nữa.`,
+                })
+              }}
             />
           ))}
         </MusicShelf>
@@ -160,7 +205,7 @@ export default function HomePage({
             className="flex items-center gap-1 text-sm font-medium transition-vw hover:opacity-80"
             style={{ color: 'var(--vw-text-muted)' }}
           >
-            {t.yourVibe}
+            {t.seeAll} <ChevronRight size={14} />
           </a>
         </div>
         <MusicShelf>
@@ -176,7 +221,32 @@ export default function HomePage({
 
       {/* Quick Picks — track list */}
       <section aria-labelledby="quick-picks-heading">
-        <SectionHeader title="Giai điệu theo tâm trạng" />
+        <SectionHeader
+          title="Giai điệu theo tâm trạng"
+          rightAction={
+            <button
+              onClick={() => handleRefreshQuickPicks(activeGenre)}
+              disabled={isRefreshing}
+              className={`group/btn flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md ${
+                isRefreshing
+                  ? 'border-purple-500/30 text-purple-300/80 bg-purple-500/10'
+                  : 'border-white/10 hover:border-purple-500/30 text-white/60 hover:text-purple-300 bg-white/5 hover:bg-purple-500/10'
+              }`}
+              style={{
+                boxShadow: isRefreshing ? '0 0 15px rgba(155,77,224,0.2)' : 'none',
+              }}
+              title="Làm mới bài hát"
+            >
+              <RotateCw
+                size={14}
+                className={`transition-transform duration-500 ${
+                  isRefreshing ? 'animate-spin text-purple-400' : 'group-hover/btn:rotate-180 text-white/60 group-hover/btn:text-purple-400'
+                }`}
+              />
+              <span>{isRefreshing ? 'Đang làm mới...' : 'Làm mới'}</span>
+            </button>
+          }
+        />
 
         {/* Filter Labels */}
         <div className="mb-6">
@@ -187,13 +257,7 @@ export default function HomePage({
           />
         </div>
 
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            backgroundColor: 'var(--vw-surface)',
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}
-        >
+        <div className="vw-playlist-table">
           {/* Header row */}
           <div
             className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"

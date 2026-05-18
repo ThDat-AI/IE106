@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { Search, Clock, History, Play, Shuffle, MoreHorizontal, Music2, CalendarDays } from 'lucide-react'
+import { Search, History, Play, Shuffle, Music2, CalendarDays } from 'lucide-react'
+import TrackRow from '@/components/music/track-row'
 import { type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import { usePlayerStore } from '@/lib/player-store'
@@ -11,20 +12,68 @@ import {
   GlassPanel,
   AmbientOrbs,
 } from '@/components/ui/vibewave'
+import { cn } from '@/lib/utils'
 
 // Time grouping helpers
-function getTimeGroup(index: number): string {
-  if (index < 3) return 'Vừa nghe'
-  if (index < 8) return 'Hôm nay'
-  if (index < 15) return 'Tuần này'
-  return 'Trước đó'
+function getTimeGroup(playedAtStr?: string, index?: number): string {
+  if (!playedAtStr) {
+    const idx = index ?? 0;
+    if (idx < 3) return 'Hôm nay'
+    if (idx < 6) return 'Hôm qua'
+    if (idx < 11) return '7 ngày qua'
+    return 'Trước đó'
+  }
+
+  const playedAt = new Date(playedAtStr);
+  const now = new Date();
+  
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const playedDate = new Date(playedAt.getFullYear(), playedAt.getMonth(), playedAt.getDate());
+  
+  if (playedDate.getTime() === today.getTime()) {
+    return 'Hôm nay';
+  } else if (playedDate.getTime() === yesterday.getTime()) {
+    return 'Hôm qua';
+  }
+  
+  const diffTime = today.getTime() - playedDate.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays >= 2 && diffDays <= 8) {
+    return '7 ngày qua';
+  }
+  
+  return 'Trước đó';
 }
 
 const GROUP_COLORS: Record<string, { text: string; bg: string; border: string }> = {
-  'Vừa nghe': { text: '#3ABEF9', bg: 'rgba(58,190,249,0.08)', border: 'rgba(58,190,249,0.2)' },
-  'Hôm nay':  { text: '#05D69E', bg: 'rgba(5,214,158,0.08)',  border: 'rgba(5,214,158,0.2)' },
-  'Tuần này': { text: '#9B4DE0', bg: 'rgba(155,77,224,0.08)', border: 'rgba(155,77,224,0.2)' },
-  'Trước đó': { text: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
+  'Hôm nay':     { text: '#3ABEF9', bg: 'rgba(58,190,249,0.08)', border: 'rgba(58,190,249,0.2)' },
+  'Hôm qua':     { text: '#05D69E', bg: 'rgba(5,214,158,0.08)',  border: 'rgba(5,214,158,0.2)' },
+  '7 ngày qua':  { text: '#F73859', bg: 'rgba(247,56,89,0.08)',  border: 'rgba(247,56,89,0.2)'  },
+  'Trước đó':    { text: '#FACC15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
+  'Kết quả tìm kiếm': { text: '#FF8A08', bg: 'rgba(255,138,8,0.08)', border: 'rgba(255,138,8,0.2)' },
+}
+
+const GROUP_LABELS: Record<string, { vi: string; en: string }> = {
+  'Hôm nay':     { vi: 'Hôm nay', en: 'Today' },
+  'Hôm qua':     { vi: 'Hôm qua', en: 'Yesterday' },
+  '7 ngày qua':  { vi: '7 ngày qua', en: 'Last 7 Days' },
+  'Trước đó':    { vi: 'Trước đó', en: 'Before That' },
+  'Kết quả tìm kiếm': { vi: 'Kết quả tìm kiếm', en: 'Search Results' },
+}
+
+const getGroupVariant = (group: string) => {
+  switch (group) {
+    case 'Hôm nay': return 'blue'
+    case 'Hôm qua': return 'green'
+    case '7 ngày qua': return 'red'
+    case 'Trước đó': return 'yellow'
+    default: return 'purple'
+  }
 }
 
 function formatTime(secs: number) {
@@ -35,13 +84,12 @@ function formatTime(secs: number) {
 
 export default function RecentlyPlayedPage({ 
   initialTracks = [] 
-}: { 
-  initialTracks?: Track[] 
-}) {
-  const { t } = useTranslation()
-  const { setTrack } = usePlayerStore()
+  }: { 
+    initialTracks?: Track[] 
+  }) {
+  const { t, language } = useTranslation()
+  const { setTrack, setQueue, isShuffle } = usePlayerStore()
   const [searchQ, setSearchQ] = useState('')
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null)
 
   const filtered = initialTracks.filter(track =>
     track.title.toLowerCase().includes(searchQ.toLowerCase()) || 
@@ -52,16 +100,40 @@ export default function RecentlyPlayedPage({
   // Group tracks by time
   type GroupEntry = { group: string; tracks: Array<{ track: Track; originalIndex: number }> }
   const groups: GroupEntry[] = []
-  let currentGroup = ''
 
-  filtered.forEach((track, i) => {
-    const group = searchQ ? 'Kết quả' : getTimeGroup(i)
-    if (group !== currentGroup) {
-      currentGroup = group
-      groups.push({ group, tracks: [] })
+  if (searchQ) {
+    const resultsGroup: GroupEntry = { group: 'Kết quả tìm kiếm', tracks: [] }
+    filtered.forEach((track, i) => {
+      resultsGroup.tracks.push({ track, originalIndex: i })
+    })
+    if (resultsGroup.tracks.length > 0) {
+      groups.push(resultsGroup)
     }
-    groups[groups.length - 1].tracks.push({ track, originalIndex: i })
-  })
+  } else {
+    const sections: Record<string, Array<{ track: Track; originalIndex: number }>> = {
+      'Hôm nay': [],
+      'Hôm qua': [],
+      '7 ngày qua': [],
+      'Trước đó': [],
+    }
+
+    filtered.forEach((track, i) => {
+      const group = getTimeGroup(track.playedAt, i)
+      if (sections[group]) {
+        sections[group].push({ track, originalIndex: i })
+      } else {
+        sections['Trước đó'].push({ track, originalIndex: i })
+      }
+    })
+
+    // Only add groups that have tracks in their designated order
+    const groupOrder = ['Hôm nay', 'Hôm qua', '7 ngày qua', 'Trước đó']
+    groupOrder.forEach(key => {
+      if (sections[key].length > 0) {
+        groups.push({ group: key, tracks: sections[key] })
+      }
+    })
+  }
 
   return (
     <div className="space-y-10 relative">
@@ -75,42 +147,53 @@ export default function RecentlyPlayedPage({
           eyebrowLabel={t.recentlyPlayed}
           title={t.recentlyPlayed}
           subtitle={t.historySub}
-          gradientClass="from-white via-cyan-100 to-sky-400"
+          gradientClass="from-white to-white"
           action={
             /* Controls row */
             <div className="flex items-center gap-3">
-              {/* Play recent button */}
-              <button
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(58,190,249,0.2) 0%, rgba(58,190,249,0.06) 100%)',
-                  border: '1px solid rgba(58,190,249,0.35)',
-                  color: '#3ABEF9',
-                  boxShadow: '0 0 16px rgba(58,190,249,0.15)',
-                }}
-                onClick={() => { if (filtered[0]) setTrack(filtered[0]) }}
-                aria-label="Play most recent track"
-              >
-                <Play size={14} fill="#3ABEF9" style={{ color: '#3ABEF9' }} className="ml-0.5" />
-                Nghe Lại
-              </button>
-
               {/* Shuffle button */}
               <button
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #3ABEF9 0%, #0284C7 100%)',
-                  color: 'rgba(255,255,255,0.95)',
-                  boxShadow: '0 0 20px rgba(58,190,249,0.4)',
-                }}
+                className={cn(
+                  "relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 cursor-pointer shadow-sm shrink-0",
+                  isShuffle 
+                    ? "text-[#9B4DE0] bg-[#9B4DE0]/10 border border-[#9B4DE0]/30 shadow-[0_0_12px_rgba(155,77,224,0.15)] scale-[0.98]" 
+                    : "text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]"
+                )}
                 onClick={() => {
-                  const random = filtered[Math.floor(Math.random() * filtered.length)]
-                  if (random) setTrack(random)
+                  if (filtered.length > 0) {
+                    if (isShuffle) {
+                      usePlayerStore.setState({ isShuffle: false })
+                    } else {
+                      usePlayerStore.setState({ isShuffle: true })
+                      const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+                      setQueue(shuffled)
+                      setTrack(shuffled[0])
+                    }
+                  }
                 }}
                 aria-label="Shuffle recently played"
               >
-                <Shuffle size={14} />
-                Shuffle
+                <Shuffle size={18} />
+                {isShuffle && (
+                  <span className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
+                )}
+              </button>
+
+              {/* Play all button */}
+              <button
+                className="group relative flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-white overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/20 cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7C3AED 100%)' }}
+                onClick={() => {
+                  if (filtered.length > 0) {
+                    setQueue(filtered)
+                    setTrack(filtered[0])
+                  }
+                }}
+                aria-label="Play all recently played songs"
+              >
+                <Play size={20} fill="white" className="text-white" />
+                <span>{language === 'vi' ? 'Phát tất cả' : 'Play All'}</span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </button>
             </div>
           }
@@ -163,7 +246,7 @@ export default function RecentlyPlayedPage({
           <CalendarDays size={13} style={{ color: '#3ABEF9' }} />
           <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
             {filtered.length}
-            {searchQ ? ` / ${initialTracks.length}` : ''} bài gần đây
+            {searchQ ? ` / ${initialTracks.length}` : ''} {language === 'vi' ? 'bài gần đây' : 'recent tracks'}
           </span>
         </div>
       </section>
@@ -181,10 +264,10 @@ export default function RecentlyPlayedPage({
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                  {searchQ ? `${t.noResults} "${searchQ}"` : 'Chưa có bài hát nào trong lịch sử'}
+                  {searchQ ? `${t.noResults} "${searchQ}"` : (language === 'vi' ? 'Chưa có bài hát nào trong lịch sử' : 'No tracks in your listening history')}
                 </p>
                 <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                  {searchQ ? 'Thử từ khóa khác' : 'Bắt đầu nghe để xây dựng lịch sử của bạn'}
+                  {searchQ ? (language === 'vi' ? 'Thử từ khóa khác' : 'Try another keyword') : (language === 'vi' ? 'Bắt đầu nghe để xây dựng lịch sử của bạn' : 'Start listening to build your history')}
                 </p>
               </div>
             </div>
@@ -193,163 +276,55 @@ export default function RecentlyPlayedPage({
       ) : (
         groups.map(({ group, tracks }) => {
           const gc = GROUP_COLORS[group] ?? GROUP_COLORS['Trước đó']
+          const displayLabel = GROUP_LABELS[group] ? (language === 'vi' ? GROUP_LABELS[group].vi : GROUP_LABELS[group].en) : group
           return (
             <section key={group}>
               {/* Group heading */}
               <div className="flex items-center gap-3 mb-4">
                 <AccentBar height={6} color={
-                  group === 'Vừa nghe' ? 'blue' :
-                  group === 'Hôm nay' ? 'green' :
-                  group === 'Tuần này' ? 'purple' : 'indigo'
+                  group === 'Hôm nay' ? 'blue' :
+                  group === 'Hôm qua' ? 'green' :
+                  group === '7 ngày qua' ? 'red' :
+                  group === 'Trước đó' ? 'yellow' : 'indigo'
                 } />
                 <h2
                   className="font-display font-semibold"
                   style={{ fontSize: 18, color: gc.text, letterSpacing: '-0.3px' }}
                 >
-                  {group}
+                  {displayLabel}
                 </h2>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider"
                   style={{ backgroundColor: gc.bg, color: gc.text, border: `1px solid ${gc.border}` }}
                 >
-                  {tracks.length} bài
+                  {tracks.length} {language === 'vi' ? 'bài' : 'tracks'}
                 </span>
               </div>
 
-              <GlassPanel variant="dark">
+              <GlassPanel variant="dark" className="vw-playlist-table">
                 {/* Table header */}
                 <div
-                  className="grid gap-3 px-5 py-3"
-                  style={{
-                    gridTemplateColumns: '3rem 1fr 8rem 5rem',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  }}
+                  className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>#</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.titleLabel}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest hidden md:block" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.albumLabel}</span>
-                  <div className="flex items-center justify-end">
-                    <Clock size={12} style={{ color: 'rgba(255,255,255,0.2)' }} />
-                  </div>
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+                  <span className="hidden md:block text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-right pr-2" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
                 </div>
 
                 {/* Track rows */}
-                {tracks.map(({ track, originalIndex }, rowIdx) => (
-                  <div
-                    key={track.id}
-                    className="grid gap-3 px-5 py-3.5 transition-all duration-200 cursor-pointer group/row"
-                    style={{
-                      gridTemplateColumns: '3rem 1fr 8rem 5rem',
-                      borderBottom: rowIdx < tracks.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                      backgroundColor: hoveredRow === track.id
-                        ? `${gc.bg}`
-                        : 'transparent',
-                    }}
-                    onMouseEnter={() => setHoveredRow(track.id)}
-                    onMouseLeave={() => setHoveredRow(null)}
-                    onClick={() => setTrack(track)}
-                  >
-                    {/* Rank / Play toggle */}
-                    <div className="flex items-center justify-center">
-                      {hoveredRow === track.id ? (
-                        <button
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
-                          style={{
-                            background: `linear-gradient(135deg, ${gc.text} 0%, rgba(0,0,0,0.4) 200%)`,
-                            boxShadow: `0 0 14px ${gc.border}`,
-                            backgroundColor: gc.text,
-                          }}
-                          aria-label={`Play ${track.title}`}
-                        >
-                          <Play size={12} fill="white" className="text-white ml-0.5" />
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          {/* History position indicator */}
-                          <span
-                            className="text-sm font-bold tabular-nums"
-                            style={{
-                              color: originalIndex === 0 ? gc.text : 'rgba(255,255,255,0.25)',
-                              textShadow: originalIndex === 0 ? `0 0 10px ${gc.border}` : 'none',
-                            }}
-                          >
-                            {originalIndex + 1}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Cover + title + artist */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative shrink-0">
-                        {track.albumArt ? (
-                          <img
-                            src={track.albumArt}
-                            alt={track.title}
-                            className="w-10 h-10 rounded-xl object-cover transition-transform duration-300 group-hover/row:scale-105"
-                            style={{
-                              boxShadow: hoveredRow === track.id
-                                ? `0 4px 16px ${gc.border}`
-                                : '0 4px 12px rgba(0,0,0,0.4)',
-                              border: hoveredRow === track.id
-                                ? `1.5px solid ${gc.border}`
-                                : '1px solid rgba(255,255,255,0.08)',
-                              transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold"
-                            style={{ background: `linear-gradient(135deg, ${gc.bg} 0%, #16111E 100%)`, color: gc.text }}
-                          >
-                            {track.title.charAt(0)}
-                          </div>
-                        )}
-                        {/* Recent indicator for first track */}
-                        {originalIndex === 0 && (
-                          <div
-                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full"
-                            style={{
-                              backgroundColor: gc.text,
-                              boxShadow: `0 0 8px ${gc.border}`,
-                            }}
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p
-                          className="text-sm font-semibold truncate transition-colors group-hover/row:text-white"
-                          style={{ color: 'rgba(255,255,255,0.9)' }}
-                        >
-                          {track.title}
-                        </p>
-                        <p className="text-xs truncate mt-0.5 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          {track.artist}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Album */}
-                    <p className="text-xs text-right truncate self-center hidden md:block" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {track.album}
-                    </p>
-
-                    {/* Duration + more */}
-                    <div className="flex items-center justify-end gap-3">
-                      <button
-                        className="transition-opacity duration-200"
-                        style={{ color: 'rgba(255,255,255,0.35)', opacity: hoveredRow === track.id ? 1 : 0 }}
-                        aria-label="More options"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal size={14} />
-                      </button>
-                      <span className="text-xs tabular-nums shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                        {formatTime(track.duration)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                <div className="py-2">
+                  {tracks.map(({ track, originalIndex }) => (
+                    <TrackRow
+                      key={track.id}
+                      index={originalIndex + 1}
+                      track={track}
+                      showAlbum
+                      variant={getGroupVariant(group) as any}
+                    />
+                  ))}
+                </div>
               </GlassPanel>
             </section>
           )
