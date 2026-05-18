@@ -371,7 +371,7 @@ export default function ArtistPage({
               {/* Right Stats Column */}
               <div className="flex flex-col justify-between p-6 rounded-2xl bg-white/[0.03] border border-white/5 space-y-6">
                 <div>
-                  <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Chỉ số trên VibeWave</h4>
+                  <h4 className="text-xs font-display font-bold text-white/40 uppercase tracking-widest mb-4">Chỉ số trên VibeWave</h4>
                   <div className="space-y-4">
                     <div>
                       <span className="text-xs text-white/50 block">Người nghe hàng tháng</span>

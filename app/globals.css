@@ -6,6 +6,7 @@
 
 :root {
   /* VibeWave Dark Design System */
+  --font-display: var(--font-montserrat);
   --vw-bg: #16111E;
   --vw-surface: #231B2F;
   --vw-elevated: #302643;

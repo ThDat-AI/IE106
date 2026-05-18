@@ -132,7 +132,7 @@ export default function AboutContactPage() {
                   </div>
                 </div>
                 <GlassPanel className="p-8 space-y-6">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
                     <span className="text-purple-500">“</span>
                     {t.theMission}
                     <span className="text-purple-500">”</span>
@@ -153,7 +153,7 @@ export default function AboutContactPage() {
                   {VALUES.map((v, i) => (
                     <GlassPanel key={i} className="p-8 group hover:-translate-y-1 transition-transform duration-300">
                       <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">{v.icon}</div>
-                      <h3 className="text-lg font-bold text-white mb-3">{v.title}</h3>
+                      <h3 className="text-lg font-display font-bold text-white mb-3">{v.title}</h3>
                       <p className="text-sm text-white/50 leading-relaxed">{v.body}</p>
                     </GlassPanel>
                   ))}
@@ -181,7 +181,7 @@ export default function AboutContactPage() {
                         >
                           {member.initials}
                         </div>
-                        <h4 className="text-white font-bold text-sm mb-1">{member.name}</h4>
+                        <h4 className="text-white font-display font-bold text-sm mb-1">{member.name}</h4>
                         <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{member.role}</p>
                       </GlassPanel>
                     </div>
@@ -239,7 +239,7 @@ export default function AboutContactPage() {
                 </div>
 
                 <GlassPanel className="p-6 bg-gradient-to-br from-purple-600/10 to-blue-600/10">
-                  <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                  <h4 className="text-white font-display font-bold mb-4 flex items-center gap-2">
                     <ExternalLink size={16} className="text-purple-400" />
                     {t.helpCenter}
                   </h4>
@@ -259,7 +259,7 @@ export default function AboutContactPage() {
                         <CheckCircle2 size={40} />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-white">{t.messageSent}</h3>
+                        <h3 className="text-2xl font-display font-bold text-white">{t.messageSent}</h3>
                         <p className="text-white/50">{t.sentDesc}</p>
                       </div>
                       <button 
