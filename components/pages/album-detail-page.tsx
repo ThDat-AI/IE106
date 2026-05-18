@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Shuffle, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, Share2, SkipForward, ListPlus, Plus, Trash2, Check, Info } from 'lucide-react'
+import { Play, Shuffle, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, SkipForward, ListPlus, Plus, Trash2, Check, Info } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
 import { usePlayerStore, type Track } from '@/lib/player-store'
@@ -100,7 +100,13 @@ export default function AlbumDetailPage({
           info = await getAlbumInfo(slug)
           if (info) albumTracks = await getAlbumTracks(slug)
         } else {
-          const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+          let decodedSlug = slug
+          try {
+            decodedSlug = decodeURIComponent(slug)
+          } catch (e) {
+            console.error('Failed to decode slug:', e)
+          }
+          const title = decodedSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
           const searchResults = await searchAlbums(title, 1)
           if (searchResults.length > 0) {
             info = searchResults[0]
@@ -188,11 +194,6 @@ export default function AlbumDetailPage({
         >
           <ChevronLeft size={20} className="text-white/70 group-hover:text-white group-hover:-translate-x-0.5 transition-transform" />
         </button>
-        <div className="flex items-center gap-3">
-          <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 transition-vw text-white/70 hover:text-white">
-            <Share2 size={18} />
-          </button>
-        </div>
       </div>
 
       {/* Hero Section */}

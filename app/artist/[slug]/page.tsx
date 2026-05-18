@@ -12,7 +12,13 @@ export default async function Page({
   const { slug } = await params
   const { id } = await searchParams
   
-  const name = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  let decodedSlug = slug
+  try {
+    decodedSlug = decodeURIComponent(slug)
+  } catch (e) {
+    console.error('Failed to decode slug:', e)
+  }
+  const name = decodedSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   
   // Fetch initial data on server side
   // If we have an ID, use the more accurate lookup functions

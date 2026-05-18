@@ -15,7 +15,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       albumInfo = await getAlbumInfo(slug)
       if (albumInfo) tracks = await getAlbumTracks(slug)
     } else {
-      const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      let decodedSlug = slug
+      try {
+        decodedSlug = decodeURIComponent(slug)
+      } catch (e) {
+        console.error('Failed to decode slug:', e)
+      }
+      const title = decodedSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
       const searchResults = await searchAlbums(title, 1)
       if (searchResults.length > 0) {
         albumInfo = searchResults[0]

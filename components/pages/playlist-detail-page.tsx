@@ -24,7 +24,12 @@ import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
 import { cn } from '@/lib/utils'
 
 function slugToTitle(slug: string) {
-  return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  try {
+    const decoded = decodeURIComponent(slug)
+    return decoded.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  } catch (e) {
+    return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  }
 }
 
 export default function PlaylistDetailPage({ slug }: { slug: string }) {

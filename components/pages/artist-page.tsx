@@ -12,7 +12,12 @@ import { cn } from '@/lib/utils'
 
 function slugToName(slug: string) {
   if (!slug) return ''
-  return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  try {
+    const decoded = decodeURIComponent(slug)
+    return decoded.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  } catch (e) {
+    return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  }
 }
 
 export default function ArtistPage({ 
