@@ -78,29 +78,31 @@ export default function AboutContactPage() {
 
         {/* Tab Switcher */}
         <div className="flex justify-center">
-          <div className="p-1 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-1">
-            <button
-              onClick={() => setActiveTab('about')}
-              className={`px-8 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                activeTab === 'about' 
-                  ? 'bg-purple-600 text-white shadow-[0_0_20px_rgba(155,77,224,0.4)]' 
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-              }`}
-            >
-              <Users size={16} />
-              {t.aboutUs}
-            </button>
-            <button
-              onClick={() => setActiveTab('contact')}
-              className={`px-8 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                activeTab === 'contact' 
-                  ? 'bg-purple-600 text-white shadow-[0_0_20px_rgba(155,77,224,0.4)]' 
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-              }`}
-            >
-              <MessageSquare size={16} />
-              {t.contactUs}
-            </button>
+          <div className="p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md flex items-center gap-1.5">
+            {(['about', 'contact'] as const).map(tab => {
+              const isActive = activeTab === tab
+              const Icon = tab === 'about' ? Users : MessageSquare
+              const label = tab === 'about' ? t.aboutUs : t.contactUs
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`
+                    px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                      : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                    }
+                  `}
+                >
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+                  )}
+                  <Icon size={16} />
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
 

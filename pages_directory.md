@@ -1,0 +1,51 @@
+# VibeWave — Pages & Routing Directory
+> **Visual philosophy:** Superhuman-grade dark minimalist structure  
+> This document lists all page routes, page components, and code locations for the VibeWave music streaming application.
+
+---
+
+## 🧭 Core App Pages (15 Routes)
+The following tables catalog all operational pages in the application, including core player functionality, dynamic details, profile settings, and authentication forms.
+
+| Route Path | Name & Description (Vietnamese) | Name & Description (English) | Next.js Page File | UI Page Component |
+| :--- | :--- | :--- | :--- | :--- |
+| **`/`** | **Trang chủ**<br>Bảng điều khiển chính với các danh sách gợi ý cá nhân hóa từ AI, bảng xếp hạng nổi bật, danh mục nghe tiếp và album đề xuất. | **Home Dashboard**<br>Main player hub featuring continue listening, quick picks, top albums, and customized V-Pop suggestions. | [`app/page.tsx`](file:///d:/IE106/app/page.tsx) | [`HomePage`](file:///d:/IE106/components/pages/home-page.tsx) |
+| **`/your-vibe`** | **Dành riêng cho bạn**<br>Trang cá nhân hóa nâng cao do AI phân tích, hiển thị thống kê hàng tháng, nghệ sĩ nghe nhiều nhất, và danh sách phát đề xuất. | **Your Vibe**<br>Advanced AI recommendations, monthly listening metrics (hours listened, tracks played), and top artist breakdowns. | [`app/your-vibe/page.tsx`](file:///d:/IE106/app/your-vibe/page.tsx) | [`YourVibePage`](file:///d:/IE106/components/pages/your-vibe-page.tsx) |
+| **`/library`** | **Thư viện**<br>Trung tâm quản lý nhạc cá nhân, hiển thị danh sách phát đã tạo, album đã lưu và nghệ sĩ đang theo dõi. | **Library**<br>User's personalized dashboard of saved playlists, albums, followed artists, and custom playlist creation. | [`app/library/page.tsx`](file:///d:/IE106/app/library/page.tsx) | [`LibraryPage`](file:///d:/IE106/components/pages/library-page.tsx) |
+| **`/library/liked`** | **Bài hát đã thích**<br>Danh sách phát các bài hát người dùng đã nhấn "Thích" với khả năng phát nhanh và tìm kiếm bộ lọc bài hát. | **Liked Songs**<br>Dedicated list of all liked tracks with quick search filters and full play control. | [`app/library/liked/page.tsx`](file:///d:/IE106/app/library/liked/page.tsx) | [`LikedSongsPage`](file:///d:/IE106/components/pages/liked-songs-page.tsx) |
+| **`/library/recent`** | **Nghe gần đây**<br>Lịch sử các bài hát người dùng đã nghe gần đây, được nhóm theo khoảng thời gian trực quan (hôm nay, tuần này, tuần trước). | **Recently Played**<br>Grouped timeline of user's streaming history for easy back-to-back discovery. | [`app/library/recent/page.tsx`](file:///d:/IE106/app/library/recent/page.tsx) | [`RecentlyPlayedPage`](file:///d:/IE106/components/pages/recently-played-page.tsx) |
+| **`/search`** | **Tìm kiếm**<br>Công cụ tìm kiếm thông minh thời gian thực dành cho bài hát, album và nghệ sĩ. | **Search Results**<br>Real-time contextual search system powered by VibeWave's local search API. | [`app/search/page.tsx`](file:///d:/IE106/app/search/page.tsx) | [`SearchPage`](file:///d:/IE106/components/pages/search-page.tsx) |
+| **`/charts`** | **Bảng xếp hạng**<br>Danh sách các bài hát được nghe nhiều nhất được chia theo các khu vực (Việt Nam, Toàn cầu, US-UK, K-Pop). | **Charts & Trends**<br>Regional top tracks and viral hit tables updated daily. | [`app/charts/page.tsx`](file:///d:/IE106/app/charts/page.tsx) | [`ChartsPage`](file:///d:/IE106/components/pages/charts-page.tsx) |
+| **`/album/[slug]`** | **Chi tiết Album**<br>Trang thông tin chi tiết của một Album nhạc cụ thể bao gồm danh sách bài hát và thông tin nhà phát hành. | **Album Detail**<br>Dynamic route representing specific albums with high-quality metadata and tracks tables. | [`app/album/[slug]/page.tsx`](file:///d:/IE106/app/album/%5Bslug%5D/page.tsx) | [`AlbumDetailPage`](file:///d:/IE106/components/pages/album-detail-page.tsx) |
+| **`/artist/[slug]`** | **Trang nghệ sĩ**<br>Trang thông tin nghệ sĩ, hiển thị bài hát hàng đầu, danh sách album đã phát hành và gợi ý nghệ sĩ tương tự. | **Artist Profile**<br>Verified artist details featuring followers, top tracks, discography grid, and recommendations. | [`app/artist/[slug]/page.tsx`](file:///d:/IE106/app/artist/%5Bslug%5D/page.tsx) | [`ArtistPage`](file:///d:/IE106/components/pages/artist-page.tsx) |
+| **`/playlist/[slug]`** | **Chi tiết Danh sách phát**<br>Trang hiển thị chi tiết của một danh sách phát nhạc cụ thể với các công cụ sắp xếp và tùy chỉnh danh sách. | **Playlist Detail**<br>Detailed dynamic playlist manager featuring title, tags, tracks, metadata, and full play controllers. | [`app/playlist/[slug]/page.tsx`](file:///d:/IE106/app/playlist/%5Bslug%5D/page.tsx) | [`PlaylistDetailPage`](file:///d:/IE106/components/pages/playlist-detail-page.tsx) |
+| **`/profile`** | **Hồ sơ & Cài đặt**<br>Trang quản lý hồ sơ người dùng cá nhân cùng hệ thống cài đặt nâng cao (chất lượng âm thanh, hoạt ảnh, ngôn ngữ, quyền riêng tư). | **Profile & Settings**<br>Full accounts management suite containing profile details, playback settings, styling presets, and active session controls. | [`app/profile/page.tsx`](file:///d:/IE106/app/profile/page.tsx) | [`ProfileSettingsPage`](file:///d:/IE106/components/pages/profile-settings-page.tsx) |
+| **`/notifications`** | **Thông báo**<br>Trung tâm thông báo trong ứng dụng được phân chia thành các chủ đề: cập nhật hệ thống, phát hành mới, hoạt động bạn bè. | **Notifications Hub**<br>Comprehensive notifications list with smart categorization and search filters. | [`app/notifications/page.tsx`](file:///d:/IE106/app/notifications/page.tsx) | *Rendered Inline* |
+| **`/login`** | **Đăng nhập**<br>Cổng đăng nhập tối giản và sang trọng bằng tài khoản VibeWave hoặc các nhà cung cấp Google, Facebook, Apple. | **Sign In Portal**<br>Minimalist account sign-in interface supporting responsive desktop OAuth and local credentials. | [`app/login/page.tsx`](file:///d:/IE106/app/login/page.tsx) | [`LoginPage`](file:///d:/IE106/components/pages/login-page.tsx) |
+| **`/register`** | **Đăng ký**<br>Cổng đăng ký tài khoản mới miễn phí của VibeWave. | **Sign Up Portal**<br>New user registration page optimized for instant account provisioning. | [`app/register/page.tsx`](file:///d:/IE106/app/register/page.tsx) | [`RegisterPage`](file:///d:/IE106/components/pages/register-page.tsx) |
+| **`/maintenance`** | **Bảo trì hệ thống**<br>Trang thông báo hệ thống đang tạm ngưng hoạt động để bảo trì hoặc nâng cấp máy chủ. | **Maintenance Splash**<br>Friendly temporary downtime notification overlay for high-traffic updates. | [`app/maintenance/page.tsx`](file:///d:/IE106/app/maintenance/page.tsx) | *Rendered Inline* |
+
+---
+
+## ⚖️ Support & Legal Pages (4 Routes)
+Support, informational, and legal documentation are grouped into unified routes for editorial ease and extreme visual consistency.
+
+| Route Path & Parameters | Name & Description (Vietnamese) | Name & Description (English) | Next.js Page File | UI Page Component |
+| :--- | :--- | :--- | :--- | :--- |
+| **`/about`** | **Giới thiệu & Liên hệ**<br>Trang giới thiệu sứ mệnh, tầm nhìn, đội ngũ phát triển VibeWave kết hợp với biểu mẫu liên hệ hỗ trợ. | **About Us & Contact**<br>Editorial narrative showing VibeWave's mission, design principles, engineering team, and active support contact form. | [`app/about/page.tsx`](file:///d:/IE106/app/about/page.tsx) | [`AboutContactPage`](file:///d:/IE106/components/pages/about-contact-page.tsx) |
+| **`/faq`** | **Câu hỏi thường gặp**<br>Cung cấp câu trả lời nhanh chóng cho các thắc mắc về tài khoản, phát nhạc, chất lượng và hỗ trợ kỹ thuật dạng accordion. | **FAQ Help Center**<br>Interactive, categorized helper accordion for quick navigation of common issues. | [`app/faq/page.tsx`](file:///d:/IE106/app/faq/page.tsx) | [`FAQPage`](file:///d:/IE106/components/pages/faq-page.tsx) |
+| **`/legal`** | **Trung tâm Pháp lý (Mặc định)**<br>Trang điều khoản dịch vụ chính thức dành cho người dùng VibeWave. | **Terms of Service**<br>Default tab of the legal documentation center. | [`app/legal/page.tsx`](file:///d:/IE106/app/legal/page.tsx) | [`LegalCombinedPage`](file:///d:/IE106/components/pages/legal-combined-page.tsx) |
+| **`/legal?tab=privacy`** | **Chính sách bảo mật**<br>Các cam kết bảo vệ dữ liệu cá nhân của VibeWave. | **Privacy Policy**<br>Detailed information detailing user data protection under local laws. | [`app/legal/page.tsx`](file:///d:/IE106/app/legal/page.tsx) | [`LegalCombinedPage`](file:///d:/IE106/components/pages/legal-combined-page.tsx) |
+| **`/legal?tab=copyright`** | **Bản quyền & DMCA**<br>Thông tin gỡ bỏ bản quyền và đại diện pháp lý sở hữu trí tuệ của VibeWave. | **Copyright & DMCA**<br>Information regarding DMCA takedown procedures and licensing practices. | [`app/legal/page.tsx`](file:///d:/IE106/app/legal/page.tsx) | [`LegalCombinedPage`](file:///d:/IE106/components/pages/legal-combined-page.tsx) |
+| **`/error`** | **Trang báo lỗi**<br>Trang thông báo thân thiện được kích hoạt khi hệ thống phát sinh lỗi runtime nghiêm trọng. | **Error Fallback**<br>System-wide error fallback displaying helpful guidance and refresh parameters. | [`app/error/page.tsx`](file:///d:/IE106/app/error/page.tsx) | *Rendered Inline* |
+
+---
+
+## ⚡ Global Layout Elements
+In addition to standard page routing, VibeWave features continuous playback UI elements that persist across transitions:
+
+1. **[`app-shell.tsx`](file:///d:/IE106/components/layout/app-shell.tsx)**: The parent frame wrapping all routes, providing global responsive grids and dark theme providers.
+2. **[`header.tsx`](file:///d:/IE106/components/layout/header.tsx)**: Navigation panel containing the logo, AI search bar suggestion engine, and quick profile settings dropdown.
+3. **[`sidebar.tsx`](file:///d:/IE106/components/layout/sidebar.tsx)**: Collapsible primary navigation links (Home, Your Vibe, Library, Charts).
+4. **[`player.tsx`](file:///d:/IE106/components/layout/player.tsx)**: Bottom persistent audio player bar containing tracks information, seek progress, volume controller, queue manager, and lyrics trigger.
+5. **[`full-player.tsx`](file:///d:/IE106/components/layout/full-player.tsx)**: Full-screen immersive playback container featuring synchronized lyrics overlay, dynamic background blurred artwork, and waveform visualization.

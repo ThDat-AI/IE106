@@ -318,25 +318,27 @@ export default function ChartsPage() {
           action={
             /* Region selector */
             <div
-              className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl shrink-0"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl shrink-0 bg-white/[0.03] border border-white/[0.06] shadow-xl"
             >
               {REGIONS.map((r) => {
-                const active = region === r.id
+                const isActive = region === r.id
                 return (
                   <button
                     key={r.id}
                     onClick={() => setRegion(r.id)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer"
-                    style={{
-                      background: active ? 'linear-gradient(135deg, rgba(155,77,224,0.25) 0%, rgba(155,77,224,0.08) 100%)' : 'transparent',
-                      color: active ? '#E9D5FF' : 'rgba(255,255,255,0.45)',
-                      border: active ? '1px solid rgba(155,77,224,0.4)' : '1px solid transparent',
-                      boxShadow: active ? '0 0 14px rgba(155,77,224,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' : 'none',
-                    }}
-                    aria-pressed={active}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 cursor-pointer
+                      ${isActive 
+                        ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                        : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                      }
+                    `}
+                    aria-pressed={isActive}
                   >
-                    {REGION_ICONS[r.id]}
+                    {isActive && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+                    )}
+                    {!isActive && REGION_ICONS[r.id]}
                     {r.label}
                   </button>
                 )

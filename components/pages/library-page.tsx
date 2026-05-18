@@ -420,30 +420,39 @@ export default function LibraryPage({
       {/* Tabs + controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2.5 rounded-2xl bg-[#120E18]/60 backdrop-blur-xl border border-white/5 shadow-xl relative z-10">
         <div className="flex items-center gap-2 w-full sm:w-auto p-1.5 rounded-xl bg-white/[0.02]">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="relative flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 flex-1 sm:flex-none overflow-hidden group"
-              style={{
-                color: activeTab === tab.id ? '#ffffff' : 'rgba(255,255,255,0.4)',
-              }}
-            >
-              {activeTab === tab.id && (
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 rounded-lg shadow-[inset_0_0_12px_rgba(155,77,224,0.2)]" />
-              )}
-              <span className="relative z-10 group-hover:text-white/90 transition-colors">{tab.label}</span>
-              <span
-                className="relative z-10 text-[11px] px-2.5 py-0.5 rounded-full font-bold transition-all duration-300"
-                style={{
-                  backgroundColor: activeTab === tab.id ? 'rgba(155,77,224,0.3)' : 'rgba(255,255,255,0.05)',
-                  color: activeTab === tab.id ? '#E9D5FF' : 'rgba(255,255,255,0.3)'
-                }}
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  relative flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold 
+                  transition-all duration-300 flex-1 sm:flex-none overflow-hidden cursor-pointer group
+                  ${isActive 
+                    ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                    : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                  }
+                `}
               >
-                {tab.count}
-              </span>
-            </button>
-          ))}
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+                <span
+                  className={`
+                    relative z-10 text-[11px] px-2.5 py-0.5 rounded-full font-bold transition-all duration-300
+                    ${isActive 
+                      ? 'bg-white/20 text-white' 
+                      : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white/60'
+                    }
+                  `}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
         <div className="relative w-full sm:w-auto group">

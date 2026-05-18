@@ -75,23 +75,28 @@ function LegalContent() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center justify-center gap-2 mb-12 p-1.5 rounded-2xl bg-white/5 border border-white/10 w-fit mx-auto backdrop-blur-xl">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden group"
-            style={{
-              color: activeTabId === tab.id ? 'white' : 'rgba(255,255,255,0.4)',
-              backgroundColor: activeTabId === tab.id ? 'rgba(155,77,224,0.2)' : 'transparent',
-            }}
-          >
-            {activeTabId === tab.id && (
-              <div className="absolute inset-0 bg-gradient-to-r from-[#9B4DE0]/20 to-[#6366f1]/20 animate-pulse" />
-            )}
-            <span className="relative z-10">{tab.title}</span>
-          </button>
-        ))}
+      <div className="flex items-center justify-center gap-2 mb-12 p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] w-fit mx-auto backdrop-blur-xl">
+        {tabs.map((tab) => {
+          const isActive = activeTabId === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`
+                px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden flex items-center gap-2 cursor-pointer
+                ${isActive 
+                  ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                  : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                }
+              `}
+            >
+              {isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+              )}
+              <span className="relative z-10">{tab.title}</span>
+            </button>
+          )
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">

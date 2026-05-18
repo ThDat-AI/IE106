@@ -177,16 +177,18 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className="px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap cursor-pointer transition-all duration-300"
-              style={{
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(155,77,224,0.3) 0%, rgba(155,77,224,0.1) 100%)'
-                  : 'rgba(255,255,255,0.04)',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
-                border: isActive ? '1px solid rgba(155,77,224,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                boxShadow: isActive ? '0 8px 20px -8px rgba(155,77,224,0.4)' : 'none',
-              }}
+              className={`
+                px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap cursor-pointer 
+                transition-all duration-300 flex items-center gap-2
+                ${isActive 
+                  ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                  : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+                }
+              `}
             >
+              {isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+              )}
               {(t as any)[tab.labelKey] || tab.id}
             </button>
           )
@@ -347,7 +349,7 @@ function SearchInner() {
           eyebrowLabel={t.search || "Tìm kiếm"}
           title={hasQuery ? `${t.resultsFor || "Kết quả cho"} "${query}"` : t.exploreMusic || "Khám phá âm nhạc"}
           subtitle={hasQuery ? undefined : t.searchSub || "Khám phá các bài hát, nghệ sĩ và album yêu thích của bạn thông qua thanh tìm kiếm ở phía trên."}
-          gradientClass="from-white via-purple-200 to-purple-500"
+          gradientClass="from-white to-white"
         />
       </section>
 

@@ -138,20 +138,28 @@ export default function NotificationsPage() {
               className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-vw-purple/50 focus:bg-white/[0.05] transition-vw text-sm"
             />
           </div>
-          <div className="flex gap-2 p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl">
-            {(['all', 'system', 'activity'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-vw ${
-                  activeTab === tab 
-                    ? 'bg-vw-purple text-white shadow-lg shadow-vw-purple/20' 
-                    : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-                }`}
-              >
-                {tab === 'all' ? t.all || 'All' : tab === 'system' ? t.system || 'System' : t.activity || 'Activity'}
-              </button>
-            ))}
+          <div className="flex gap-2 p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl shrink-0 items-center">
+            {(['all', 'system', 'activity'] as const).map(tab => {
+              const isActive = activeTab === tab
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`
+                    flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                      : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                    }
+                  `}
+                >
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+                  )}
+                  {tab === 'all' ? t.all || 'All' : tab === 'system' ? t.system || 'System' : t.activity || 'Activity'}
+                </button>
+              )
+            })}
           </div>
         </div>
 

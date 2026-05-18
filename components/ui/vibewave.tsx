@@ -348,16 +348,18 @@ export function FilterPills({ categories, active, onSelect, label }: FilterPills
           <button
             key={cat}
             onClick={() => onSelect(cat)}
-            className="px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 backdrop-blur-md whitespace-nowrap"
-            style={{
-              background: isActive
-                ? 'linear-gradient(135deg, rgba(155,77,224,0.2) 0%, rgba(155,77,224,0.05) 100%)'
-                : 'rgba(255,255,255,0.03)',
-              border: isActive ? '1px solid rgba(155,77,224,0.5)' : '1px solid rgba(255,255,255,0.1)',
-              color: isActive ? '#E9D5FF' : 'rgba(255,255,255,0.7)',
-              boxShadow: isActive ? '0 0 15px rgba(155,77,224,0.3)' : 'none',
-            }}
+            className={`
+              px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap cursor-pointer 
+              transition-all duration-300 flex items-center gap-2
+              ${isActive 
+                ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
+                : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+              }
+            `}
           >
+            {isActive && (
+              <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+            )}
             {cat}
           </button>
         )
