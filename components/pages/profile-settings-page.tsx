@@ -162,11 +162,6 @@ export default function ProfileSettingsPage() {
           eyebrowLabel="VibeWave Account"
           title={t.profileAndSettings}
           subtitle={t.manageAccount}
-          action={
-            <div className="flex items-center gap-4">
-              <AiBadge label="Premium Member" withIcon />
-            </div>
-          }
         />
 
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12 items-start">

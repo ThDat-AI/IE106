@@ -404,17 +404,6 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
         >
           <ChevronLeft size={20} className="text-white/70 group-hover:text-white group-hover:-translate-x-0.5 transition-transform" />
         </button>
-        <div className="flex items-center gap-3">
-          {playlist.isCustom && (
-            <button
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 text-red-400 hover:text-red-300 transition-vw cursor-pointer"
-              title="Xóa danh sách phát"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Hero Section */}
@@ -557,7 +546,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
               ) : (
                 <button
                   onClick={() => setIsAddSongsOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-all cursor-pointer shadow-lg shadow-purple-500/20"
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-white bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] hover:from-[#aa62ee] hover:to-[#8b44e3] transition-all cursor-pointer shadow-lg shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Plus size={18} />
                   <span>Thêm bài hát đầu tiên</span>
@@ -727,7 +716,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
               
               <button
                 onClick={() => setIsAddSongsOpen(true)}
-                className="relative z-10 mt-6 px-6 py-2.5 rounded-full text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-400 hover:to-indigo-400 hover:shadow-[0_0_20px_rgba(155,77,224,0.4)] active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-purple-500/10"
+                className="relative z-10 mt-6 px-6 py-2.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] hover:from-[#aa62ee] hover:to-[#8b44e3] text-white hover:shadow-[0_0_20px_rgba(155,77,224,0.4)] active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-purple-500/10"
               >
                 Tìm và Thêm bài hát
               </button>
@@ -821,9 +810,15 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                   <button
                     onClick={() => loadSuggestedTracks()}
                     disabled={isRefreshingSuggestions}
-                    className="flex items-center gap-2.5 px-6 py-3 rounded-full text-xs font-semibold text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border border-purple-500/20 disabled:opacity-50 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-purple-500/5 active:scale-95"
+                    className="group flex items-center gap-3 px-6 py-3 rounded-full text-sm font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
                   >
-                    <RotateCw size={12} className={isRefreshingSuggestions ? 'animate-spin' : ''} />
+                    <RotateCw
+                      size={14}
+                      className={cn(
+                        "transition-transform duration-700",
+                        isRefreshingSuggestions ? "animate-spin text-purple-400" : "group-hover:rotate-180"
+                      )}
+                    />
                     <span>Làm mới gợi ý</span>
                   </button>
                 </div>

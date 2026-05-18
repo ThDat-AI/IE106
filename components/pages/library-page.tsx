@@ -408,8 +408,8 @@ export default function LibraryPage({
               }}
               className="group relative flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold text-sm text-white overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(155,77,224,0.2)] hover:shadow-[0_0_30px_rgba(155,77,224,0.4)] cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 transition-transform duration-300 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] transition-transform duration-300 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#aa62ee] to-[#8b44e3] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Plus size={18} className="relative z-10 transition-transform duration-300 group-hover:rotate-90" />
               <span className="relative z-10 tracking-wide">{activeTab === 'albums' ? t.newAlbum : t.newPlaylist}</span>
             </button>
