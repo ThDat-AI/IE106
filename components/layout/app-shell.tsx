@@ -5,6 +5,8 @@ import Header from './header'
 import Sidebar from './sidebar'
 import BottomPlayer from './bottom-player'
 import Footer from './footer'
+import QueuePanel from './queue-panel'
+import { usePlayerStore } from '@/lib/player-store'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -13,6 +15,7 @@ interface AppShellProps {
 
 export default function AppShell({ children, showFooter = true }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const { isQueueOpen } = usePlayerStore()
 
   return (
     <div className="min-h-screen bg-vw-bg relative overflow-hidden">
@@ -34,7 +37,8 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
           className="pt-16 pb-20 min-h-screen"
           style={{
             marginLeft: sidebarCollapsed ? '72px' : '240px',
-            transition: 'margin-left 0.3s ease',
+            marginRight: isQueueOpen ? '380px' : '0px',
+            transition: 'margin-left 0.3s ease, margin-right 0.3s ease',
           }}
         >
           <div className="max-w-[1220px] mx-auto px-8 py-8">
@@ -44,6 +48,7 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
         </main>
 
         <BottomPlayer sidebarCollapsed={sidebarCollapsed} />
+        <QueuePanel />
       </div>
     </div>
   )

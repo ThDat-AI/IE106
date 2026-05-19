@@ -23,6 +23,7 @@ interface PlayerState {
   isMuted: boolean
   isFullPlayer: boolean
   queue: Track[]
+  isQueueOpen: boolean
   isLiked: boolean
   isShuffle: boolean
   isRepeat: boolean
@@ -38,6 +39,8 @@ interface PlayerState {
   setQueue: (queue: Track[]) => void
   toggleShuffle: () => void
   toggleRepeat: () => void
+  toggleQueue: () => void
+  setIsQueueOpen: (isOpen: boolean) => void
 }
 
 export const SAMPLE_TRACKS: Track[] = [
@@ -184,6 +187,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     isMuted: false,
     isFullPlayer: false,
     queue: SAMPLE_TRACKS,
+    isQueueOpen: false,
     isLiked: initialLiked,
     isShuffle: false,
     isRepeat: false,
@@ -208,6 +212,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     setQueue: (queue) => set({ queue }),
     toggleShuffle: () => set((s) => ({ isShuffle: !s.isShuffle })),
     toggleRepeat: () => set((s) => ({ isRepeat: !s.isRepeat })),
+    toggleQueue: () => set((s) => ({ isQueueOpen: !s.isQueueOpen })),
+    setIsQueueOpen: (isQueueOpen) => set({ isQueueOpen }),
 
     nextTrack: () => {
       const { queue, currentTrack, isShuffle } = get()

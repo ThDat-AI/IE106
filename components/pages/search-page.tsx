@@ -351,6 +351,7 @@ function SearchInner() {
           subtitle={hasQuery ? undefined : t.searchSub || "Khám phá các bài hát, nghệ sĩ và album yêu thích của bạn thông qua thanh tìm kiếm ở phía trên."}
           gradientClass="from-white to-white"
           titleColor="#ffffff"
+          subtitleColor="rgba(255, 255, 255, 0.85)"
         />
       </section>
 

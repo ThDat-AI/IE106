@@ -29,7 +29,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
     currentTrack, isPlaying, progress, volume, isMuted, isLiked,
     togglePlay, setProgress, setVolume, toggleMute, toggleFullPlayer, toggleLike,
     nextTrack, prevTrack, isFullPlayer, isShuffle, toggleShuffle,
-    isRepeat, toggleRepeat,
+    isRepeat, toggleRepeat, isQueueOpen, toggleQueue,
   } = usePlayerStore()
 
   // Sync audio element with state
@@ -48,6 +48,17 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
     if (!audioRef.current) return
     audioRef.current.volume = isMuted ? 0 : volume / 100
   }, [volume, isMuted])
+
+  useEffect(() => {
+    function onSeek(e: Event) {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail !== undefined) {
+        handleSeek(customEvent.detail)
+      }
+    }
+    window.addEventListener('vw_seek', onSeek)
+    return () => window.removeEventListener('vw_seek', onSeek)
+  }, [currentTrack])
 
   const handleTimeUpdate = () => {
     if (!audioRef.current || !currentTrack) return
@@ -269,10 +280,18 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
             </button>
 
             <button
-              className="p-2 text-white/40 hover:text-white/90 transition-all hover:bg-white/5 rounded-full"
+              onClick={toggleQueue}
+              className={cn(
+                "p-2 transition-all hover:bg-white/5 rounded-full relative active:scale-95",
+                isQueueOpen ? "text-[#9B4DE0] bg-white/5" : "text-white/40 hover:text-white/90"
+              )}
               aria-label={t.queue}
+              aria-pressed={isQueueOpen}
             >
               <ListMusic size={18} />
+              {isQueueOpen && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)]" />
+              )}
             </button>
 
             <div className="flex items-center gap-2 group/volume ml-2">
