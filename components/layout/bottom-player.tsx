@@ -80,6 +80,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
       {isFullPlayer && <FullPlayer />}
 
       <div
+        suppressHydrationWarning={true}
         className="fixed bottom-0 right-0 z-50 px-4 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all"
         style={{
           left: sidebarCollapsed ? '72px' : '240px',

@@ -221,7 +221,7 @@ export default function MusicCard({
           <p className="text-sm font-semibold truncate text-white group-hover:text-purple-400 transition-colors">
             {title}
           </p>
-          <p className="text-xs text-white/40 truncate mt-0.5">
+          <p className="text-xs text-white/70 font-medium truncate mt-0.5">
             {subtitle || 'Nghệ sĩ'}
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function MusicCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-white/90 truncate group-hover:text-purple-400 transition-colors">{title}</p>
-        <p className="text-xs text-white/40 truncate">{subtitle}</p>
+        <p className="text-xs text-white/70 font-medium truncate">{subtitle}</p>
       </div>
       {onDelete && (
         <button

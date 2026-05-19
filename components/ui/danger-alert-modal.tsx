@@ -71,7 +71,7 @@ export function DangerAlertModal({ isOpen, onClose, onConfirm, type }: DangerAle
             {title}
           </h3>
 
-          <p className="text-sm text-white/40 font-light leading-relaxed mb-10">
+          <p className="text-sm text-white/70 font-light leading-relaxed mb-10">
             {description}
           </p>
 
@@ -79,7 +79,7 @@ export function DangerAlertModal({ isOpen, onClose, onConfirm, type }: DangerAle
             <button
               onClick={onClose}
               disabled={isDeleting}
-              className="px-6 py-4 rounded-2xl text-[15px] font-bold text-white/40 hover:text-white/80 hover:bg-white/5 transition-all border border-transparent hover:border-white/10 disabled:opacity-50"
+              className="px-6 py-4 rounded-2xl text-[15px] font-bold text-white/75 hover:text-white hover:bg-white/10 transition-all border border-white/10 disabled:opacity-50"
             >
               {t.cancel}
             </button>

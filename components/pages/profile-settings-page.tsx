@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Camera, Check, ChevronRight, Volume2, Type, Globe,
-  Palette, Moon, User, Bell, Shield, Music, Zap, Sparkles, Trash2, Mail
+  Palette, Moon, User, Bell, Shield, Music, Zap, Sparkles, Trash2, Mail, AlertTriangle
 } from 'lucide-react'
 import { useI18nStore, useTranslation } from '@/lib/i18n-store'
 import { PageHero, GlassPanel, AmbientOrbs, AiBadge, AccentBar } from '@/components/ui/vibewave'
@@ -120,6 +121,36 @@ export default function ProfileSettingsPage() {
   const [bio, setBio] = useState('Music enthusiast. Always looking for the next great track.')
   const [profileSaved, setProfileSaved] = useState(false)
 
+  // Change Password State
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+
+  function handleSavePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError(currentLang === 'vi' ? 'Vui lòng nhập đầy đủ thông tin' : 'Please fill in all fields')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordError(currentLang === 'vi' ? 'Mật khẩu mới phải có ít nhất 6 ký tự' : 'New password must be at least 6 characters')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError(currentLang === 'vi' ? 'Mật khẩu mới và xác nhận không khớp' : 'New password and confirmation do not match')
+      return
+    }
+
+    setPasswordError('')
+    setPasswordSaved(true)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setTimeout(() => setPasswordSaved(false), 2500)
+  }
+
   // Appearance
   const [fontSize, setFontSize] = useState('M')
 
@@ -161,7 +192,10 @@ export default function ProfileSettingsPage() {
           eyebrowIcon={<Zap size={12} />}
           eyebrowLabel="VibeWave Account"
           title={t.profileAndSettings}
+          titleColor="white"
           subtitle={t.manageAccount}
+          gradientClass="from-white to-white"
+          subtitleColor="white"
         />
 
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12 items-start">
@@ -175,28 +209,29 @@ export default function ProfileSettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group"
-                  style={{
-                    backgroundColor: isActive ? 'rgba(155,77,224,0.12)' : 'transparent',
-                    color: isActive ? '#C4B5FD' : 'rgba(255,255,255,0.45)',
-                    border: isActive ? '1px solid rgba(155,77,224,0.2)' : '1px solid transparent',
-                  }}
+                  className={`
+                    flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[15px] font-bold transition-all duration-300 whitespace-nowrap group cursor-pointer border
+                    ${isActive 
+                      ? 'bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_4px_20px_rgba(155,77,224,0.1)]' 
+                      : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+                    }
+                  `}
                 >
-                  <Icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 opacity-60'}`} />
+                  <Icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 opacity-80'}`} />
                   {tab.label}
-                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#C4B5FD]" />}
+                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-450 shadow-[0_0_8px_#C4B5FD]" />}
                 </button>
               )
             })}
 
             <div className="mt-8 pt-8 border-t border-white/5 hidden lg:block">
-              <p className="px-5 text-[11px] font-bold uppercase tracking-widest text-white/20 mb-4">Support</p>
-              <button className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium text-white/40 hover:text-white/80 hover:bg-white/5 transition-all">
-                <Globe size={16} /> Help Center
-              </button>
-              <button className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium text-white/40 hover:text-white/80 hover:bg-white/5 transition-all">
-                <Shield size={16} /> Legal Info
-              </button>
+              <p className="px-5 text-[11px] font-bold uppercase tracking-widest text-white/65 mb-4">{t.support}</p>
+              <Link href="/faq" className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white transition-all cursor-pointer mb-2.5">
+                <Globe size={16} /> {t.helpCenter}
+              </Link>
+              <Link href="/legal" className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white transition-all cursor-pointer">
+                <Shield size={16} /> {t.legalInfo}
+              </Link>
             </div>
           </nav>
 
@@ -229,10 +264,10 @@ export default function ProfileSettingsPage() {
                     </div>
                     <div className="text-center sm:text-left">
                       <h4 className="text-lg font-display font-bold text-white/90 mb-1">{t.profilePhoto}</h4>
-                      <p className="text-sm text-white/40 font-light mb-4">{t.photoDesc}</p>
+                      <p className="text-sm text-white/60 font-light mb-4">{t.photoDesc}</p>
                       <div className="flex flex-wrap justify-center sm:justify-start gap-3">
-                        <button type="button" className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-all">Upload New</button>
-                        <button type="button" className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-white/40 hover:bg-white/10 hover:text-white/60 transition-all">Remove</button>
+                        <button type="button" className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-all">{t.uploadNew}</button>
+                        <button type="button" className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-xs font-bold text-white/80 hover:bg-white/20 hover:text-white transition-all">{t.remove}</button>
                       </div>
                     </div>
                   </div>
@@ -241,7 +276,7 @@ export default function ProfileSettingsPage() {
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label htmlFor="display-name" className="text-sm font-bold text-white/50 px-1">{t.displayName}</label>
+                        <label htmlFor="display-name" className="text-sm font-bold text-white/75 px-1">{t.displayName}</label>
                         <input
                           id="display-name"
                           type="text"
@@ -251,7 +286,7 @@ export default function ProfileSettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="profile-email" className="text-sm font-bold text-white/50 px-1">{t.emailAddress}</label>
+                        <label htmlFor="profile-email" className="text-sm font-bold text-white/75 px-1">{t.emailAddress}</label>
                         <div className="relative">
                           <input
                             id="profile-email"
@@ -265,7 +300,7 @@ export default function ProfileSettingsPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="bio" className="text-sm font-bold text-white/50 px-1">{t.bio}</label>
+                      <label htmlFor="bio" className="text-sm font-bold text-white/75 px-1">{t.bio}</label>
                       <textarea
                         id="bio"
                         rows={4}
@@ -286,53 +321,118 @@ export default function ProfileSettingsPage() {
                     </button>
                     <button
                       type="button"
-                      className="w-full sm:w-auto px-8 py-4 rounded-2xl text-[15px] font-bold text-white/40 hover:text-white/80 hover:bg-white/5 transition-all border border-transparent hover:border-white/10"
+                      className="w-full sm:w-auto px-8 py-4 rounded-2xl text-[15px] font-bold text-white/75 hover:text-white hover:bg-white/10 transition-all border border-white/10"
                     >
                       {t.cancel}
                     </button>
+                  </div>
+
+                  {/* Change Password Section */}
+                  <div className="mt-16 pt-12 border-t border-white/5 animate-in fade-in duration-300">
+                    <SectionHeader title={t.changePassword} icon={Shield} color="pink" />
+                    
+                    <div className="space-y-6 max-w-md">
+                      <div className="space-y-4">
+                        {/* Current Password */}
+                        <div className="space-y-2">
+                          <label htmlFor="current-password" className="text-sm font-bold text-white/75 px-1">{t.currentPassword}</label>
+                          <input
+                            id="current-password"
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className={inputClasses}
+                            placeholder="••••••••"
+                          />
+                        </div>
+                        {/* New Password */}
+                        <div className="space-y-2">
+                          <label htmlFor="new-password" className="text-sm font-bold text-white/75 px-1">{t.newPassword}</label>
+                          <input
+                            id="new-password"
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className={inputClasses}
+                            placeholder="••••••••"
+                          />
+                        </div>
+                        {/* Confirm New Password */}
+                        <div className="space-y-2">
+                          <label htmlFor="confirm-new-password" className="text-sm font-bold text-white/75 px-1">{t.confirmNewPassword}</label>
+                          <input
+                            id="confirm-new-password"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className={inputClasses}
+                            placeholder="••••••••"
+                          />
+                        </div>
+                      </div>
+
+                      {passwordError && (
+                        <p className="text-sm font-semibold px-1 animate-in fade-in duration-200 text-[#ff7d7d]">
+                          {passwordError}
+                        </p>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
+                        <button
+                          type="button"
+                          onClick={handleSavePassword}
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-[15px] font-bold transition-all duration-300 hover:opacity-90 active:scale-95 shadow-lg shadow-purple-500/25"
+                          style={{ backgroundColor: '#9B4DE0', color: 'white' }}
+                        >
+                          {passwordSaved ? <><Check size={18} /> {t.passwordChanged}</> : <><Sparkles size={18} /> {t.changePassword}</>}
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Danger zone */}
                   <div className="mt-16 pt-12 border-t border-white/5">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                        <Trash2 size={16} className="text-red-400" />
+                        <Trash2 size={16} className="text-[#ff7d7d]" />
                       </div>
-                      <h4 className="text-lg font-display font-bold text-red-400/80">{t.dangerZone}</h4>
+                      <h4 className="text-lg font-display font-bold text-[#ff7d7d]">{t.dangerZone}</h4>
                     </div>
 
                     <div className="space-y-4">
                       {/* Delete Personal Data */}
                       <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white/[0.08] transition-all duration-300">
                         <div className="text-center md:text-left">
-                          <div className="text-base font-bold text-white/90 mb-1">{t.deletePersonalData}</div>
-                          <div className="text-sm text-white/40 font-light max-w-md">
+                          <div className="text-base font-bold text-white/80 mb-1">{t.deletePersonalData}</div>
+                          <div className="text-sm text-white/50 font-light max-w-md">
                             {t.deletePersonalDataDesc}
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => setDangerModal({ isOpen: true, type: 'data' })}
-                          className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-white/5 text-white/60 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all duration-300"
+                          className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-white/10 text-white/80 border border-white/20 hover:bg-red-500/20 hover:text-[#ff7d7d] hover:border-[#ff7d7d]/30 transition-all duration-300"
                         >
-                          {t.deletePersonalData}
+                          <Trash2 size={15} className="shrink-0 text-[#ff7d7d]" />
+                          <span>{t.deletePersonalData}</span>
                         </button>
                       </div>
 
                       {/* Delete Account */}
                       <div className="p-6 rounded-3xl bg-red-500/5 border border-red-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="text-center md:text-left">
-                          <div className="text-base font-bold text-white/90 mb-1">{t.deleteAccount}</div>
-                          <div className="text-sm text-white/40 font-light max-w-md">
+                          <div className="text-base font-bold text-white/80 mb-1">{t.deleteAccount}</div>
+                          <div className="text-sm text-white/50 font-light max-w-md">
                             {t.deleteAccountDesc}
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => setDangerModal({ isOpen: true, type: 'account' })}
-                          className="w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300"
+                          className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-red-500/15 text-[#ff7d7d] border border-[#ff7d7d]/30 hover:bg-red-600 hover:text-white transition-all duration-300"
                         >
-                          {t.deleteAccount}
+                          <AlertTriangle size={15} className="shrink-0" />
+                          <span>{t.deleteAccount}</span>
                         </button>
                       </div>
                     </div>

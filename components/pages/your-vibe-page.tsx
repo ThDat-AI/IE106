@@ -86,11 +86,12 @@ export default function YourVibePage() {
       {/* Hero */}
       <section>
         <PageHero
-          eyebrowIcon={<Sparkles size={13} />}
+          eyebrowIcon={<Sparkles size={16} className="text-yellow-300" fill="currentColor" style={{ color: '#FDE047' }} />}
           eyebrowLabel={t.aiPowered}
           title={t.yourVibe}
           subtitle={t.yourVibeSub}
-          gradientClass="from-white to-white"
+          titleColor="#ffffff"
+          subtitleColor="rgba(255,255,255,0.9)"
         />
 
         {/* Mood selector */}
@@ -142,14 +143,14 @@ export default function YourVibePage() {
               )}
             </div>
             <div className="flex-1">
-              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2" style={{ backgroundColor: 'rgba(155,77,224,0.2)', color: '#D8B4FE', border: '1px solid rgba(155,77,224,0.3)' }}>
-                ✨ {t.topPickToday}
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 text-white" style={{ backgroundColor: 'rgba(155,77,224,0.2)', border: '1px solid rgba(155,77,224,0.3)' }}>
+                <Sparkles size={12} className="mr-1.5 text-yellow-300" fill="currentColor" style={{ color: '#FDE047' }} /> {t.topPickToday}
               </span>
-              <h2 className="font-display font-bold mt-1 mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
-                V-Pop Daily Mix
+              <h2 className="font-display font-bold mt-1 mb-3 text-white" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
+                {mixes[0]?.title || 'V-Pop Daily Mix'}
               </h2>
               <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                {mixes[0]?.artist || '...'} &amp; các nghệ sĩ V-Pop hàng đầu · {isLoading ? '...' : '25'} bài hát
+                {mixes[0]?.artist || '...'}
               </p>
               <div className="flex items-center gap-3">
                 <button
@@ -164,13 +165,6 @@ export default function YourVibePage() {
                   <Play size={16} fill="currentColor" className="relative z-10 drop-shadow-md" />
                   <span className="relative z-10">{t.listenNow}</span>
                 </button>
-                <Link
-                  href="/playlist/daily-mix-1"
-                  className="group/link flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-white/10 hover:border-white/20 backdrop-blur-md"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.1)' }}
-                >
-                  {t.viewPlaylist} <ChevronRight size={16} className="opacity-70 group-hover/link:opacity-100 transition-opacity" />
-                </Link>
               </div>
             </div>
           </div>
@@ -189,10 +183,10 @@ export default function YourVibePage() {
           <button
             onClick={handleRefreshMixes}
             disabled={isLoadingMixes || isLoading}
-            className="group flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+            className="group flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold bg-white/5 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/20 text-white/80 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
           >
             <RotateCw
-              size={12}
+              size={14}
               className={cn(
                 "transition-transform duration-700",
                 isLoadingMixes ? "animate-spin text-purple-400" : "group-hover:rotate-180"
@@ -316,8 +310,22 @@ export default function YourVibePage() {
                   </div>
                   
                   <div className="flex-1 min-w-0 z-10">
-                    <p className="text-base font-semibold truncate transition-colors group-hover/artist:text-white" style={{ color: isTop4 ? '#ffffff' : 'rgba(255,255,255,0.85)' }}>{artist.title}</p>
-                    <p className="text-xs truncate mt-0.5 uppercase tracking-wide font-medium" style={{ color: 'rgba(155,77,224,0.9)' }}>{artist.subtitle}</p>
+                    <p
+                      className="text-base font-semibold truncate transition-colors group-hover/artist:text-white"
+                      style={{
+                        color: 'var(--vw-text-primary)',
+                        fontFamily: 'var(--font-display)',
+                        letterSpacing: '-0.3px',
+                      }}
+                    >
+                      {artist.title}
+                    </p>
+                    <p
+                      className="text-xs truncate mt-0.5"
+                      style={{ color: 'var(--vw-text-secondary)' }}
+                    >
+                      {artist.subtitle}
+                    </p>
                   </div>
                   
                   <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover/artist:bg-white/10 z-10">
@@ -359,15 +367,11 @@ export default function YourVibePage() {
                   className="absolute top-0 left-0 w-full h-1 opacity-50 group-hover:opacity-100 transition-opacity" 
                   style={{ background: `linear-gradient(90deg, ${rc.text}, ${rc.bg.replace('0.1', '1').replace('0.12', '1')})` }}
                 />
-                <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
-                <p className="font-display font-bold bg-clip-text text-transparent" style={{ 
+                <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.92)' }}>{stat.label}</p>
+                <p className="font-display font-bold text-white" style={{ 
                   fontSize: 42, 
                   letterSpacing: '-1px', 
                   lineHeight: 1,
-                  backgroundImage: i === 0 ? 'linear-gradient(135deg, #ffffff 0%, #BAE6FD 100%)' : 
-                                   i === 1 ? 'linear-gradient(135deg, #ffffff 0%, #A7F3D0 100%)' : 
-                                   i === 2 ? 'linear-gradient(135deg, #ffffff 0%, #FECDD3 100%)' : 
-                                   'linear-gradient(135deg, #ffffff 0%, #FEF08A 100%)'
                 }}>{stat.value}</p>
                 <p className="text-sm mt-3 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{stat.sub}</p>
               </div>

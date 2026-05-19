@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Search, History, Play, Shuffle, Music2, CalendarDays } from 'lucide-react'
+import { Search, History, Play, Shuffle, Music2, CalendarDays, Clock } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import { type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
@@ -53,7 +53,7 @@ function getTimeGroup(playedAtStr?: string, index?: number): string {
 const GROUP_COLORS: Record<string, { text: string; bg: string; border: string }> = {
   'Hôm nay':     { text: '#3ABEF9', bg: 'rgba(58,190,249,0.08)', border: 'rgba(58,190,249,0.2)' },
   'Hôm qua':     { text: '#05D69E', bg: 'rgba(5,214,158,0.08)',  border: 'rgba(5,214,158,0.2)' },
-  '7 ngày qua':  { text: '#F73859', bg: 'rgba(247,56,89,0.08)',  border: 'rgba(247,56,89,0.2)'  },
+  '7 ngày qua':  { text: '#FF708A', bg: 'rgba(255,112,138,0.08)',  border: 'rgba(255,112,138,0.25)'  },
   'Trước đó':    { text: '#FACC15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
   'Kết quả tìm kiếm': { text: '#FF8A08', bg: 'rgba(255,138,8,0.08)', border: 'rgba(255,138,8,0.2)' },
 }
@@ -148,6 +148,8 @@ export default function RecentlyPlayedPage({
           title={t.recentlyPlayed}
           subtitle={t.historySub}
           gradientClass="from-white to-white"
+          titleColor="#FFFFFF"
+          subtitleColor="rgba(255, 255, 255, 0.85)"
           action={
             /* Controls row */
             <div className="flex items-center gap-3">
@@ -221,7 +223,8 @@ export default function RecentlyPlayedPage({
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.08)',
               color: 'rgba(255,255,255,0.85)',
-              width: 300,
+              width: 420,
+              maxWidth: '100%',
               transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
             }}
             onFocus={(e) => {
@@ -239,11 +242,11 @@ export default function RecentlyPlayedPage({
         <div
           className="flex items-center gap-2 px-4 py-2 rounded-xl"
           style={{
-            backgroundColor: 'rgba(58,190,249,0.08)',
-            border: '1px solid rgba(58,190,249,0.2)',
+            backgroundColor: 'rgba(155, 77, 224, 0.08)',
+            border: '1px solid rgba(155, 77, 224, 0.2)',
           }}
         >
-          <CalendarDays size={13} style={{ color: '#3ABEF9' }} />
+          <CalendarDays size={13} style={{ color: '#9B4DE0' }} />
           <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
             {filtered.length}
             {searchQ ? ` / ${initialTracks.length}` : ''} {language === 'vi' ? 'bài gần đây' : 'recent tracks'}
@@ -295,7 +298,7 @@ export default function RecentlyPlayedPage({
                 </h2>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider"
-                  style={{ backgroundColor: gc.bg, color: gc.text, border: `1px solid ${gc.border}` }}
+                  style={{ backgroundColor: gc.bg, color: '#FFFFFF', border: `1px solid ${gc.border}` }}
                 >
                   {tracks.length} {language === 'vi' ? 'bài' : 'tracks'}
                 </span>
@@ -304,13 +307,22 @@ export default function RecentlyPlayedPage({
               <GlassPanel variant="dark" className="vw-playlist-table">
                 {/* Table header */}
                 <div
-                  className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"
+                  className="flex items-center gap-4 px-3 pb-2 pt-3"
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
-                  <span className="hidden md:block text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-right pr-2" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
+                  <div className="w-6 flex items-center justify-center shrink-0">
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+                  </div>
+                  <div className="flex-1 flex items-center gap-4 min-w-0">
+                    <div className="w-10 shrink-0" />
+                    <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+                  </div>
+                  <div className="hidden md:block w-40 shrink-0">
+                    <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+                  </div>
+                  <div className="w-20 flex justify-end shrink-0 pr-4">
+                    <Clock size={14} style={{ color: 'var(--vw-text-muted)' }} />
+                  </div>
                 </div>
 
                 {/* Track rows */}

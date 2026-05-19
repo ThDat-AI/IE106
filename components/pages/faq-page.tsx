@@ -63,11 +63,25 @@ export default function FaqPage() {
       <div className="max-w-5xl mx-auto px-6">
         {/* Hero Section */}
         <div className="pt-12 mb-16">
-          <PageHero
-            title={t.faqHeroTitle}
-            subtitle={t.faqHeroSub}
-            centered
-          />
+          <div className="text-center space-y-4">
+            <h1 
+              className="font-bold text-white tracking-tight" 
+              style={{ 
+                fontFamily: 'var(--font-montserrat)', 
+                fontSize: 'clamp(44px, 5vw, 64px)', 
+                letterSpacing: '-0.03em', 
+                lineHeight: 1.1
+              }}
+            >
+              {t.faqHeroTitle}
+            </h1>
+            <p 
+              className="text-base font-light leading-relaxed max-w-2xl mx-auto text-white/80" 
+              style={{ fontFamily: 'var(--font-montserrat)' }}
+            >
+              {t.faqHeroSub}
+            </p>
+          </div>
 
           {/* Search Bar Container */}
           <div className="mt-12 max-w-2xl mx-auto relative group">
@@ -102,7 +116,7 @@ export default function FaqPage() {
             {/* Popular Topics / Suggestions */}
             {!searchQuery && (
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-top-2 duration-700 delay-150">
-                <span className="text-xs font-semibold text-white/30 uppercase tracking-wider mr-1">{t.popularTopics}:</span>
+                <span className="text-xs font-semibold text-white/70 uppercase tracking-wider mr-1">{t.popularTopics}:</span>
                 {Object.entries(t.topics).map(([key, label]: [string, any]) => (
                   <button
                     key={key}
@@ -110,7 +124,7 @@ export default function FaqPage() {
                       setSearchQuery(label)
                       inputRef.current?.focus()
                     }}
-                    className="px-4 py-1.5 bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/30 rounded-full text-xs text-white/50 hover:text-purple-300 transition-all active:scale-95"
+                    className="px-4 py-1.5 bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/30 rounded-full text-xs text-white/80 hover:text-purple-300 transition-all active:scale-95"
                   >
                     {label}
                   </button>
@@ -177,23 +191,25 @@ export default function FaqPage() {
                     <button
                       key={cat.name}
                       onClick={() => setActiveCategory(cat.name)}
-                      className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 relative overflow-hidden"
-                      style={{
-                        backgroundColor: activeCategory === cat.name ? 'rgba(155,77,224,0.1)' : 'transparent',
-                        border: activeCategory === cat.name ? '1px solid rgba(155,77,224,0.3)' : '1px solid transparent',
-                      }}
+                      className={`
+                        group w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 relative overflow-hidden border cursor-pointer font-bold
+                        ${activeCategory === cat.name 
+                          ? 'bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_4px_20px_rgba(155,77,224,0.1)]' 
+                          : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+                        }
+                      `}
                     >
                       {activeCategory === cat.name && (
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
                       )}
-                      <span className={`transition-colors ${activeCategory === cat.name ? 'text-purple-400' : 'text-white/40 group-hover:text-white/70'}`}>
+                      <span className={`transition-colors ${activeCategory === cat.name ? 'text-purple-300' : 'text-white/60 group-hover:text-white'}`}>
                         {CATEGORY_ICONS[cat.name] || <HelpCircle size={20} />}
                       </span>
-                      <span className={`font-medium transition-colors ${activeCategory === cat.name ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`}>
+                      <span className={`transition-colors ${activeCategory === cat.name ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
                         {cat.name}
                       </span>
                       {activeCategory === cat.name && (
-                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(155,77,224,0.8)]" />
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#C4B5FD]" />
                       )}
                     </button>
                   ))}
@@ -207,7 +223,7 @@ export default function FaqPage() {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold mb-1">{t.directSupport}</h4>
-                      <p className="text-white/40 text-xs leading-relaxed">
+                      <p className="text-white/80 text-xs leading-relaxed">
                         {t.directSupportDesc}
                       </p>
                     </div>
@@ -277,7 +293,7 @@ function FaqItem({ item, isOpen, onToggle }: { item: { q: string; a: string }; i
         <div className="overflow-hidden">
           <div className="px-7 pb-6">
             <div className="w-full h-px bg-white/5 mb-6" />
-            <p className="text-white/50 leading-relaxed text-[15px]">
+            <p className="text-neutral-200 leading-relaxed text-[15px]">
               {item.a}
             </p>
           </div>

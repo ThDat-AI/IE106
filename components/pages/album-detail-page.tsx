@@ -233,10 +233,6 @@ export default function AlbumDetailPage({
           {/* Album Details */}
           <div className="flex-1 text-center md:text-left space-y-6">
             <div className="space-y-2">
-              <div className="flex items-center justify-center md:justify-start gap-3">
-                <AiBadge label="Premium Album" withIcon />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Release</span>
-              </div>
               <h1 className="text-4xl md:text-6xl font-display font-bold text-white tracking-tight leading-[1.1]">
                 {title}
               </h1>
@@ -426,13 +422,18 @@ export default function AlbumDetailPage({
           </div>
 
           <GlassPanel variant="dark" className="vw-playlist-table border-white/5">
-            <div className="grid grid-cols-[3rem_1fr_4rem] md:grid-cols-[3rem_1fr_5rem] gap-4 items-center px-6 py-3 border-b border-white/5 opacity-40">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-center">#</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Tiêu đề</span>
-              <span className="flex justify-end">
-                <Clock size={14} />
-              </span>
-            </div>
+             <div className="flex items-center gap-4 px-5 py-3 border-b border-white/5 opacity-80">
+               <div className="w-6 flex items-center justify-center shrink-0">
+                 <span className="text-[10px] font-bold uppercase tracking-widest text-center">#</span>
+               </div>
+               <div className="flex-1 flex items-center gap-4 min-w-0">
+                 <div className="w-10 shrink-0" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest">Tiêu đề</span>
+               </div>
+               <div className="w-20 flex justify-end shrink-0 pr-4">
+                 <Clock size={14} />
+               </div>
+             </div>
             <div className="p-2 space-y-1">
               {tracks.map((track, i) => (
                 <TrackRow
@@ -445,9 +446,6 @@ export default function AlbumDetailPage({
             </div>
           </GlassPanel>
 
-          <p className="text-[11px] text-white/20 px-4">
-            &copy; {year} {artist}. Cung cấp bởi iTunes Music.
-          </p>
         </div>
 
         {/* Sidebar */}
@@ -471,7 +469,7 @@ export default function AlbumDetailPage({
               </div>
               <div>
                 <h3 className="font-display font-bold text-lg text-white group-hover:text-purple-400 transition-colors">{artist}</h3>
-                <p className="text-sm text-white/40">{albumInfo?.genre || 'V-Pop Artist'}</p>
+                <p className="text-sm text-white/70">{albumInfo?.genre || 'V-Pop Artist'}</p>
               </div>
               <Link
                 href={`/artist/${encodeURIComponent(artist.toLowerCase().replace(/\s+/g, '-'))}${albumInfo?.artistId ? `?id=${albumInfo.artistId}` : ''}`}
@@ -496,12 +494,26 @@ export default function AlbumDetailPage({
                     href={`/album/${item.id}`}
                     className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-vw group"
                   >
-                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5">
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 vw-album-art">
                       <img src={item.albumArt} alt={item.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-white/90 truncate group-hover:text-purple-400 transition-colors">{item.title}</p>
-                      <p className="text-xs text-white/40">{new Date(item.release_date).getFullYear()}</p>
+                      <p
+                        className="text-sm font-semibold truncate group-hover:text-purple-400 transition-colors"
+                        style={{
+                          color: 'var(--vw-text-primary)',
+                          fontFamily: 'var(--font-display)',
+                          letterSpacing: '-0.3px',
+                        }}
+                      >
+                        {item.title}
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: 'var(--vw-text-secondary)' }}
+                      >
+                        {new Date(item.release_date).getFullYear()}
+                      </p>
                     </div>
                   </Link>
                 ))}

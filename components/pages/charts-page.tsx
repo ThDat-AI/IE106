@@ -31,8 +31,8 @@ const REGION_ICONS: Record<Region, React.ReactNode> = {
 
 function TrendIcon({ change }: { change: 'up' | 'down' | 'same' }) {
   if (change === 'up') return <TrendingUp size={12} style={{ color: '#4ade80' }} />
-  if (change === 'down') return <TrendingDown size={12} style={{ color: '#f87171' }} />
-  return <Minus size={12} style={{ color: 'rgba(255,255,255,0.2)' }} />
+  if (change === 'down') return <TrendingDown size={12} style={{ color: '#fca5a5' }} />
+  return <Minus size={12} style={{ color: '#cbd5e1' }} />
 }
 
 function SkeletonRow({ cols }: { cols: number }) {
@@ -68,6 +68,8 @@ interface ChartRowProps {
 function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { currentTrack } = usePlayerStore()
+  const isActive = currentTrack?.id === item.id
   const rc = RANK_COLORS[index] ?? null
   const trend = index % 3 === 0 ? 'up' : index % 5 === 0 ? 'down' : 'same'
 
@@ -152,22 +154,32 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold truncate transition-colors group-hover/row:text-white" style={{ color: 'rgba(255,255,255,0.9)' }}>
+          <p
+            className="text-sm font-semibold truncate transition-colors group-hover/row:text-white"
+            style={{
+              color: isActive ? '#9B4DE0' : 'var(--vw-text-primary)',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.3px',
+            }}
+          >
             {item.title}
           </p>
-          <p className="text-xs truncate mt-0.5 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p
+            className="text-xs truncate mt-0.5 transition-colors"
+            style={{ color: 'var(--vw-text-secondary)' }}
+          >
             {item.artist}
           </p>
         </div>
       </div>
 
       {/* Album */}
-      <p className="text-xs text-right truncate self-center" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.album}</p>
+      <p className="text-xs text-right truncate self-center" style={{ color: '#cbd5e1' }}>{item.album}</p>
 
       {/* Trend text */}
       <p
         className="text-xs text-right self-center font-semibold"
-        style={{ color: trend === 'up' ? '#4ade80' : trend === 'down' ? '#f87171' : 'rgba(255,255,255,0.2)' }}
+        style={{ color: trend === 'up' ? '#4ade80' : trend === 'down' ? '#fca5a5' : '#cbd5e1' }}
       >
         {trend === 'up' ? '↑ 1' : trend === 'down' ? '↓ 2' : '—'}
       </p>
@@ -314,11 +326,13 @@ export default function ChartsPage() {
           eyebrowLabel={t.charts}
           title="Bảng Xếp Hạng"
           subtitle={t.chartsSub}
+          titleColor="white"
+          subtitleColor="#cbd5e1"
           gradientClass="from-white to-white"
           action={
             /* Region selector */
             <div
-              className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl shrink-0 bg-white/[0.03] border border-white/[0.06] shadow-xl"
+              className="flex items-center gap-1 p-1.5 rounded-2xl backdrop-blur-xl shrink-0 bg-[#120E18] border border-white/10 shadow-xl"
             >
               {REGIONS.map((r) => {
                 const isActive = region === r.id
@@ -327,10 +341,10 @@ export default function ChartsPage() {
                     key={r.id}
                     onClick={() => setRegion(r.id)}
                     className={`
-                      flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 cursor-pointer
+                      flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 cursor-pointer
                       ${isActive 
-                        ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                        : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                        ? 'bg-gradient-to-r from-purple-700 via-violet-700 to-indigo-700 border border-purple-500/50 text-white shadow-lg shadow-purple-900/40' 
+                        : 'bg-[#191322] border border-white/10 text-slate-200 hover:bg-[#251d33] hover:border-white/20 hover:text-white'
                       }
                     `}
                     aria-pressed={isActive}
@@ -362,7 +376,7 @@ export default function ChartsPage() {
             <h2 className="font-display font-semibold" style={{ fontSize: 20, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.3px' }}>
               {t.topSongs} — {REGIONS.find(r => r.id === region)?.label}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.updatedDate}</p>
+            <p className="text-xs mt-0.5" style={{ color: '#cbd5e1' }}>{t.updatedDate}</p>
           </div>
         </div>
 
@@ -373,12 +387,15 @@ export default function ChartsPage() {
             className="grid gap-3 px-5 py-3"
             style={{ gridTemplateColumns: '3.5rem 0.75rem 1fr 6rem 4.5rem 5.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>#</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#cbd5e1' }}>#</span>
             <span />
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.titleLabel}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.albumLabel}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.trendLabel}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: 'rgba(255,255,255,0.2)' }}></span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#cbd5e1' }}>{t.titleLabel}</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: '#cbd5e1' }}>{t.albumLabel}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: '#cbd5e1' }}>{t.trendLabel}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: '#cbd5e1' }}></span>
           </div>
 
           {loading ? (

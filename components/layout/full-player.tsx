@@ -320,7 +320,7 @@ export default function FullPlayer() {
         </div>
 
         <div className="flex items-center gap-8">
-          <p className="text-[11px] text-white/20 uppercase tracking-widest font-medium">
+          <p className="text-[11px] text-white/70 uppercase tracking-widest font-medium">
             Audio Quality: Lossless 24-bit / 48kHz
           </p>
         </div>

@@ -151,17 +151,20 @@ export default function ArtistPage({
           {/* Artist Meta */}
           <div className="flex-1 text-center md:text-left pb-4">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
-                  <CheckCircle2 size={14} />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{t.verifiedArtist || 'Verified Artist'}</span>
+               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)] backdrop-blur-md" style={{ fontFamily: 'var(--font-montserrat)' }}>
+                  <CheckCircle2 size={14} className="text-emerald-400 drop-shadow-[0_0_4px_rgba(52,211,153,0.5)] animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)]">{t.verifiedArtist || 'Verified Artist'}</span>
                </div>
-               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50">
+               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50" style={{ fontFamily: 'var(--font-montserrat)' }}>
                   <Users size={14} />
                   <span className="text-[10px] font-bold uppercase tracking-wider">2.4M {t.followers || 'Followers'}</span>
                </div>
             </div>
 
-            <h1 className="font-display text-5xl md:text-8xl lg:text-9xl mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-purple-400 drop-shadow-sm leading-[0.85]">
+            <h1 
+              className="font-display font-bold text-3xl md:text-5xl lg:text-6xl mb-6 tracking-tight text-white drop-shadow-md leading-[1.1]"
+              style={{ fontFamily: 'var(--font-montserrat)', color: '#ffffff' }}
+            >
               {name}
             </h1>
 

@@ -164,7 +164,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
               <h1 className="font-display font-bold text-2xl md:text-3xl mb-3 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500 whitespace-nowrap" key={mode === 'login' ? 'title-l' : 'title-r'} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
                 {mode === 'login' ? t.welcomeBack : t.createAccount}
               </h1>
-              <p className="text-sm md:text-base font-medium opacity-50 animate-in fade-in duration-700" key={mode === 'login' ? 'sub-l' : 'sub-r'}>
+              <p className="text-sm md:text-base font-medium text-white/75 animate-in fade-in duration-700" key={mode === 'login' ? 'sub-l' : 'sub-r'}>
                 {mode === 'login' ? t.signInSub : t.createAccountSub}
               </p>
             </div>
@@ -188,7 +188,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
           {/* Divider (Shared) */}
           <div className="flex items-center gap-4 mb-8">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">{t.orContinueWith} Email</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/65">{t.orContinueWith} Email</span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
 
@@ -197,7 +197,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
             {mode === 'login' ? (
               <form onSubmit={handleLoginSubmit} noValidate className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.email}</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/75">{t.email}</label>
                   <div className="relative flex items-center group" style={inputContainerStyle('login-email', !!loginErrors.email)}>
                     <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Mail size={18} /></div>
                     <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} onFocus={() => setFocusedField('login-email')} onBlur={() => setFocusedField(null)} placeholder="you@example.com" className="w-full bg-transparent border-none outline-none py-4 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
@@ -207,7 +207,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between ml-1">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-white/50">{t.password}</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-white/75">{t.password}</label>
                     <button type="button" className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300">{t.forgotPassword}</button>
                   </div>
                   <div className="relative flex items-center group" style={inputContainerStyle('login-password', !!loginErrors.password)}>
@@ -226,7 +226,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
             ) : (
               <form onSubmit={handleRegisterSubmit} noValidate className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.fullName}</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/75">{t.fullName}</label>
                   <div className="relative flex items-center group" style={inputContainerStyle('reg-name', !!regErrors.name)}>
                     <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><User size={18} /></div>
                     <input type="text" value={regForm.name} onChange={(e) => setRegForm({ ...regForm, name: e.target.value })} onFocus={() => setFocusedField('reg-name')} onBlur={() => setFocusedField(null)} placeholder="Alex Johnson" className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
@@ -235,7 +235,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.email}</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/75">{t.email}</label>
                   <div className="relative flex items-center group" style={inputContainerStyle('reg-email', !!regErrors.email)}>
                     <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Mail size={18} /></div>
                     <input type="email" value={regForm.email} onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} onFocus={() => setFocusedField('reg-email')} onBlur={() => setFocusedField(null)} placeholder="you@example.com" className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
@@ -244,7 +244,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/50">{t.password}</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/75">{t.password}</label>
                   <div className="relative flex items-center group" style={inputContainerStyle('reg-password', !!regErrors.password)}>
                     <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Lock size={18} /></div>
                     <input type={showPassword ? 'text' : 'password'} value={regForm.password} onChange={(e) => setRegForm({ ...regForm, password: e.target.value })} onFocus={() => setFocusedField('reg-password')} onBlur={() => setFocusedField(null)} placeholder={t.passwordMinRegister} className="w-full bg-transparent border-none outline-none py-3.5 px-4 text-[15px] text-white/90 placeholder:text-white/20" />
@@ -272,29 +272,26 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
           {/* Footer (Shared Toggle) */}
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-white/75">
                 {mode === 'login' ? t.noAccount : t.alreadyHaveAccount}{' '}
                 <button 
                   onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                  className="font-bold text-purple-400 hover:text-purple-300 transition-colors"
+                  className="font-bold text-purple-300 hover:text-purple-200 transition-colors"
                 >
                   {mode === 'login' ? t.createOne : t.signInLink}
                 </button>
               </p>
               
               {mode === 'register' && (
-                <p className="text-[10px] leading-relaxed px-4 text-white/25">
-                  {t.termsAgree} <Link href="/legal?tab=terms" className="underline hover:text-white/40">{t.termsLink}</Link> {t.andText} <Link href="/legal?tab=privacy" className="underline hover:text-white/40">{t.privacyLink}</Link>.
+                <p className="text-[10px] leading-relaxed text-white/70">
+                  {t.termsAgree} <Link href="/legal?tab=terms" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.termsLink}</Link> {t.andText} <Link href="/legal?tab=privacy" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.privacyLink}</Link>.
                 </p>
               )}
             </div>
           </div>
         </GlassPanel>
 
-        {/* Bottom decorative hint */}
-        <div className="mt-8 flex items-center justify-center gap-6 opacity-30 hover:opacity-60 transition-all duration-500">
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">VibeWave Music Protocol</div>
-        </div>
+
       </div>
 
       <style jsx>{`

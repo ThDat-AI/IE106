@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable} ${montserrat.variable} bg-vw-bg`}>
-      <body className="font-sans antialiased bg-vw-bg text-primary-text">
+    <html lang="en" suppressHydrationWarning={true} className={`${poppins.variable} ${montserrat.variable} bg-vw-bg`}>
+      <body suppressHydrationWarning={true} className="font-sans antialiased bg-vw-bg text-primary-text">
         {children}
       </body>
     </html>

@@ -76,7 +76,9 @@ export default function LikedSongsPage({
           eyebrowLabel={t.likedSongs}
           title={t.likedSongs}
           subtitle={`${tracks.length} ${t.songsSaved}`}
-          gradientClass="from-white to-white"
+          gradientClass="!text-white"
+          titleColor="#ffffff"
+          subtitleColor="rgba(255, 255, 255, 0.85)"
           action={
             /* Controls row */
             <div className="flex items-center gap-3">
@@ -152,7 +154,8 @@ export default function LikedSongsPage({
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.08)',
               color: 'rgba(255,255,255,0.85)',
-              width: 300,
+              width: 420,
+              maxWidth: '100%',
               transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
             }}
             onFocus={(e) => {
@@ -195,13 +198,22 @@ export default function LikedSongsPage({
         <GlassPanel variant="dark" className="vw-playlist-table">
           {/* Table header */}
           <div
-            className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"
+            className="flex items-center gap-4 px-3 pb-2 pt-3"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
-            <span className="hidden md:block text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-right pr-2" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
+            <div className="w-6 flex items-center justify-center shrink-0">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+            </div>
+            <div className="flex-1 flex items-center gap-4 min-w-0">
+              <div className="w-10 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+            </div>
+            <div className="hidden md:block w-40 shrink-0">
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+            </div>
+            <div className="w-20 flex justify-end shrink-0 pr-4">
+              <Clock size={14} style={{ color: 'var(--vw-text-muted)' }} />
+            </div>
           </div>
 
           {/* Track rows */}

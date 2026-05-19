@@ -396,7 +396,8 @@ export default function LibraryPage({
           eyebrowLabel="Bộ Sưu Tập"
           title="Thư viện"
           subtitle="Lưu trữ và quản lý những giai điệu yêu thích, playlist cá nhân và album mà bạn không thể sống thiếu."
-          gradientClass="from-white to-white"
+          gradientClass="!text-white"
+          subtitleColor="rgba(255, 255, 255, 0.75)"
           action={
             <button
               onClick={() => {
@@ -430,8 +431,8 @@ export default function LibraryPage({
                   relative flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold 
                   transition-all duration-300 flex-1 sm:flex-none overflow-hidden cursor-pointer group
                   ${isActive 
-                    ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                    : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                    ? 'bg-gradient-to-r from-purple-800 via-violet-800 to-indigo-800 border border-purple-700/50 text-white shadow-lg shadow-purple-900/40' 
+                    : 'bg-[#191322] border border-white/10 text-slate-200 hover:bg-[#251d33] hover:border-white/20 hover:text-white'
                   }
                 `}
               >
@@ -443,8 +444,8 @@ export default function LibraryPage({
                   className={`
                     relative z-10 text-[11px] px-2.5 py-0.5 rounded-full font-bold transition-all duration-300
                     ${isActive 
-                      ? 'bg-white/20 text-white' 
-                      : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white/60'
+                      ? 'bg-white text-purple-950 shadow-[0_2px_4px_rgba(0,0,0,0.15)]' 
+                      : 'bg-[#2d223c] text-slate-200 group-hover:bg-[#382b4a] group-hover:text-white'
                     }
                   `}
                 >
@@ -459,14 +460,14 @@ export default function LibraryPage({
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
           <Search
             size={16}
-            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/30 group-focus-within:text-purple-400 transition-colors duration-300 z-10"
+            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-purple-400 transition-colors duration-300 z-10"
           />
           <input
             type="text"
             value={searchQ}
             onChange={(e) => setSearchQ(e.target.value)}
             placeholder={t.filter || "Tìm kiếm trong thư viện..."}
-            className="w-full sm:w-[320px] pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 bg-white/[0.03] border border-white/[0.05] text-white/90 placeholder-white/30 hover:bg-white/[0.05] focus:bg-white/[0.06] focus:border-purple-500/50 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)] relative z-10"
+            className="w-full sm:w-[320px] pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 bg-white/[0.03] border border-white/10 text-white placeholder-slate-400 hover:bg-white/[0.05] hover:border-white/20 focus:bg-white/[0.07] focus:border-purple-500/50 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)] relative z-10"
           />
         </div>
       </div>
@@ -526,7 +527,7 @@ export default function LibraryPage({
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-xl bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                <span className="text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-xl bg-purple-500/10 text-white border border-purple-500/20">
                   Gợi ý hàng đầu
                 </span>
               </div>
@@ -536,7 +537,7 @@ export default function LibraryPage({
               >
                 Album gợi ý cho bạn
               </h2>
-              <p className="text-sm text-white/40 mt-1">
+              <p className="text-sm text-white/70 mt-1">
                 Khám phá các album đang được yêu thích và đề xuất dựa trên sở thích âm nhạc của bạn.
               </p>
             </div>
@@ -545,10 +546,10 @@ export default function LibraryPage({
             <button
               onClick={() => handleRefreshSuggestions(true)}
               disabled={isLoadingSuggestions}
-              className="group flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+              className="group flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold bg-white/5 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/20 text-white/80 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
             >
               <RotateCw
-                size={12}
+                size={14}
                 className={cn(
                   "transition-transform duration-700",
                   isLoadingSuggestions ? "animate-spin text-purple-400" : "group-hover:rotate-180"

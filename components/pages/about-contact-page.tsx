@@ -64,16 +64,24 @@ export default function AboutContactPage() {
 
       <div className="max-w-6xl mx-auto px-6 pt-12 space-y-16">
         {/* Hero Section */}
-        <div className="text-center space-y-6 max-w-3xl mx-auto">
-          <PageHero
-            title={activeTab === 'about' ? t.aboutUs : t.contactUs}
-            subtitle={
-              activeTab === 'about' 
-                ? t.aboutSub
-                : t.contactSub
-            }
-            centered={true}
-          />
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <h1 
+            className="font-bold text-white tracking-tight" 
+            style={{ 
+              fontFamily: 'var(--font-montserrat)', 
+              fontSize: 'clamp(44px, 5vw, 64px)', 
+              letterSpacing: '-0.03em', 
+              lineHeight: 1.1
+            }}
+          >
+            {activeTab === 'about' ? t.aboutUs : t.contactUs}
+          </h1>
+          <p 
+            className="text-base font-light leading-relaxed max-w-2xl mx-auto text-white/80" 
+            style={{ fontFamily: 'var(--font-montserrat)' }}
+          >
+            {activeTab === 'about' ? t.aboutSub : t.contactSub}
+          </p>
         </div>
 
         {/* Tab Switcher */}
@@ -91,7 +99,7 @@ export default function AboutContactPage() {
                     px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer
                     ${isActive 
                       ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                      : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                      : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
                     }
                   `}
                 >
@@ -147,14 +155,14 @@ export default function AboutContactPage() {
               <section className="space-y-12">
                 <div className="text-center space-y-4">
                   <h2 className="text-3xl font-display font-bold text-white tracking-tight">{t.whatWeStandFor}</h2>
-                  <p className="text-white/50">{t.principlesDesc}</p>
+                  <p className="text-zinc-300 font-medium">{t.principlesDesc}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {VALUES.map((v, i) => (
                     <GlassPanel key={i} className="p-8 group hover:-translate-y-1 transition-transform duration-300">
                       <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">{v.icon}</div>
                       <h3 className="text-lg font-display font-bold text-white mb-3">{v.title}</h3>
-                      <p className="text-sm text-white/50 leading-relaxed">{v.body}</p>
+                      <p className="text-sm text-zinc-300 leading-relaxed font-normal">{v.body}</p>
                     </GlassPanel>
                   ))}
                 </div>
@@ -164,7 +172,7 @@ export default function AboutContactPage() {
               <section className="space-y-12">
                 <div className="text-center space-y-4">
                   <h2 className="text-3xl font-display font-bold text-white tracking-tight">{t.meetTheTeam}</h2>
-                  <p className="text-white/50">{t.innovatorsDesc}</p>
+                  <p className="text-zinc-300 font-medium">{t.innovatorsDesc}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                   {TEAM.map((member, i) => (
@@ -182,7 +190,9 @@ export default function AboutContactPage() {
                           {member.initials}
                         </div>
                         <h4 className="text-white font-display font-bold text-sm mb-1">{member.name}</h4>
-                        <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{member.role}</p>
+                        <p className="text-[11px] text-zinc-300/90 font-semibold tracking-wide text-center mt-2 min-h-[2.5rem] flex items-center justify-center leading-snug">
+                          {member.role}
+                        </p>
                       </GlassPanel>
                     </div>
                   ))}

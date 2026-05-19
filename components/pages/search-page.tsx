@@ -156,8 +156,8 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
           {t.noResults || "Không tìm thấy kết quả"}
         </h3>
         
-        <p className="relative z-10 text-xs text-white/50 mt-2 max-w-md leading-relaxed">
-          Không có kết quả nào phù hợp với từ khóa &ldquo;<span className="text-purple-350 font-semibold">{query}</span>&rdquo;. {t.noResultsDesc || "Hãy thử điều chỉnh cụm từ tìm kiếm của bạn hoặc duyệt qua các danh mục khám phá khác."}
+        <p className="relative z-10 text-xs text-white/80 mt-2 max-w-md leading-relaxed">
+          Không có kết quả nào phù hợp với từ khóa &ldquo;<span className="text-purple-400 font-semibold">{query}</span>&rdquo;. {t.noResultsDesc || "Hãy thử điều chỉnh cụm từ tìm kiếm của bạn hoặc duyệt qua các danh mục khám phá khác."}
         </p>
       </div>
     )
@@ -182,7 +182,7 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
                 transition-all duration-300 flex items-center gap-2
                 ${isActive 
                   ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                  : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+                  : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
                 }
               `}
             >
@@ -234,7 +234,7 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
                   <h3 className="font-display font-bold text-3xl tracking-tight text-white line-clamp-1">
                     {topResult.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-white/50 font-medium">
+                  <div className="flex items-center gap-2 text-white/80 font-medium">
                     <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] uppercase tracking-wider">Bài hát</span>
                     <span>•</span>
                     <span className="hover:text-purple-400 transition-colors">{topResult.artist}</span>
@@ -350,6 +350,7 @@ function SearchInner() {
           title={hasQuery ? `${t.resultsFor || "Kết quả cho"} "${query}"` : t.exploreMusic || "Khám phá âm nhạc"}
           subtitle={hasQuery ? undefined : t.searchSub || "Khám phá các bài hát, nghệ sĩ và album yêu thích của bạn thông qua thanh tìm kiếm ở phía trên."}
           gradientClass="from-white to-white"
+          titleColor="#ffffff"
         />
       </section>
 

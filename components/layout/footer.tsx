@@ -51,7 +51,7 @@ export default function Footer() {
                 VibeWave
               </span>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
               {t.musicThatWorks}
             </p>
           </div>
@@ -61,7 +61,7 @@ export default function Footer() {
             <div key={heading}>
               <h3
                 className="text-[11px] font-semibold uppercase tracking-widest mb-4"
-                style={{ color: 'rgba(255,255,255,0.35)' }}
+                style={{ color: 'rgba(255,255,255,0.70)' }}
               >
                 {heading}
               </h3>
@@ -70,8 +70,8 @@ export default function Footer() {
                   <li key={label}>
                     <Link
                       href={href}
-                      className="text-sm transition-vw hover:opacity-80"
-                      style={{ color: 'rgba(255,255,255,0.45)' }}
+                      className="text-sm transition-vw hover:text-white hover:opacity-100"
+                      style={{ color: 'rgba(255,255,255,0.70)' }}
                     >
                       {label}
                     </Link>
@@ -87,7 +87,7 @@ export default function Footer() {
           className="flex items-center justify-between mt-10 pt-6"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.70)' }}>
             &copy; {new Date().getFullYear()} VibeWave. {t.allRightsReserved}
           </p>
 
@@ -95,8 +95,8 @@ export default function Footer() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-[#1F162E] text-xs border-none outline-none cursor-pointer"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
+              className="bg-[#1F162E] text-xs border-none outline-none cursor-pointer hover:text-white transition-colors"
+              style={{ color: 'rgba(255,255,255,0.70)' }}
               aria-label="Language selector"
             >
               <option value="en">English</option>

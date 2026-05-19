@@ -57,6 +57,7 @@ export default function Header() {
 
   return (
     <header
+      suppressHydrationWarning={true}
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 bg-white/[0.01] backdrop-blur-2xl border-b border-white/5"
     >
       {/* Logo */}
@@ -104,20 +105,7 @@ export default function Header() {
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder={t.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg outline-none transition-vw"
-              style={{
-                backgroundColor: '#2A1F3D',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.95)',
-                fontSize: '14px',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#9B4DE0'
-                setShowSuggestions(true)
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-              }}
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl outline-none transition-all duration-300 bg-[#231B2F]/40 hover:bg-[#231B2F]/65 border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-md text-white placeholder:text-white/30 focus:border-vw-purple focus:bg-[#231B2F]/75 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)]"
               aria-label={t.search}
               aria-expanded={showSuggestions}
               aria-haspopup="listbox"
@@ -128,11 +116,9 @@ export default function Header() {
         {/* Suggestions Dropdown */}
         {showSuggestions && (
           <div
-            className="absolute top-full mt-2 w-full rounded-2xl py-2 z-50"
+            className="absolute top-full mt-2 w-full rounded-2xl py-2 z-50 backdrop-blur-xl border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
             style={{
-              backgroundColor: '#2A1F3D',
-              border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              background: 'linear-gradient(135deg, rgba(35, 27, 47, 0.85) 0%, rgba(22, 17, 30, 0.9) 100%)',
             }}
             role="listbox"
           >

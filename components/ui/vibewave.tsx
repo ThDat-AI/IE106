@@ -65,10 +65,16 @@ export function SectionHeader({ title, href, seeAllLabel, rightAction }: Section
         {href && (
           <Link
             href={href}
-            className="flex items-center gap-1 text-sm font-medium transition-vw hover:opacity-80"
-            style={{ color: 'var(--vw-text-muted)' }}
+            className="group/seeall flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md hover:border-purple-500/60 hover:text-purple-100"
+            style={{
+              background: 'linear-gradient(135deg, rgba(155,77,224,0.15) 0%, rgba(255,255,255,0.03) 100%)',
+              borderColor: 'rgba(155,77,224,0.3)',
+              color: '#d8b4fe',
+              boxShadow: '0 4px 12px rgba(10, 7, 18, 0.4), inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}
           >
-            {seeAllLabel ?? t.seeAll} <ChevronRight size={14} />
+            <span>{seeAllLabel ?? t.seeAll}</span>
+            <ChevronRight size={12} className="transition-transform duration-300 group-hover/seeall:translate-x-0.5" />
           </Link>
         )}
       </div>
@@ -130,6 +136,10 @@ interface PageHeroProps {
   action?: React.ReactNode
   /** Whether to center all content. Default: false */
   centered?: boolean
+  /** Custom color for the subtitle */
+  subtitleColor?: string
+  /** Custom color for the title */
+  titleColor?: string
 }
 
 export function PageHero({
@@ -140,6 +150,8 @@ export function PageHero({
   gradientClass = 'from-white via-purple-100 to-purple-400',
   action,
   centered = false,
+  subtitleColor,
+  titleColor,
 }: PageHeroProps) {
   return (
     <div className={`flex flex-col ${centered ? 'items-center text-center' : 'md:flex-row md:items-end justify-between'} gap-6`}>
@@ -150,9 +162,9 @@ export function PageHero({
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md"
             style={{ backgroundColor: 'rgba(155,77,224,0.12)', border: '1px solid rgba(155,77,224,0.25)' }}
           >
-            {eyebrowIcon && <span style={{ color: '#9B4DE0' }}>{eyebrowIcon}</span>}
+            {eyebrowIcon && <span style={{ color: '#E9D5FF' }}>{eyebrowIcon}</span>}
             {eyebrowLabel && (
-              <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#C4B5FD' }}>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-white">
                 {eyebrowLabel}
               </span>
             )}
@@ -161,15 +173,20 @@ export function PageHero({
 
         {/* Title */}
         <h1
-          className={`font-display font-bold text-transparent bg-clip-text bg-gradient-to-br ${gradientClass}`}
-          style={{ fontSize: 'clamp(44px, 5vw, 64px)', letterSpacing: '-0.03em', lineHeight: 1 }}
+          className={`font-display font-bold ${titleColor ? '' : 'text-transparent bg-clip-text bg-gradient-to-br'} ${gradientClass}`}
+          style={{ 
+            fontSize: 'clamp(44px, 5vw, 64px)', 
+            letterSpacing: '-0.03em', 
+            lineHeight: 1,
+            color: titleColor
+          }}
         >
           {title}
         </h1>
 
         {/* Subtitle */}
         {subtitle && (
-          <p className={`text-base font-light leading-relaxed ${centered ? 'max-w-2xl' : 'max-w-lg'}`} style={{ color: 'rgba(255,255,255,0.55)' }}>
+          <p className={`text-base font-light leading-relaxed ${centered ? 'max-w-2xl' : 'max-w-lg'}`} style={{ color: subtitleColor ?? 'rgba(255,255,255,0.55)' }}>
             {subtitle}
           </p>
         )}
@@ -191,8 +208,8 @@ export function AiBadge({ label = 'AI Powered', withIcon = false }: AiBadgeProps
   return (
     <div className="inline-flex items-center gap-1.5">
       <span
-        className="text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md"
-        style={{ backgroundColor: 'rgba(155,77,224,0.15)', color: '#9B4DE0' }}
+        className="text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md text-white"
+        style={{ backgroundColor: 'rgba(155,77,224,0.2)', border: '1px solid rgba(155,77,224,0.35)' }}
       >
         {withIcon && '✨ '}{label}
       </span>
@@ -275,7 +292,7 @@ export function RankBadge({ index, size = 'md', outline = false }: RankBadgeProp
       className="font-display font-bold"
       style={{
         fontSize,
-        color:       rc ? rc.text : 'rgba(255,255,255,0.25)',
+        color:       rc ? rc.text : '#cbd5e1',
         textShadow:  rc ? `0 0 18px ${rc.glow}` : 'none',
         letterSpacing: '-0.5px',
       }}
@@ -338,7 +355,7 @@ export function FilterPills({ categories, active, onSelect, label }: FilterPills
   return (
     <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
       {label && (
-        <span className="text-sm shrink-0" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <span className="text-sm shrink-0" style={{ color: 'rgba(255,255,255,0.7)' }}>
           {label}:
         </span>
       )}
@@ -353,7 +370,7 @@ export function FilterPills({ categories, active, onSelect, label }: FilterPills
               transition-all duration-300 flex items-center gap-2
               ${isActive 
                 ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
+                : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
               }
             `}
           >
@@ -470,7 +487,7 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
       />
 
       {/* Large Image Container */}
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-4 shadow-lg border border-white/10">
+      <div className="relative w-full aspect-square vw-trending-art mb-4 shadow-lg border border-white/10">
         <img
           src={track.albumArt}
           alt={track.title}
@@ -651,10 +668,13 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
             }
           `}} />
           {shouldScroll && isHovered ? (
-            <div className="w-full overflow-hidden whitespace-nowrap">
+            <div className="w-full overflow-hidden whitespace-nowrap mb-1">
               <span
-                className="text-sm font-semibold inline-block text-white"
+                className="text-sm font-semibold leading-tight inline-block"
                 style={{
+                  color: 'var(--vw-text-primary)',
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.3px',
                   animation: 'marquee-scroll 6s linear infinite alternate',
                 }}
               >
@@ -662,11 +682,23 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
               </span>
             </div>
           ) : (
-            <p className="text-sm font-semibold truncate text-white">
+            <p
+              className="text-sm font-semibold leading-tight truncate mb-1"
+              style={{
+                color: 'var(--vw-text-primary)',
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.3px',
+              }}
+            >
               {track.title}
             </p>
           )}
-          <p className="text-xs truncate text-white/50 mt-0.5">{track.artist}</p>
+          <p
+            className="text-xs truncate mt-0.5"
+            style={{ color: 'var(--vw-text-secondary)' }}
+          >
+            {track.artist}
+          </p>
         </div>
       </div>
     </div>
@@ -771,7 +803,7 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
 
       {/* Album art square */}
       <div
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden vw-song-art"
         style={{ aspectRatio: '1/1' }}
       >
         {track.albumArt ? (
@@ -957,7 +989,7 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
             <span
               className="text-sm font-semibold leading-tight inline-block"
               style={{
-                color: 'rgba(255,255,255,0.95)',
+                color: 'var(--vw-text-primary)',
                 fontFamily: 'var(--font-display)',
                 letterSpacing: '-0.3px',
                 animation: 'marquee-scroll 6s linear infinite alternate',
@@ -969,12 +1001,19 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
         ) : (
           <p
             className="text-sm font-semibold leading-tight truncate mb-1"
-            style={{ color: 'rgba(255,255,255,0.95)', fontFamily: 'var(--font-display)', letterSpacing: '-0.3px' }}
+            style={{
+              color: 'var(--vw-text-primary)',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.3px',
+            }}
           >
             {track.title}
           </p>
         )}
-        <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <p
+          className="text-xs truncate mt-0.5"
+          style={{ color: 'var(--vw-text-secondary)' }}
+        >
           {track.artist}
         </p>
       </div>

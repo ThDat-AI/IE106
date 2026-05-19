@@ -370,4 +370,13 @@
   .vw-playlist-card:hover .vw-playlist-art {
     transform: scale(1.04) !important;
   }
+
+  .vw-trending-art {
+    border-radius: 1rem !important; /* 16px */
+    overflow: hidden;
+    transition: transform 0.3s ease !important;
+  }
+  .vw-trending-card:hover .vw-trending-art {
+    transform: scale(1.04) !important;
+  }
 }

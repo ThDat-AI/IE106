@@ -451,7 +451,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     setEditImage(playlist.image || '')
                     setIsEditModalOpen(true)
                   }}
-                  className="px-4 py-2 rounded-xl bg-white/20 border border-white/30 text-white text-xs font-semibold backdrop-blur-md hover:bg-white/30 hover:scale-105 transition-all duration-200 cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-black/65 border border-white/20 text-white text-xs font-semibold backdrop-blur-md hover:bg-purple-600 hover:border-purple-400/50 hover:scale-105 transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-lg"
                 >
                   <Camera size={14} />
                   <span>Sửa hình ảnh</span>
@@ -464,7 +464,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             <div className="space-y-3">
               <div className="flex items-center justify-center md:justify-start gap-3">
                 <AiBadge label={playlist.isCustom ? "Custom Playlist" : "Personalized Playlist"} withIcon />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Curated for you</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-300">Dành riêng cho bạn</span>
               </div>
               <h1
                 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-[1.1] flex items-center justify-center md:justify-start gap-4"
@@ -485,17 +485,12 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                   </button>
                 )}
               </h1>
-              <p className="text-white/50 text-sm max-w-xl font-light leading-relaxed">
+              <p className="text-white/80 text-sm max-w-xl font-light leading-relaxed">
                 {playlist.description || 'Danh sách phát cá nhân của bạn.'}
               </p>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-white/40 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px] border border-purple-500/30 text-purple-400 font-bold">VW</div>
-                  <span>VibeWave</span>
-                </div>
-                <span className="w-1 h-1 rounded-full bg-white/20" />
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-white/70 text-sm">
                 <span>{tracks.length} bài hát</span>
-                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="w-1 h-1 rounded-full bg-white/35" />
                 <span>Khoảng {durationMin} phút</span>
               </div>
             </div>
@@ -546,9 +541,9 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
               ) : (
                 <button
                   onClick={() => setIsAddSongsOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-white bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] hover:from-[#aa62ee] hover:to-[#8b44e3] transition-all cursor-pointer shadow-lg shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex items-center gap-3 px-8 py-4.5 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-[#b57cf6] to-[#8d54f6] hover:from-[#c59eff] hover:to-[#a074ff] transition-all cursor-pointer shadow-lg shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:scale-[1.03] active:scale-[0.97]"
                 >
-                  <Plus size={18} />
+                  <Plus size={22} />
                   <span>Thêm bài hát đầu tiên</span>
                 </button>
               )}
@@ -667,21 +662,28 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             </div>
             <button
               onClick={() => setIsAddSongsOpen(true)}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300 transition-colors cursor-pointer"
+              className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-purple-300 hover:text-purple-200 transition-colors cursor-pointer"
             >
-              <Plus size={14} /> Thêm bài hát
+              <Plus size={16} /> Thêm bài hát
             </button>
           </div>
 
           {tracks.length > 0 ? (
             <GlassPanel variant="dark" className="vw-playlist-table border-white/5">
-              <div className="grid grid-cols-[3rem_1fr_10rem_5rem] gap-4 items-center px-6 py-4 border-b border-white/5 opacity-40">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-center">#</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Tiêu đề</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Album</span>
-                <span className="flex justify-end">
+              <div className="flex items-center gap-4 px-5 py-4 border-b border-white/5 opacity-80">
+                <div className="w-6 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-center">#</span>
+                </div>
+                <div className="flex-1 flex items-center gap-4 min-w-0">
+                  <div className="w-10 shrink-0" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Tiêu đề</span>
+                </div>
+                <div className="hidden md:block w-40 shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Album</span>
+                </div>
+                <div className="w-20 flex justify-end shrink-0 pr-4">
                   <Clock size={14} />
-                </span>
+                </div>
               </div>
               <div className="p-2 space-y-1">
                 {tracks.map((track, i) => (
@@ -716,7 +718,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
               
               <button
                 onClick={() => setIsAddSongsOpen(true)}
-                className="relative z-10 mt-6 px-6 py-2.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] hover:from-[#aa62ee] hover:to-[#8b44e3] text-white hover:shadow-[0_0_20px_rgba(155,77,224,0.4)] active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-purple-500/10"
+                className="relative z-10 mt-8 px-9 py-3.5 rounded-full text-sm font-bold bg-gradient-to-r from-[#b57cf6] to-[#8d54f6] hover:from-[#c59eff] hover:to-[#a074ff] text-white hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] active:scale-95 transition-all duration-300 cursor-pointer shadow-lg shadow-[0_0_25px_rgba(168,85,247,0.3)]"
               >
                 Tìm và Thêm bài hát
               </button>
@@ -730,10 +732,10 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-purple-400 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Gợi ý hàng đầu</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Gợi ý hàng đầu</span>
               </div>
               <h2 className="text-2xl font-display font-semibold text-white tracking-tight">Bài hát đề xuất</h2>
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-white/70">
                 Những bài hát được đề xuất dựa trên sở thích âm nhạc và danh sách phát của bạn.
               </p>
             </div>
@@ -756,7 +758,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         {/* Thumbnail with Play Overlay */}
-                        <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-[1.03] transition-transform duration-200">
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-white/5 border border-white/10 flex items-center justify-center vw-song-art group-hover:scale-[1.03] transition-transform duration-200">
                           {track.albumArt ? (
                             <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover" />
                           ) : (
@@ -774,10 +776,20 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                         </div>
 
                         <div className="min-w-0">
-                          <h4 className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition-colors tracking-tight">
+                          <h4
+                            className="text-sm font-semibold truncate group-hover:text-purple-300 transition-colors"
+                            style={{
+                              color: 'var(--vw-text-primary)',
+                              fontFamily: 'var(--font-display)',
+                              letterSpacing: '-0.3px',
+                            }}
+                          >
                             {track.title}
                           </h4>
-                          <p className="text-xs text-white/60 truncate mt-0.5">
+                          <p
+                            className="text-xs truncate mt-0.5"
+                            style={{ color: 'var(--vw-text-secondary)' }}
+                          >
                             {track.artist}
                           </p>
                         </div>
@@ -810,7 +822,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                   <button
                     onClick={() => loadSuggestedTracks()}
                     disabled={isRefreshingSuggestions}
-                    className="group flex items-center gap-3 px-6 py-3 rounded-full text-sm font-bold bg-white/[0.03] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/70 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+                    className="group flex items-center gap-3 px-5 py-2 rounded-full text-sm font-bold bg-white/5 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/20 text-white/80 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
                   >
                     <RotateCw
                       size={14}

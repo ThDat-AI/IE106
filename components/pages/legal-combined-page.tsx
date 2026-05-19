@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n-store'
-import { GlassPanel, PageHero } from '@/components/ui/vibewave'
+import { GlassPanel, PageHero, SectionHeader } from '@/components/ui/vibewave'
 
 interface Section {
   id: string
@@ -66,12 +66,25 @@ function LegalContent() {
     <div className="max-w-6xl mx-auto px-4 py-12">
       {/* Page header */}
       <div className="mb-16">
-        <PageHero
-          centered
-          title={t.legalTitle}
-          subtitle={t.legalSub}
-          gradientClass="from-white via-purple-200 to-[#9B4DE0]"
-        />
+        <div className="text-center space-y-4">
+          <h1 
+            className="font-bold text-white tracking-tight" 
+            style={{ 
+              fontFamily: 'var(--font-montserrat)', 
+              fontSize: 'clamp(44px, 5vw, 64px)', 
+              letterSpacing: '-0.03em', 
+              lineHeight: 1.1
+            }}
+          >
+            {t.legalTitle}
+          </h1>
+          <p 
+            className="text-base font-light leading-relaxed max-w-2xl mx-auto text-white/80" 
+            style={{ fontFamily: 'var(--font-montserrat)' }}
+          >
+            {t.legalSub}
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -86,7 +99,7 @@ function LegalContent() {
                 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden flex items-center gap-2 cursor-pointer
                 ${isActive 
                   ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/50 text-white shadow-lg shadow-purple-500/30' 
-                  : 'bg-transparent border border-transparent text-white/60 hover:bg-white/5 hover:text-white'
+                  : 'bg-white/10 border border-white/15 text-white/90 hover:bg-white/[0.18] hover:border-white/30 hover:text-white'
                 }
               `}
             >
@@ -101,43 +114,48 @@ function LegalContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">
         {/* Sticky table of contents */}
-        <aside className="lg:col-span-1 sticky top-24 order-2 lg:order-1">
-          <GlassPanel className="p-6">
-            <p
-              className="text-[10px] font-bold uppercase tracking-[0.2em] mb-6"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
-            >
-              {t.contentsLabel}
-            </p>
-            <div className="space-y-1">
-              {activeTabData.sections.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => scrollTo(s.id)}
-                  className="w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group flex items-center gap-3"
-                  style={{
-                    backgroundColor: activeSection === s.id ? 'rgba(155,77,224,0.1)' : 'transparent',
-                    color: activeSection === s.id ? '#9B4DE0' : 'rgba(255,255,255,0.4)',
-                  }}
-                >
+        <aside className="lg:col-span-1 sticky top-24 order-2 lg:order-1 space-y-4">
+          <SectionHeader title={t.contentsLabel} />
+          <div className="space-y-1.5">
+            {activeTabData.sections.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className={`
+                  group w-full flex items-start gap-3 px-5 py-4 rounded-2xl transition-all duration-300 relative overflow-hidden border cursor-pointer font-bold text-left text-[13px] leading-relaxed
+                  ${activeSection === s.id
+                    ? 'bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_4px_20px_rgba(155,77,224,0.1)]'
+                    : 'bg-white/10 border border-white/15 text-white/90 hover:bg-white/[0.18] hover:border-white/30 hover:text-white'
+                  }
+                `}
+              >
+                {activeSection === s.id && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
+                )}
+                <span className={`transition-colors shrink-0 mt-1.5 ${activeSection === s.id ? 'text-purple-300' : 'text-white/60 group-hover:text-white'}`}>
                   <div 
                     className="w-1.5 h-1.5 rounded-full transition-all duration-300"
                     style={{ 
-                      backgroundColor: activeSection === s.id ? '#9B4DE0' : 'rgba(255,255,255,0.1)',
+                      backgroundColor: activeSection === s.id ? '#C4B5FD' : 'rgba(255,255,255,0.2)',
                       transform: activeSection === s.id ? 'scale(1)' : 'scale(0.5)'
                     }}
                   />
+                </span>
+                <span className={`transition-colors relative z-10 break-words flex-1 ${activeSection === s.id ? 'text-white' : 'text-white/90 group-hover:text-white'}`}>
                   {s.heading}
-                </button>
-              ))}
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-white/5">
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', lineHeight: 1.6 }}>
-                {t.lastUpdatedLabel}: {activeTabData.lastUpdated}
-              </p>
-            </div>
-          </GlassPanel>
+                </span>
+                {activeSection === s.id && (
+                  <div className="ml-auto mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#C4B5FD] shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-white/5">
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }}>
+              {t.lastUpdatedLabel}: {activeTabData.lastUpdated}
+            </p>
+          </div>
         </aside>
 
         {/* Legal content */}
@@ -160,7 +178,7 @@ function LegalContent() {
                   >
                     {s.heading}
                   </h3>
-                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8 }}>
+                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.88)', lineHeight: 1.8 }}>
                     {s.body}
                   </p>
                 </section>
@@ -173,12 +191,12 @@ function LegalContent() {
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', lineHeight: 1.6 }} className="max-w-md">
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }} className="max-w-md">
                   This document is provided for informational purposes. For official legal inquiries, please reach out to our legal department.
                 </p>
                 <a 
                   href={`mailto:${activeTabId === 'privacy' ? 'privacy' : activeTabId === 'copyright' ? 'dmca' : 'legal'}@vibewave.fm`}
-                  className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 text-sm font-medium text-white/70 w-fit"
+                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/15 hover:bg-white/[0.18] transition-all duration-300 text-sm font-medium text-white/90 w-fit"
                 >
                   Contact Legal Team
                 </a>

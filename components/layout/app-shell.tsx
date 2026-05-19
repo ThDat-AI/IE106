@@ -17,7 +17,7 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
   return (
     <div className="min-h-screen bg-vw-bg relative overflow-hidden">
       {/* Immersive Deep Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div suppressHydrationWarning={true} className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-vw-purple opacity-[0.25] blur-[100px] mix-blend-screen animate-blob" />
         <div className="absolute top-[20%] right-[-10%] w-[35vw] h-[35vw] rounded-full bg-[#00FFFF] opacity-[0.15] blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
         <div className="absolute bottom-[-10%] left-[20%] w-[45vw] h-[45vw] rounded-full bg-[#FF00FF] opacity-[0.15] blur-[120px] mix-blend-screen animate-blob animation-delay-4000" />

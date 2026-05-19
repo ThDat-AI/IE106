@@ -104,6 +104,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
 
   return (
     <aside
+      suppressHydrationWarning={true}
       className={cn(
         "fixed left-0 top-0 bottom-0 pt-16 flex flex-col z-40 transition-all duration-300 ease-in-out",
         "bg-white/[0.01] backdrop-blur-3xl border-r border-white/5"
@@ -123,7 +124,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <ChevronLeft
             size={18}
             className={cn(
-              "text-white/60 transition-transform duration-300 group-hover:text-vw-purple",
+              "text-white/80 transition-transform duration-300 group-hover:text-vw-purple",
               collapsed ? "rotate-180" : "rotate-0"
             )}
           />
@@ -142,7 +143,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                 "group relative flex items-center gap-3 rounded-xl h-12 transition-vw px-3",
                 active
                   ? "bg-vw-purple/20 text-white shadow-lg shadow-purple-500/10"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
               )}
               aria-current={active ? 'page' : undefined}
             >
@@ -184,7 +185,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           {/* Library section */}
           <nav aria-label="Library" className="mb-8">
             <div className="px-3 pb-3 flex items-center justify-between">
-              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/50">
+              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/85 font-semibold">
                 {t.library}
               </span>
             </div>
@@ -199,7 +200,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                       "group flex items-center gap-3 rounded-xl h-11 transition-vw px-3",
                       active
                         ? "bg-vw-purple/20 text-white shadow-sm shadow-purple-500/10"
-                        : "text-white/60 hover:text-white hover:bg-white/10"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                     )}
                     aria-current={active ? 'page' : undefined}
                   >
@@ -219,7 +220,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                           "text-[10px] px-2 py-0.5 rounded-full font-bold transition-all",
                           label === t.likedSongs
                             ? "bg-vw-purple/30 text-white border border-vw-purple/40 group-hover:bg-vw-purple/40"
-                            : "bg-white/10 text-white/60 border border-white/10 group-hover:bg-white/20"
+                            : "bg-white/10 text-white/80 border border-white/10 group-hover:bg-white/20"
                         )}
                       >
                         {count}
@@ -234,11 +235,11 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           {/* Playlists */}
           <div className="space-y-1">
             <div className="px-3 pb-3 flex items-center justify-between">
-              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/50">
+              <span className="text-[11px] font-display uppercase tracking-[0.2em] text-white/85 font-semibold">
                 {t.playlists}
               </span>
               <button
-                className="w-6 h-6 rounded-lg flex items-center justify-center transition-vw hover:bg-vw-purple/30 hover:text-white text-white/50 border border-white/5 hover:border-vw-purple/30"
+                className="w-6 h-6 rounded-lg flex items-center justify-center transition-vw hover:bg-vw-purple/30 hover:text-white text-white/80 border border-white/10 hover:border-vw-purple/30"
                 aria-label="Create new playlist"
               >
                 <Plus size={14} />
@@ -255,7 +256,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
                       "group flex items-center gap-3 rounded-xl h-10 transition-vw px-3 relative",
                       active
                         ? "bg-vw-purple/20 text-white"
-                        : "text-white/55 hover:text-white hover:bg-white/10"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                     )}
                   >
                     <div className="w-5 h-5 flex items-center justify-center shrink-0 relative">
@@ -286,7 +287,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
       {collapsed && (
         <div className="flex-1 flex flex-col items-center pt-8 space-y-4 px-3">
           <div className="w-10 h-px bg-white/5" />
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-white/30 hover:bg-vw-purple/20 hover:text-vw-purple transition-vw">
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-white/80 hover:bg-vw-purple/20 hover:text-white transition-vw" aria-label="Create new playlist">
             <Plus size={20} />
           </button>
         </div>

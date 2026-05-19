@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, SAMPLE_TRACKS, type Track } from '@/lib/player-store'
@@ -7,7 +8,7 @@ import { useTranslation } from '@/lib/i18n-store'
 import { useState, useEffect, useRef } from 'react'
 import { searchMusic, searchAlbums } from '@/lib/music-api'
 import { useToast } from '@/components/ui/use-toast'
-import { ChevronDown, ChevronRight, RotateCw } from 'lucide-react'
+import { ChevronDown, ChevronRight, RotateCw, Clock } from 'lucide-react'
 import {
   SectionHeader,
   AiBadge,
@@ -191,7 +192,7 @@ export default function HomePage({
         <div className="flex items-end justify-between mb-6">
           <div>
             <div className="mb-1">
-              <AiBadge label={t.aiPowered} />
+              <AiBadge label={t.aiPowered} withIcon />
             </div>
             <h2
               className="font-display font-semibold"
@@ -200,13 +201,19 @@ export default function HomePage({
               {t.madeForYou}
             </h2>
           </div>
-          <a
+          <Link
             href="/your-vibe"
-            className="flex items-center gap-1 text-sm font-medium transition-vw hover:opacity-80"
-            style={{ color: 'var(--vw-text-muted)' }}
+            className="group/seeall flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md hover:border-purple-500/60 hover:text-purple-100"
+            style={{
+              background: 'linear-gradient(135deg, rgba(155,77,224,0.15) 0%, rgba(255,255,255,0.03) 100%)',
+              borderColor: 'rgba(155,77,224,0.3)',
+              color: '#d8b4fe',
+              boxShadow: '0 4px 12px rgba(10, 7, 18, 0.4), inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}
           >
-            {t.seeAll} <ChevronRight size={14} />
-          </a>
+            <span>{t.seeAll}</span>
+            <ChevronRight size={12} className="transition-transform duration-300 group-hover/seeall:translate-x-0.5" />
+          </Link>
         </div>
         <MusicShelf>
           {madeForYou.map((item, i) => (
@@ -227,10 +234,10 @@ export default function HomePage({
             <button
               onClick={() => handleRefreshQuickPicks(activeGenre)}
               disabled={isRefreshing}
-              className={`group/btn flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md ${
+              className={`group/btn flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md ${
                 isRefreshing
                   ? 'border-purple-500/30 text-purple-300/80 bg-purple-500/10'
-                  : 'border-white/10 hover:border-purple-500/30 text-white/60 hover:text-purple-300 bg-white/5 hover:bg-purple-500/10'
+                  : 'border-white/10 hover:border-purple-500/30 text-white/80 hover:text-purple-300 bg-white/5 hover:bg-purple-500/10'
               }`}
               style={{
                 boxShadow: isRefreshing ? '0 0 15px rgba(155,77,224,0.2)' : 'none',
@@ -240,7 +247,7 @@ export default function HomePage({
               <RotateCw
                 size={14}
                 className={`transition-transform duration-500 ${
-                  isRefreshing ? 'animate-spin text-purple-400' : 'group-hover/btn:rotate-180 text-white/60 group-hover/btn:text-purple-400'
+                  isRefreshing ? 'animate-spin text-purple-400' : 'group-hover/btn:rotate-180 text-white/80 group-hover/btn:text-purple-400'
                 }`}
               />
               <span>{isRefreshing ? 'Đang làm mới...' : 'Làm mới'}</span>
@@ -260,13 +267,22 @@ export default function HomePage({
         <div className="vw-playlist-table">
           {/* Header row */}
           <div
-            className="grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_1fr_10rem_auto] items-center gap-4 px-3 pb-2 pt-3"
+            className="flex items-center gap-4 px-3 pb-2 pt-3"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
-            <span className="hidden md:block text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.durationLabel}</span>
+            <div className="w-6 flex items-center justify-center shrink-0">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+            </div>
+            <div className="flex-1 flex items-center gap-4 min-w-0">
+              <div className="w-10 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+            </div>
+            <div className="hidden md:block w-40 shrink-0">
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+            </div>
+            <div className="w-20 flex justify-end shrink-0 pr-4">
+              <Clock size={14} style={{ color: 'var(--vw-text-muted)' }} />
+            </div>
           </div>
           <div className="py-2">
             {quickPicks.slice(0, visibleCount).map((track, i) => (
