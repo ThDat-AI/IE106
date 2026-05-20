@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban, X, Check } from 'lucide-react'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,7 +29,6 @@ function formatTime(secs: number) {
 }
 
 export default function TrackRow({ index, track, showAlbum = true, onRemove, removeLabel, hideGoToArtist, variant = 'purple' }: TrackRowProps) {
-  const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
@@ -200,49 +200,55 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
   return (
     <>
       <div
-        className="flex items-center gap-4 px-3 py-2.5 rounded-lg group transition-vw"
+        className={cn(
+          "flex items-center gap-4 px-3 py-2.5 rounded-lg group transition-vw hover:bg-white/10",
+          isActive ? "bg-[var(--vw-active-bg)]" : ""
+        )}
         style={{
-          backgroundColor: isHovered ? 'rgba(255,255,255,0.1)' : isActive ? activeBg : 'transparent',
-        }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+          '--vw-active-bg': activeBg,
+        } as React.CSSProperties}
       >
         {/* Index / play */}
-        <div className="w-6 flex items-center justify-center shrink-0">
-          {isHovered ? (
-            <button
-              onClick={handlePlay}
-              aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
-            >
-              {isCurrentlyPlaying
-                ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <rect x="3" y="2" width="3" height="12" rx="1" fill={themeColor}/>
-                    <rect x="10" y="2" width="3" height="12" rx="1" fill={themeColor}/>
-                  </svg>
-                : <Play size={14} fill={themeColor} style={{ color: themeColor, marginLeft: 1 }} />
-              }
-            </button>
-          ) : isCurrentlyPlaying ? (
-            <div className="flex items-end gap-0.5" aria-label="Now playing">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-0.5 rounded-full"
-                  style={{
-                    backgroundColor: themeColor,
-                    height: `${4 + i * 2}px`,
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <span
-              className="text-sm tabular-nums"
-              style={{ color: isActive ? themeColor : 'var(--vw-text-muted)' }}
-            >
-              {index}
-            </span>
-          )}
+        <div className="w-6 flex items-center justify-center shrink-0 relative">
+          {/* Play button shown on hover */}
+          <button
+            onClick={handlePlay}
+            aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
+            className="hidden group-hover:flex items-center justify-center"
+          >
+            {isCurrentlyPlaying
+              ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <rect x="3" y="2" width="3" height="12" rx="1" fill={themeColor}/>
+                  <rect x="10" y="2" width="3" height="12" rx="1" fill={themeColor}/>
+                </svg>
+              : <Play size={14} fill={themeColor} style={{ color: themeColor, marginLeft: 1 }} />
+            }
+          </button>
+
+          {/* Index or Now Playing bars shown when NOT hovered */}
+          <div className="block group-hover:hidden">
+            {isCurrentlyPlaying ? (
+              <div className="flex items-end gap-0.5" aria-label="Now playing">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="w-0.5 rounded-full"
+                    style={{
+                      backgroundColor: themeColor,
+                      height: `${4 + i * 2}px`,
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <span
+                className="text-sm tabular-nums"
+                style={{ color: isActive ? themeColor : 'var(--vw-text-muted)' }}
+              >
+                {index}
+              </span>
+            )}
+          </div>
         </div>
   
         {/* Track art */}
@@ -295,10 +301,12 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
             onClick={handleLikeClick}
             aria-label={isLiked ? 'Unlike' : 'Like'}
             aria-pressed={isLiked}
-            className="relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-vw cursor-pointer hover:bg-white/5 rounded-full"
+            className={cn(
+              "relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100",
+              isLiked ? "opacity-100" : ""
+            )}
             style={{
               color: isLiked ? '#EF4444' : 'var(--vw-text-muted)',
-              opacity: isHovered || isLiked ? 1 : 0,
             }}
           >
             <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
@@ -320,8 +328,7 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
               }}
               aria-label={removeLabel || "Xóa khỏi danh sách phát"}
               title={removeLabel || "Xóa khỏi danh sách phát"}
-              className="transition-all duration-200 text-white/40 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer"
-              style={{ opacity: isHovered ? 1 : 0 }}
+              className="transition-all duration-200 text-white/40 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer opacity-0 group-hover:opacity-100"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
@@ -331,8 +338,11 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="More options"
-                className="transition-vw cursor-pointer hover:text-white"
-                style={{ color: 'var(--vw-text-muted)', opacity: isHovered || isMenuOpen ? 1 : 0 }}
+                className={cn(
+                  "transition-vw cursor-pointer hover:text-white opacity-0 group-hover:opacity-100",
+                  isMenuOpen ? "opacity-100" : ""
+                )}
+                style={{ color: 'var(--vw-text-muted)' }}
               >
                 <MoreHorizontal size={15} />
               </button>

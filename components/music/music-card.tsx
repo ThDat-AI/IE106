@@ -22,6 +22,7 @@ interface MusicCardProps {
   className?: string
   track?: Track
   image?: string
+  variant?: 'default' | 'compact'
   onDelete?: (id: string) => void
   deleteLabel?: string
   isLibraryPage?: boolean
@@ -53,7 +54,6 @@ export default function MusicCard({
   isLibraryPage = false,
   onHideSuggestion,
 }: MusicCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
@@ -159,21 +159,11 @@ export default function MusicCard({
   if (type === 'artist') {
     const artistCard = (
       <div
-        className={cn('relative flex flex-col items-center text-center cursor-pointer group w-full', className)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          transition: 'transform 0.2s ease',
-          transform: isHovered ? 'scale(1.04)' : 'scale(1)',
-        }}
+        className={cn('relative flex flex-col items-center text-center cursor-pointer group w-full transition-transform duration-200 hover:scale-[1.04]', className)}
       >
         {/* Circular Image Container */}
         <div 
-          className="relative w-full aspect-square rounded-full overflow-hidden mb-3 border border-white/10 shadow-lg"
-          style={{
-            boxShadow: isHovered ? '0 12px 30px rgba(155,77,224,0.25)' : '0 8px 24px rgba(0,0,0,0.5)',
-            transition: 'box-shadow 0.2s ease',
-          }}
+          className="relative w-full aspect-square rounded-full overflow-hidden mb-3 border border-white/10 shadow-lg transition-shadow duration-200 group-hover:shadow-[0_12px_30px_rgba(155,77,224,0.25)]"
         >
           {displayImage ? (
             <img
@@ -192,8 +182,7 @@ export default function MusicCard({
           
           {/* Hover Play Button Overlay */}
           <div
-            className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200"
-            style={{ opacity: isHovered ? 1 : 0 }}
+            className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 opacity-0 group-hover:opacity-100"
           >
             <button
               onClick={handlePlay}
@@ -237,8 +226,6 @@ export default function MusicCard({
   const card = variant === 'compact' ? (
     <div
       className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 relative">
         {displayImage ? (
@@ -288,8 +275,6 @@ export default function MusicCard({
             : 'vw-album-card', 
         className
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Art square */}
       <div
@@ -320,11 +305,10 @@ export default function MusicCard({
 
         {/* Hover overlay with control buttons */}
         <div
-          className="absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10"
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            opacity: isHovered || isMenuOpen ? 1 : 0,
-          }}
+          className={cn(
+            "absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover:opacity-100",
+            isMenuOpen ? "opacity-100" : ""
+          )}
         >
           {/* 1. Heart (Like) button on the LEFT */}
           <button
@@ -651,15 +635,24 @@ export default function MusicCard({
             85%, 100% { transform: translateX(-50%); }
           }
         `}} />
-        {shouldScroll && isHovered ? (
-          <div className="w-full overflow-hidden whitespace-nowrap mb-1">
+        {shouldScroll ? (
+          <div className="w-full overflow-hidden whitespace-nowrap mb-1 relative">
             <span
-              className="text-sm font-semibold leading-tight inline-block"
+              className="text-sm font-semibold leading-tight inline-block max-w-full truncate group-hover:hidden"
               style={{
                 color: 'var(--vw-text-primary)',
                 fontFamily: 'var(--font-display)',
                 letterSpacing: '-0.3px',
-                animation: 'marquee-scroll 6s linear infinite alternate',
+              }}
+            >
+              {title}
+            </span>
+            <span
+              className="text-sm font-semibold leading-tight hidden group-hover:inline-block animate-[marquee-scroll_6s_linear_infinite_alternate]"
+              style={{
+                color: 'var(--vw-text-primary)',
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.3px',
               }}
             >
               {title}

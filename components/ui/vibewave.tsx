@@ -397,7 +397,6 @@ interface PodiumCardProps {
 export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
   const rc = RANK_COLORS[index] ?? RANK_COLORS[RANK_COLORS.length - 1]
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
-  const [isHovered, setIsHovered] = React.useState(false)
   const [isLiked, setIsLiked] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
 
@@ -467,17 +466,14 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
 
   return (
     <div
-      className="vw-trending-card group/pod p-4 relative"
+      className="vw-trending-card group/pod p-4 relative hover:shadow-[0_24px_50px_-12px_var(--rc-glow),inset_0_1px_0_rgba(255,255,255,0.1)]"
       style={{
         background: `linear-gradient(145deg, ${rc.bg} 0%, rgba(22,17,30,0.9) 100%)`,
         border: `1px solid ${rc.border}`,
-        boxShadow: isHovered 
-          ? `0 24px 50px -12px ${rc.glow}, inset 0 1px 0 rgba(255,255,255,0.1)` 
-          : `0 16px 40px -16px ${rc.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-      }}
+        boxShadow: `0 16px 40px -16px ${rc.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+        '--rc-glow': rc.glow,
+      } as React.CSSProperties}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Glow blob */}
       <div
@@ -496,11 +492,7 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
         
         {/* Hover overlay with control buttons */}
         <div
-          className="absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10"
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            opacity: isHovered || isMenuOpen ? 1 : 0,
-          }}
+          className={`absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover/pod:opacity-100 ${isMenuOpen ? 'opacity-100' : ''}`}
         >
           {/* 1. Heart (Like) button on the LEFT */}
           <button
@@ -667,15 +659,24 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
               85%, 100% { transform: translateX(-50%); }
             }
           `}} />
-          {shouldScroll && isHovered ? (
-            <div className="w-full overflow-hidden whitespace-nowrap mb-1">
+          {shouldScroll ? (
+            <div className="w-full overflow-hidden whitespace-nowrap mb-1 relative">
               <span
-                className="text-sm font-semibold leading-tight inline-block"
+                className="text-sm font-semibold leading-tight inline-block max-w-full truncate group-hover/pod:hidden"
                 style={{
                   color: 'var(--vw-text-primary)',
                   fontFamily: 'var(--font-display)',
                   letterSpacing: '-0.3px',
-                  animation: 'marquee-scroll 6s linear infinite alternate',
+                }}
+              >
+                {track.title}
+              </span>
+              <span
+                className="text-sm font-semibold leading-tight hidden group-hover/pod:inline-block animate-[marquee-scroll_6s_linear_infinite_alternate]"
+                style={{
+                  color: 'var(--vw-text-primary)',
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.3px',
                 }}
               >
                 {track.title}
@@ -715,7 +716,6 @@ interface GlassMusicCardProps {
 }
 
 export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
   const [isLiked, setIsLiked] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [isHidden, setIsHidden] = React.useState(false)
@@ -786,17 +786,14 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
   return (
     <div
       className="vw-song-card group/glass relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Glow blob on hover */}
       <div
-        className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none transition-opacity duration-500"
+        className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none transition-opacity duration-500 opacity-0 group-hover/glass:opacity-20"
         style={{
           background: `radial-gradient(circle, ${accentColor} 0%, transparent 70%)`,
           filter: 'blur(20px)',
           transform: 'translate(40%, -40%)',
-          opacity: isHovered ? 0.2 : 0,
         }}
         aria-hidden
       />
@@ -823,11 +820,7 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
 
         {/* Hover overlay with control buttons */}
         <div
-          className="absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10"
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            opacity: isHovered || isMenuOpen ? 1 : 0,
-          }}
+          className={`absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover/glass:opacity-100 ${isMenuOpen ? 'opacity-100' : ''}`}
         >
           {/* 1. Heart (Like) button on the LEFT */}
           <button
@@ -984,15 +977,24 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
             85%, 100% { transform: translateX(-50%); }
           }
         `}} />
-        {shouldScroll && isHovered ? (
-          <div className="w-full overflow-hidden whitespace-nowrap mb-1">
+        {shouldScroll ? (
+          <div className="w-full overflow-hidden whitespace-nowrap mb-1 relative">
             <span
-              className="text-sm font-semibold leading-tight inline-block"
+              className="text-sm font-semibold leading-tight inline-block max-w-full truncate group-hover/glass:hidden"
               style={{
                 color: 'var(--vw-text-primary)',
                 fontFamily: 'var(--font-display)',
                 letterSpacing: '-0.3px',
-                animation: 'marquee-scroll 6s linear infinite alternate',
+              }}
+            >
+              {track.title}
+            </span>
+            <span
+              className="text-sm font-semibold leading-tight hidden group-hover/glass:inline-block animate-[marquee-scroll_6s_linear_infinite_alternate]"
+              style={{
+                color: 'var(--vw-text-primary)',
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.3px',
               }}
             >
               {track.title}

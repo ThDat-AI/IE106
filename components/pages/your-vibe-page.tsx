@@ -1,6 +1,6 @@
 "use client"
 
-import { Sparkles, RefreshCw, Play, ChevronRight, Loader2, RotateCw } from 'lucide-react'
+import { RefreshCw, Play, ChevronRight, Loader2, RotateCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
 import { SAMPLE_TRACKS, type Track } from '@/lib/player-store'
@@ -86,7 +86,7 @@ export default function YourVibePage() {
       {/* Hero */}
       <section>
         <PageHero
-          eyebrowIcon={<Sparkles size={16} className="text-yellow-300" fill="currentColor" style={{ color: '#FDE047' }} />}
+          eyebrowIcon="✨"
           eyebrowLabel={t.aiPowered}
           title={t.yourVibe}
           subtitle={t.yourVibeSub}
@@ -144,7 +144,7 @@ export default function YourVibePage() {
             </div>
             <div className="flex-1">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 text-white" style={{ backgroundColor: 'rgba(155,77,224,0.2)', border: '1px solid rgba(155,77,224,0.3)' }}>
-                <Sparkles size={12} className="mr-1.5 text-yellow-300" fill="currentColor" style={{ color: '#FDE047' }} /> {t.topPickToday}
+                ✨ {t.topPickToday}
               </span>
               <h2 className="font-display font-bold mt-1 mb-3 text-white" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
                 {mixes[0]?.title || 'V-Pop Daily Mix'}
@@ -154,14 +154,13 @@ export default function YourVibePage() {
               </p>
               <div className="flex items-center gap-3">
                 <button
-                  className="group/btn flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden relative"
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden relative before:absolute before:inset-0 before:bg-white/20 before:translate-y-full hover:before:translate-y-0 before:transition-transform before:duration-300 before:ease-out"
                   style={{ 
                     background: 'linear-gradient(135deg, #9B4DE0 0%, #6B21A8 100%)', 
                     color: '#ffffff',
                     boxShadow: '0 10px 25px -5px rgba(155,77,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2)'
                   }}
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                   <Play size={16} fill="currentColor" className="relative z-10 drop-shadow-md" />
                   <span className="relative z-10">{t.listenNow}</span>
                 </button>
@@ -255,7 +254,7 @@ export default function YourVibePage() {
                 <Link
                   key={artist.id}
                   href={artist.href}
-                  className="group/artist flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+                  className="group flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
                   style={{ 
                     background: isTop4 
                       ? 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' 
@@ -266,12 +265,12 @@ export default function YourVibePage() {
                   }}
                 >
                   {/* Hover Highlight */}
-                  <div className="absolute inset-0 bg-white/[0.06] opacity-0 group-hover/artist:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   
                   {/* Shimmer for Top 1 */}
                   {i === 0 && (
                     <div 
-                      className="absolute inset-0 opacity-0 group-hover/artist:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
                       style={{ 
                         background: 'linear-gradient(90deg, transparent, rgba(58,190,249,0.15), transparent)', 
                         transform: 'translateX(-100%) skewX(-15deg)', 
@@ -282,7 +281,7 @@ export default function YourVibePage() {
 
                   {/* Rank number */}
                   <span 
-                    className="font-display font-bold w-10 text-center shrink-0 transition-all duration-300 group-hover/artist:scale-110 group-hover/artist:-rotate-3 z-10" 
+                    className="font-display font-bold w-10 text-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3 z-10" 
                     style={{ 
                       color: rc ? rc.text : 'rgba(255,255,255,0.8)',
                       fontSize: i === 0 ? '28px' : i === 1 ? '24px' : i === 2 ? '22px' : i === 3 ? '20px' : '18px',
@@ -303,7 +302,7 @@ export default function YourVibePage() {
                     }}
                   >
                     {artist.image ? (
-                      <img src={artist.image} alt={artist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover/artist:scale-110" />
+                      <img src={artist.image} alt={artist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
                       artist.title.charAt(0)
                     )}
@@ -311,7 +310,7 @@ export default function YourVibePage() {
                   
                   <div className="flex-1 min-w-0 z-10">
                     <p
-                      className="text-base font-semibold truncate transition-colors group-hover/artist:text-white"
+                      className="text-base font-semibold truncate transition-colors group-hover:text-white"
                       style={{
                         color: 'var(--vw-text-primary)',
                         fontFamily: 'var(--font-display)',
@@ -328,8 +327,8 @@ export default function YourVibePage() {
                     </p>
                   </div>
                   
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover/artist:bg-white/10 z-10">
-                    <ChevronRight size={18} className="transition-transform duration-300 group-hover/artist:translate-x-0.5 group-hover/artist:text-white" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/10 z-10">
+                    <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-white" style={{ color: 'rgba(255,255,255,0.3)' }} />
                   </div>
                 </Link>
               );
