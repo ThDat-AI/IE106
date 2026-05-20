@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Clock, X, Loader2, Music, Check, Trash2, RotateCw } from 'lucide-react'
+import { Plus, Search, Clock, X, Loader2, Music, Check, Trash2, RotateCw, TrendingUp } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import { type Track } from '@/lib/player-store'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n-store'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { searchAlbums } from '@/lib/music-api'
 import { useToast } from '@/components/ui/use-toast'
 import {
@@ -15,6 +15,7 @@ import {
   MusicShelf,
 } from '@/components/ui/vibewave'
 import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
+import { Portal } from '@/components/ui/portal'
 
 type Tab = 'playlists' | 'albums' | 'liked' | 'recent'
 
@@ -25,6 +26,7 @@ interface LibraryItem {
   image?: string
   href: string
   type: string
+  tracks?: Track[]
 }
 
 export default function LibraryPage({
@@ -34,6 +36,7 @@ export default function LibraryPage({
 }) {
   const { t } = useTranslation()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('albums')
 
@@ -294,6 +297,9 @@ export default function LibraryPage({
     setNewPlaylistTitle('')
     setNewPlaylistDesc('')
     setIsAddPlaylistOpen(false)
+
+    // Navigate to the newly created playlist
+    router.push(`/playlist/${newId}`)
   }
 
   const handleAddAlbum = (album: any) => {
@@ -481,6 +487,7 @@ export default function LibraryPage({
               title={item.title}
               subtitle={item.subtitle}
               image={(item as any).image}
+              playlistTracks={item.tracks}
               href={item.href}
               type={(item as any).type || (activeTab === 'playlists' ? 'playlist' : activeTab === 'albums' ? 'album' : 'artist')}
               onDelete={(id) => {
@@ -591,11 +598,12 @@ export default function LibraryPage({
 
       {/* Add Album Modal */}
       {isAddAlbumOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
-            onClick={() => setIsAddAlbumOpen(false)}
-          />
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
+              onClick={() => setIsAddAlbumOpen(false)}
+            />
 
           <div
             className="relative w-full max-w-xl bg-[#130E1B]/95 border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_24px_64px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden z-10 transition-all duration-300"
@@ -646,6 +654,23 @@ export default function LibraryPage({
                     <X size={16} />
                   </button>
                 )}
+              </div>
+              
+              {/* Popular Search Suggestions */}
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-white/45 flex items-center gap-1 font-medium select-none">
+                  <TrendingUp size={12} className="text-purple-400 animate-pulse" />
+                  Xu hướng:
+                </span>
+                {['Sơn Tùng M-TP', 'Vũ.', 'Đen Vâu', 'tlinh', 'Wren Evans'].map((kw) => (
+                  <button
+                    key={kw}
+                    onClick={() => setModalSearchQ(kw)}
+                    className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/60 hover:text-purple-300 transition-all duration-200 cursor-pointer active:scale-95 text-[11px] font-medium"
+                  >
+                    {kw}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -722,12 +747,31 @@ export default function LibraryPage({
                   </p>
                 </div>
               ) : (
-                <div className="py-16 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-3">
-                    <Search size={20} className="text-purple-400" />
+                <div className="py-16 flex flex-col items-center justify-center text-center relative overflow-hidden rounded-3xl bg-[#1A1423]/20 border border-white/5 p-6 shadow-inner">
+                  {/* Decorative glowing background light */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-purple-500/[0.03] rounded-full blur-[50px] pointer-events-none" />
+                  
+                  {/* Premium animated multi-layer icon */}
+                  <div className="relative w-20 h-20 flex items-center justify-center mb-5">
+                    {/* Pulsing ring 1 */}
+                    <div className="absolute inset-0 rounded-3xl bg-purple-500/5 border border-purple-500/10 animate-ping [animation-duration:3s]" />
+                    {/* Pulsing ring 2 */}
+                    <div className="absolute inset-2 rounded-2.5xl bg-purple-500/10 border border-purple-500/20 animate-pulse" />
+                    
+                    {/* The Icon Container */}
+                    <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-[0_8px_32px_rgba(155,77,224,0.15)] backdrop-blur-md transition-transform duration-500">
+                      <Search size={22} className="text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                      {/* Floating music note icon overlay */}
+                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-400/35 flex items-center justify-center text-[10px] text-indigo-300 animate-bounce">
+                        ♬
+                      </div>
+                    </div>
                   </div>
-                  <h5 className="text-sm font-display font-bold text-white/80">Nhập từ khóa tìm kiếm</h5>
-                  <p className="text-xs text-white/40 max-w-xs mt-1 px-4">
+                  
+                  <h5 className="relative z-10 text-sm font-display font-bold text-white/90 tracking-wide">
+                    Nhập từ khóa tìm kiếm
+                  </h5>
+                  <p className="relative z-10 text-xs text-white/50 max-w-xs mt-1.5 px-4 leading-relaxed">
                     Nhập tên album hoặc nghệ sĩ để bắt đầu tìm kiếm những tác phẩm âm nhạc đỉnh cao.
                   </p>
                 </div>
@@ -735,15 +779,17 @@ export default function LibraryPage({
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Create Playlist Modal */}
       {isAddPlaylistOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
-            onClick={() => setIsAddPlaylistOpen(false)}
-          />
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
+              onClick={() => setIsAddPlaylistOpen(false)}
+            />
 
           <div
             className="relative w-full max-w-md bg-[#130E1B]/95 border border-white/10 rounded-[32px] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden z-10 transition-all duration-300"
@@ -823,6 +869,7 @@ export default function LibraryPage({
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Confirm Deletion Alert Dialog */}

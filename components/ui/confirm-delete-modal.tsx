@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Trash2, X, AlertTriangle, Loader2 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
+import { Portal } from './portal'
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean
@@ -39,10 +40,11 @@ export function ConfirmDeleteModal({
     onClose()
   }
 
-  const typeText = itemType === 'album' ? 'album' : (t.playlist || 'danh sách phát')
+  const typeText = itemType === 'album' ? 'album' : (t.playlists?.toLowerCase() || 'danh sách phát')
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <Portal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
@@ -57,7 +59,7 @@ export function ConfirmDeleteModal({
 
       {/* Modal Card */}
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-[32px] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.7)] animate-in zoom-in-95 fade-in duration-300 z-10"
+        className="relative w-full max-w-lg overflow-hidden rounded-[32px] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.7)] animate-in zoom-in-95 fade-in duration-300 z-10"
         style={{
           background: 'linear-gradient(180deg, rgba(30,22,43,0.92) 0%, rgba(16,12,23,0.96) 100%)',
           backdropFilter: 'blur(20px)',
@@ -88,7 +90,7 @@ export function ConfirmDeleteModal({
             Xác nhận xóa {typeText}
           </h3>
 
-          <p className="text-sm text-white/60 font-light leading-relaxed mb-8 px-2">
+          <p className="text-[13px] text-white/60 font-light leading-relaxed mb-8 px-2">
             Bạn có chắc chắn muốn xóa {typeText} <span className="text-purple-300 font-medium">&ldquo;{itemName}&rdquo;</span> khỏi thư viện không? Hành động này sẽ không thể hoàn tác.
           </p>
 
@@ -96,21 +98,22 @@ export function ConfirmDeleteModal({
             <button
               onClick={onClose}
               disabled={isDeleting}
-              className="px-6 py-3.5 rounded-2xl text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-3.5 rounded-xl text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               {t.cancel || 'Hủy'}
             </button>
             <button
               onClick={handleConfirm}
               disabled={isDeleting}
-              className="relative group overflow-hidden px-6 py-3.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+              className="relative group overflow-hidden px-6 py-3.5 rounded-xl text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               style={{
-                background: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)',
-                boxShadow: '0 4px 16px rgba(239,68,68,0.25)',
+                backgroundColor: '#EF4444',
+                boxShadow: '0 4px 20px rgba(239,68,68,0.3)',
+                border: '1px solid rgba(239,68,68,0.4)'
               }}
             >
-              {/* Button Hover Glow */}
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Button Glow */}
+              <div className="absolute inset-0 bg-red-600 opacity-0 transition-opacity blur-xl group-hover:opacity-20" />
 
               <div className="relative flex items-center justify-center gap-2">
                 {isDeleting ? (
@@ -125,5 +128,6 @@ export function ConfirmDeleteModal({
         </div>
       </div>
     </div>
+    </Portal>
   )
 }

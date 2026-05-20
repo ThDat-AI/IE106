@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Search, Settings, User, LogOut, Bell, ChevronDown } from 'lucide-react'
+import { Search, Settings, User, LogOut, Bell, ChevronDown, Ban } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
 
 const SEARCH_SUGGESTIONS = [
@@ -97,7 +97,7 @@ export default function Header() {
             <Search
               size={16}
               className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
+              style={{ color: 'rgba(255,255,255,0.55)' }}
             />
             <input
               type="text"
@@ -105,7 +105,7 @@ export default function Header() {
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               placeholder={t.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl outline-none transition-all duration-300 bg-[#231B2F]/40 hover:bg-[#231B2F]/65 border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-md text-white placeholder:text-white/30 focus:border-vw-purple focus:bg-[#231B2F]/75 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)]"
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl outline-none transition-all duration-300 bg-[#231B2F]/40 hover:bg-[#231B2F]/65 border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-md text-white placeholder:text-white/45 focus:border-vw-purple focus:bg-[#231B2F]/75 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)]"
               aria-label={t.search}
               aria-expanded={showSuggestions}
               aria-haspopup="listbox"
@@ -116,17 +116,17 @@ export default function Header() {
         {/* Suggestions Dropdown */}
         {showSuggestions && (
           <div
-            className="absolute top-full mt-2 w-full rounded-2xl py-2 z-50 backdrop-blur-xl border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+            className="absolute top-full mt-2 w-full rounded-2xl py-2 z-50 backdrop-blur-3xl border border-white/[0.15] shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
             style={{
-              background: 'linear-gradient(135deg, rgba(35, 27, 47, 0.85) 0%, rgba(22, 17, 30, 0.9) 100%)',
+              background: 'linear-gradient(135deg, rgba(22, 16, 31, 0.94) 0%, rgba(14, 10, 20, 0.97) 100%)',
             }}
             role="listbox"
           >
             {filtered.length > 0 ? (
               <>
                 <div
-                  className="px-4 pb-1 text-[11px] font-semibold tracking-widest uppercase"
-                  style={{ color: 'rgba(255,255,255,0.35)' }}
+                  className="px-4 pb-1.5 pt-1 text-[11px] font-bold tracking-widest uppercase"
+                  style={{ color: 'rgba(255,255,255,0.55)' }}
                 >
                   {t.suggestions}
                 </div>
@@ -135,7 +135,7 @@ export default function Header() {
                     key={i}
                     role="option"
                     aria-selected="false"
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-vw hover:bg-white/5"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-vw hover:bg-white/[0.08]"
                     onClick={() => {
                       setQuery(item.label)
                       setShowSuggestions(false)
@@ -145,21 +145,21 @@ export default function Header() {
                     <div
                       className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold uppercase"
                       style={{
-                        backgroundColor: 'rgba(155,77,224,0.15)',
-                        color: '#9B4DE0',
+                        backgroundColor: 'rgba(155,77,224,0.2)',
+                        color: '#b26bf2',
                       }}
                     >
                       {item.type === 'track' ? '♪' : item.type === 'artist' ? 'A' : item.type === 'playlist' ? '≡' : '◉'}
                     </div>
                     <div>
-                      <div className="text-sm" style={{ color: 'rgba(255,255,255,0.95)' }}>{item.label}</div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.sub}</div>
+                      <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.98)' }}>{item.label}</div>
+                      <div className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.65)' }}>{item.sub}</div>
                     </div>
                   </button>
                 ))}
               </>
             ) : (
-              <div className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              <div className="px-4 py-3 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {t.noResults} &ldquo;{query}&rdquo;
               </div>
             )}
@@ -172,12 +172,12 @@ export default function Header() {
       <div ref={notificationsRef} className="relative flex items-center">
         <button
           onClick={() => setShowNotifications(!showNotifications)}
-          className="relative p-2 rounded-lg transition-vw hover:bg-white/5"
+          className="relative p-2 rounded-lg transition-vw hover:bg-white/[0.08]"
           aria-label={t.notifications}
           aria-expanded={showNotifications}
           aria-haspopup="true"
         >
-          <Bell size={18} style={{ color: 'rgba(255,255,255,0.65)' }} />
+          <Bell size={18} style={{ color: showNotifications ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)' }} />
           <span
             className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
             style={{ backgroundColor: '#9B4DE0' }}
@@ -189,15 +189,15 @@ export default function Header() {
           <div
             className="absolute top-full right-0 mt-3 w-80 rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
             style={{
-              backgroundColor: 'rgba(42, 31, 61, 0.8)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(22, 16, 31, 0.94)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
             }}
           >
-            <div className="p-4 border-b border-white/5 flex items-center justify-between">
-              <h3 className="font-display text-sm tracking-widest text-white/90 uppercase">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <h3 className="font-display text-sm font-bold tracking-widest text-white/95 uppercase">
                 {t.notifications || 'Notifications'}
               </h3>
               <button
@@ -210,7 +210,7 @@ export default function Header() {
 
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
               {/* Welcome Notification */}
-              <div className="p-5 flex gap-4 hover:bg-white/[0.03] transition-vw group cursor-pointer border-b border-white/[0.04] bg-white/[0.02]">
+              <div className="p-5 flex gap-4 hover:bg-white/[0.06] transition-vw group cursor-pointer border-b border-white/[0.08] bg-white/[0.03]">
                 <div
                   className="w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110 group-hover:rotate-3"
                   style={{
@@ -227,10 +227,10 @@ export default function Header() {
                     </p>
                     <div className="w-2 h-2 rounded-full bg-vw-purple animate-pulse" />
                   </div>
-                  <p className="text-xs text-white/60 leading-relaxed">
+                  <p className="text-xs text-white/75 leading-relaxed">
                     {(t.welcomeNotificationDesc || "Hello {name}, we've missed you! Enjoy your personalized music journey today.").replace('{name}', 'Alex Johnson')}
                   </p>
-                  <span className="text-[9px] text-vw-purple/60 mt-2.5 block font-bold uppercase tracking-[0.1em]">
+                  <span className="text-[9px] text-vw-purple/85 mt-2.5 block font-bold uppercase tracking-[0.1em]">
                     {t.justNow || 'Just now'} • System
                   </span>
                 </div>
@@ -243,35 +243,35 @@ export default function Header() {
                   title: t.newAlbumNotificationTitle || 'New Album Release',
                   desc: (t.newAlbumNotificationDesc || '{artist} just dropped "{album}". Check it out!').replace('{artist}', 'The Weeknd').replace('{album}', 'Dawn FM'),
                   time: (t.hoursAgo || '{count} hours ago').replace('{count}', '2'),
-                  color: '#4338CA'
+                  color: '#818cf8'
                 },
                 {
                   icon: <Settings size={18} />,
                   title: t.systemUpdateNotificationTitle || 'System Update',
                   desc: (t.systemUpdateNotificationDesc || 'VibeWave is now faster and smoother than ever. Version {version} is live.').replace('{version}', '2.4.0'),
                   time: t.yesterday || 'Yesterday',
-                  color: '#22C55E'
+                  color: '#4ade80'
                 }
               ].map((notif, i) => (
-                <div key={i} className="p-4 flex gap-4 hover:bg-white/5 transition-vw group cursor-pointer border-b border-white/[0.03]">
+                <div key={i} className="p-4 flex gap-4 hover:bg-white/[0.08] transition-vw group cursor-pointer border-b border-white/[0.06]">
                   <div
                     className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110"
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.15)',
                       color: notif.color
                     }}
                   >
                     {notif.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white/80 leading-tight">
+                    <p className="text-sm font-semibold text-white/95 leading-tight">
                       {notif.title}
                     </p>
-                    <p className="text-xs text-white/40 mt-1 leading-relaxed line-clamp-2">
+                    <p className="text-xs text-white/60 mt-1 leading-relaxed line-clamp-2">
                       {notif.desc}
                     </p>
-                    <span className="text-[10px] text-white/25 mt-2 block uppercase tracking-tighter">
+                    <span className="text-[10px] text-white/45 mt-2 block uppercase tracking-tighter font-semibold">
                       {notif.time}
                     </span>
                   </div>
@@ -281,7 +281,7 @@ export default function Header() {
 
             <Link
               href="/notifications"
-              className="w-full py-3 text-xs font-semibold text-white/40 hover:text-white/70 transition-colors uppercase tracking-widest bg-white/[0.02] hover:bg-white/[0.04] text-center block"
+              className="w-full py-3 text-xs font-bold text-white/60 hover:text-white/90 transition-colors uppercase tracking-widest bg-white/[0.04] hover:bg-white/[0.08] text-center block border-t border-white/10"
               onClick={() => setShowNotifications(false)}
             >
               {t.viewAllNotifications || 'View All Notifications'}
@@ -317,39 +317,42 @@ export default function Header() {
           <div
             className="absolute top-full right-0 mt-2 w-52 rounded-2xl py-2 z-50"
             style={{
-              backgroundColor: '#2A1F3D',
-              border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              backgroundColor: 'rgba(22, 16, 31, 0.94)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             }}
             role="menu"
           >
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.95)' }}>Alex Johnson</div>
-              <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>alex@example.com</div>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.98)' }}>Alex Johnson</div>
+              <div className="text-xs mt-0.5 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>alex@example.com</div>
             </div>
             {[
               { icon: User, label: t.profileAndSettings, href: '/profile' },
+              { icon: Ban, label: t.blockList, href: '/blocked' },
             ].map(({ icon: Icon, label, href }) => (
               <Link
                 key={label}
                 href={href}
                 role="menuitem"
                 onClick={() => setShowProfile(false)}
-                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/[0.08]"
               >
-                <Icon size={15} style={{ color: 'rgba(255,255,255,0.65)' }} />
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
+                <Icon size={15} style={{ color: 'rgba(255,255,255,0.75)' }} />
+                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{label}</span>
               </Link>
             ))}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
               <Link
                 href="/login"
                 role="menuitem"
                 onClick={() => setShowProfile(false)}
-                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/[0.08]"
               >
-                <LogOut size={15} style={{ color: 'rgba(255,255,255,0.45)' }} />
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{t.signOut}</span>
+                <LogOut size={15} style={{ color: 'rgba(255,255,255,0.55)' }} />
+                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.signOut}</span>
               </Link>
             </div>
           </div>

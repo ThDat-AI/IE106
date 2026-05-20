@@ -13,6 +13,7 @@ export interface Track {
   url: string
   lyrics?: string
   playedAt?: string
+  genre?: string
 }
 
 interface PlayerState {
@@ -175,6 +176,193 @@ export function toggleSaveAlbum(album: { id: string; title: string; subtitle: st
   }
 }
 
+export function getFollowedArtists(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_followed_artists')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
+
+export function isArtistFollowed(artistName: string): boolean {
+  if (typeof window === 'undefined') return false
+  const followed = getFollowedArtists()
+  return followed.includes(artistName)
+}
+
+export function toggleFollowArtist(artistName: string): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const followed = getFollowedArtists()
+    const index = followed.indexOf(artistName)
+    let isFollowingNow = false
+    if (index > -1) {
+      followed.splice(index, 1)
+    } else {
+      followed.push(artistName)
+      isFollowingNow = true
+    }
+    localStorage.setItem('vw_followed_artists', JSON.stringify(followed))
+    // Trigger global event for components to sync instantly
+    window.dispatchEvent(new CustomEvent('vw_following_updated', { 
+      detail: { artistName, isFollowing: isFollowingNow } 
+    }))
+    return isFollowingNow
+  } catch (e) {
+    return false
+  }
+}
+
+export interface BlockedItem {
+  id: string
+  title: string
+  subtitle: string
+  image?: string
+  type: 'track' | 'album' | 'artist'
+  blockedAt: string
+}
+
+export function getBlockedTracks(): BlockedItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_blocked_tracks')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
+
+export function getBlockedAlbums(): BlockedItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_blocked_albums')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
+
+export function getBlockedArtists(): BlockedItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem('vw_blocked_artists')
+    return data ? JSON.parse(data) : []
+  } catch (e) {
+    return []
+  }
+}
+
+export function isTrackBlocked(trackId: string): boolean {
+  if (typeof window === 'undefined') return false
+  return getBlockedTracks().some(t => t.id === trackId)
+}
+
+export function isAlbumBlocked(albumId: string): boolean {
+  if (typeof window === 'undefined') return false
+  return getBlockedAlbums().some(a => a.id === albumId)
+}
+
+export function isArtistBlocked(artistName: string): boolean {
+  if (typeof window === 'undefined') return false
+  return getBlockedArtists().some(a => a.title.toLowerCase() === artistName.toLowerCase())
+}
+
+export function isSongBlocked(track: Track): boolean {
+  if (!track) return false
+  const blockedTracks = getBlockedTracks()
+  const blockedArtists = getBlockedArtists()
+  const blockedAlbums = getBlockedAlbums()
+  
+  const isTrackBlocked = blockedTracks.some(t => t.id === track.id)
+  const isArtistBlocked = blockedArtists.some(a => a.title.toLowerCase() === track.artist.toLowerCase())
+  const isAlbumBlocked = blockedAlbums.some(al => al.title.toLowerCase() === track.album.toLowerCase())
+  
+  return isTrackBlocked || isArtistBlocked || isAlbumBlocked
+}
+
+export function toggleBlockTrack(track: { id: string; title: string; artist: string; albumArt?: string }): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const blocked = getBlockedTracks()
+    const index = blocked.findIndex(t => t.id === track.id)
+    let isBlockedNow = false
+    if (index > -1) {
+      blocked.splice(index, 1)
+    } else {
+      blocked.push({
+        id: track.id,
+        title: track.title,
+        subtitle: track.artist,
+        image: track.albumArt,
+        type: 'track',
+        blockedAt: new Date().toISOString()
+      })
+      isBlockedNow = true
+    }
+    localStorage.setItem('vw_blocked_tracks', JSON.stringify(blocked))
+    window.dispatchEvent(new CustomEvent('vw_blocked_updated', { detail: { type: 'track', id: track.id, isBlocked: isBlockedNow } }))
+    return isBlockedNow
+  } catch (e) {
+    return false
+  }
+}
+
+export function toggleBlockAlbum(album: { id: string; title: string; artist: string; albumArt?: string }): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const blocked = getBlockedAlbums()
+    const index = blocked.findIndex(a => a.id === album.id)
+    let isBlockedNow = false
+    if (index > -1) {
+      blocked.splice(index, 1)
+    } else {
+      blocked.push({
+        id: album.id,
+        title: album.title,
+        subtitle: album.artist,
+        image: album.albumArt,
+        type: 'album',
+        blockedAt: new Date().toISOString()
+      })
+      isBlockedNow = true
+    }
+    localStorage.setItem('vw_blocked_albums', JSON.stringify(blocked))
+    window.dispatchEvent(new CustomEvent('vw_blocked_updated', { detail: { type: 'album', id: album.id, isBlocked: isBlockedNow } }))
+    return isBlockedNow
+  } catch (e) {
+    return false
+  }
+}
+
+export function toggleBlockArtist(artist: { id?: string; name: string; genre?: string; image?: string }): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const blocked = getBlockedArtists()
+    const index = blocked.findIndex(a => a.title.toLowerCase() === artist.name.toLowerCase())
+    let isBlockedNow = false
+    if (index > -1) {
+      blocked.splice(index, 1)
+    } else {
+      blocked.push({
+        id: artist.id || String(Date.now()),
+        title: artist.name,
+        subtitle: artist.genre || 'Nghệ sĩ',
+        image: artist.image,
+        type: 'artist',
+        blockedAt: new Date().toISOString()
+      })
+      isBlockedNow = true
+    }
+    localStorage.setItem('vw_blocked_artists', JSON.stringify(blocked))
+    window.dispatchEvent(new CustomEvent('vw_blocked_updated', { detail: { type: 'artist', name: artist.name, isBlocked: isBlockedNow } }))
+    return isBlockedNow
+  } catch (e) {
+    return false
+  }
+}
+
 export const usePlayerStore = create<PlayerState>((set, get) => {
   const initialTrack = SAMPLE_TRACKS[0]
   const initialLiked = initialTrack ? isTrackLiked(initialTrack.id) : false
@@ -218,17 +406,38 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     nextTrack: () => {
       const { queue, currentTrack, isShuffle } = get()
       if (!currentTrack || queue.length === 0) return
+
+      const unblockedQueue = queue.filter(t => !isSongBlocked(t))
+      if (unblockedQueue.length === 0) {
+        set({ isPlaying: false })
+        return
+      }
+
       let next: Track
       if (isShuffle) {
-        const remaining = queue.filter(t => t.id !== currentTrack.id)
+        const remaining = unblockedQueue.filter(t => t.id !== currentTrack.id)
         if (remaining.length > 0) {
           next = remaining[Math.floor(Math.random() * remaining.length)]
         } else {
-          next = currentTrack
+          next = unblockedQueue[0]
         }
       } else {
-        const idx = queue.findIndex((t) => t.id === currentTrack.id)
-        next = queue[(idx + 1) % queue.length]
+        const origIdx = queue.findIndex((t) => t.id === currentTrack.id)
+        let foundNext = false
+        let nextIdx = origIdx
+        for (let i = 1; i <= queue.length; i++) {
+          const checkIdx = (origIdx + i) % queue.length
+          if (!isSongBlocked(queue[checkIdx])) {
+            nextIdx = checkIdx
+            foundNext = true
+            break
+          }
+        }
+        next = queue[nextIdx]
+        if (!foundNext) {
+          set({ isPlaying: false })
+          return
+        }
       }
       set({ currentTrack: next, isPlaying: true, progress: 0, isLiked: isTrackLiked(next.id) })
     },
@@ -236,17 +445,38 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     prevTrack: () => {
       const { queue, currentTrack, isShuffle } = get()
       if (!currentTrack || queue.length === 0) return
+
+      const unblockedQueue = queue.filter(t => !isSongBlocked(t))
+      if (unblockedQueue.length === 0) {
+        set({ isPlaying: false })
+        return
+      }
+
       let prev: Track
       if (isShuffle) {
-        const remaining = queue.filter(t => t.id !== currentTrack.id)
+        const remaining = unblockedQueue.filter(t => t.id !== currentTrack.id)
         if (remaining.length > 0) {
           prev = remaining[Math.floor(Math.random() * remaining.length)]
         } else {
-          prev = currentTrack
+          prev = unblockedQueue[0]
         }
       } else {
-        const idx = queue.findIndex((t) => t.id === currentTrack.id)
-        prev = queue[(idx - 1 + queue.length) % queue.length]
+        const origIdx = queue.findIndex((t) => t.id === currentTrack.id)
+        let foundPrev = false
+        let prevIdx = origIdx
+        for (let i = 1; i <= queue.length; i++) {
+          const checkIdx = (origIdx - i + queue.length) % queue.length
+          if (!isSongBlocked(queue[checkIdx])) {
+            prevIdx = checkIdx
+            foundPrev = true
+            break
+          }
+        }
+        prev = queue[prevIdx]
+        if (!foundPrev) {
+          set({ isPlaying: false })
+          return
+        }
       }
       set({ currentTrack: prev, isPlaying: true, progress: 0, isLiked: isTrackLiked(prev.id) })
     },

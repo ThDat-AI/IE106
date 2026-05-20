@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { getMockLyrics, fetchLyrics } from '@/lib/music-api'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 function formatTime(secs: number) {
   const m = Math.floor(secs / 60)
@@ -78,6 +79,9 @@ export default function FullPlayer() {
   }, [toggleFullPlayer])
 
   if (!currentTrack) return null
+
+  const artistSlug = currentTrack.artist.toLowerCase().replace(/\s+/g, '-')
+  const artistUrl = `/artist/${encodeURIComponent(artistSlug)}${currentTrack.artistId ? `?id=${currentTrack.artistId}` : ''}`
 
   const elapsed = Math.round((progress / 100) * currentTrack.duration)
   const currentLyricIdx = hasTimestamps
@@ -324,14 +328,18 @@ export default function FullPlayer() {
                 <h2 className="font-display text-2xl sm:text-3xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug break-words drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
                   {currentTrack.title}
                 </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="font-sans text-base sm:text-lg font-semibold text-white/60 tracking-wide truncate">
+                <Link
+                  href={artistUrl}
+                  onClick={toggleFullPlayer}
+                  className="flex items-center gap-2 mt-1 hover:text-white transition-colors duration-200 group/artist cursor-pointer"
+                >
+                  <p className="font-sans text-base sm:text-lg font-semibold text-white/60 group-hover/artist:text-white transition-colors tracking-wide truncate">
                     {currentTrack.artist}
                   </p>
-                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#10B981] text-black" title="Verified Artist">
+                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#10B981] text-black shrink-0" title="Verified Artist">
                     <Check size={10} className="text-black stroke-[4px]" />
                   </span>
-                </div>
+                </Link>
               </div>
               <button
                 onClick={toggleLike}

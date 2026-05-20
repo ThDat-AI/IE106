@@ -8,7 +8,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   // Fetch data on server side to avoid CORS/Client network issues
   const isId = /^\d+$/.test(slug)
   let albumInfo = null
-  let tracks = []
+  let tracks: any[] = []
   
   try {
     if (isId) {

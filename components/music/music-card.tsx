@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Play, Heart, Trash2, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban } from 'lucide-react'
-import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, isAlbumSaved, toggleSaveAlbum } from '@/lib/player-store'
+import { Play, Heart, Trash2, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban, Share2 } from 'lucide-react'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, isAlbumSaved, toggleSaveAlbum, isArtistFollowed, toggleFollowArtist, toggleBlockTrack, toggleBlockAlbum, toggleBlockArtist } from '@/lib/player-store'
 import { cn } from '@/lib/utils'
+import { CardHoverOverlay } from './card-hover-overlay'
+import { searchMusic } from '@/lib/music-api'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -22,6 +24,7 @@ interface MusicCardProps {
   className?: string
   track?: Track
   image?: string
+  playlistTracks?: Track[]
   variant?: 'default' | 'compact'
   onDelete?: (id: string) => void
   deleteLabel?: string
@@ -48,6 +51,7 @@ export default function MusicCard({
   className,
   track,
   image,
+  playlistTracks,
   variant = 'default',
   onDelete,
   deleteLabel,
@@ -55,9 +59,130 @@ export default function MusicCard({
   onHideSuggestion,
 }: MusicCardProps) {
   const [isLiked, setIsLiked] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [localTracks, setLocalTracks] = useState<Track[]>([])
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    let shareUrl = ''
+    if (typeof window !== 'undefined') {
+      const baseUrl = window.location.origin
+      if (href) {
+        shareUrl = `${baseUrl}${href}`
+      } else if (type === 'album') {
+        shareUrl = `${baseUrl}/album/${id}`
+      } else if (type === 'playlist') {
+        shareUrl = `${baseUrl}/playlist/${id}`
+      } else if (type === 'artist') {
+        shareUrl = `${baseUrl}/artist/${id}`
+      } else {
+        shareUrl = `${baseUrl}/search?q=${encodeURIComponent(title)}`
+      }
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        triggerToast('Đã sao chép liên kết vào khay nhớ tạm!')
+      } else {
+        triggerToast('Chia sẻ liên kết thành công!')
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (type === 'artist') {
+      setIsFollowing(isArtistFollowed(title))
+
+      const handleFollowingUpdated = (e: Event) => {
+        const customEvent = e as CustomEvent<{ artistName: string; isFollowing: boolean }>
+        if (customEvent.detail && customEvent.detail.artistName === title) {
+          setIsFollowing(customEvent.detail.isFollowing)
+        }
+      }
+
+      window.addEventListener('vw_following_updated', handleFollowingUpdated)
+      return () => window.removeEventListener('vw_following_updated', handleFollowingUpdated)
+    }
+  }, [title, type])
+
+  useEffect(() => {
+    if (type === 'playlist' && !image && !playlistTracks) {
+      const loadPlaylistTracks = () => {
+        const stored = localStorage.getItem('vw_saved_playlists')
+        if (stored) {
+          try {
+            const playlists = JSON.parse(stored)
+            const found = playlists.find((p: any) => p.id === id)
+            if (found && found.tracks) {
+              setLocalTracks(found.tracks)
+            } else {
+              setLocalTracks([])
+            }
+          } catch (e) {
+            setLocalTracks([])
+          }
+        }
+      }
+      loadPlaylistTracks()
+      window.addEventListener('vw_playlists_updated', loadPlaylistTracks)
+      return () => window.removeEventListener('vw_playlists_updated', loadPlaylistTracks)
+    }
+  }, [id, type, image, playlistTracks])
+
+  const renderCover = (isCompact: boolean) => {
+    if (displayImage) {
+      return <img src={displayImage} alt={title} className="w-full h-full object-cover" />
+    }
+
+    if (type === 'playlist') {
+      const validArts = (playlistTracks || localTracks)
+        ?.map(t => t.albumArt)
+        .filter((art): art is string => !!art) || []
+
+      if (validArts.length >= 4) {
+        return (
+          <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+            <img src={validArts[0]} alt="" className="w-full h-full object-cover" />
+            <img src={validArts[1]} alt="" className="w-full h-full object-cover" />
+            <img src={validArts[2]} alt="" className="w-full h-full object-cover" />
+            <img src={validArts[3]} alt="" className="w-full h-full object-cover" />
+          </div>
+        )
+      } else if (validArts.length > 0) {
+        return (
+          <img
+            src={validArts[0]}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        )
+      }
+    }
+
+    return (
+      <div 
+        className="w-full h-full flex items-center justify-center font-bold"
+        style={{ 
+          background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`, 
+          color: 'rgba(255,255,255,0.3)',
+          fontSize: isCompact ? '1.25rem' : '2.25rem'
+        }}
+      >
+        {title.charAt(0).toUpperCase()}
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (type === 'album') {
@@ -89,10 +214,12 @@ export default function MusicCard({
   const gradientIdx = Math.abs(title.charCodeAt(0) + title.charCodeAt(title.length - 1)) % GRADIENT_PAIRS.length
   const [c1, c2] = GRADIENT_PAIRS[gradientIdx]
 
-  const isCurrentlyPlaying = currentTrack?.id === id && isPlaying
+  const isCurrentlyPlaying = type === 'artist'
+    ? currentTrack?.artist === title && isPlaying
+    : currentTrack?.id === id && isPlaying
   const shouldScroll = title.length > 18
 
-  function handlePlay(e: React.MouseEvent) {
+  async function handlePlay(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
     if (track) {
@@ -101,7 +228,29 @@ export default function MusicCard({
       } else {
         setTrack(track)
       }
+    } else if (type === 'artist') {
+      if (currentTrack?.artist === title) {
+        togglePlay()
+      } else {
+        try {
+          const tracks = await searchMusic(title, 10)
+          if (tracks && tracks.length > 0) {
+            const store = usePlayerStore.getState()
+            store.setTrack(tracks[0])
+            store.setQueue(tracks)
+          }
+        } catch (err) {
+          console.error('Failed to play artist:', err)
+        }
+      }
     }
+  }
+
+  function handleFollow(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const newFollowingState = toggleFollowArtist(title)
+    setIsFollowing(newFollowingState)
   }
 
   function handleLike(e: React.MouseEvent) {
@@ -157,9 +306,10 @@ export default function MusicCard({
   const displayImage = track?.albumArt || image
 
   if (type === 'artist') {
+    const cleanedClassName = className ? className.replace(/\bcard-hover\b/g, '') : ''
     const artistCard = (
       <div
-        className={cn('relative flex flex-col items-center text-center cursor-pointer group w-full transition-transform duration-200 hover:scale-[1.04]', className)}
+        className={cn('relative flex flex-col items-center text-center cursor-pointer group w-full transition-transform duration-200 hover:scale-[1.04]', cleanedClassName)}
       >
         {/* Circular Image Container */}
         <div 
@@ -180,29 +330,90 @@ export default function MusicCard({
             </div>
           )}
           
-          {/* Hover Play Button Overlay */}
-          <div
-            className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 opacity-0 group-hover:opacity-100"
-          >
-            <button
-              onClick={handlePlay}
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-              style={{
-                backgroundColor: '#9B4DE0',
-                boxShadow: '0 4px 16px rgba(155,77,224,0.4)',
-              }}
-              aria-label={`Play ${title}`}
-            >
-              {isCurrentlyPlaying ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
-                  <rect x="3" y="2" width="3" height="12" rx="1"/>
-                  <rect x="10" y="2" width="3" height="12" rx="1"/>
-                </svg>
-              ) : (
-                <Play size={16} fill="white" className="text-white ml-0.5" />
-              )}
-            </button>
-          </div>
+          {/* Hover Overlay with follow and dropdown controls */}
+          <CardHoverOverlay
+            isLiked={isFollowing}
+            onLike={handleFollow}
+            isCurrentlyPlaying={isCurrentlyPlaying}
+            onPlay={handlePlay}
+            isMenuOpen={isMenuOpen}
+            setIsMenuOpen={setIsMenuOpen}
+            className="group-hover:opacity-100"
+            likeTitle={isFollowing ? `Bỏ theo dõi ${title}` : `Theo dõi ${title}`}
+            menuContent={
+              <DropdownMenuContent
+                align="start"
+                alignOffset={12}
+                side="right"
+                sideOffset={10}
+                className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                <div className="py-2 px-2 flex flex-col gap-1 text-left">
+                  {/* 1. Theo dõi / Bỏ theo dõi */}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleFollow(e)
+                    }}
+                    className={cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-98 outline-none",
+                      isFollowing
+                        ? "text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
+                        : "text-white/80 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                    )}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <Trash2 size={13} className="text-red-400/80" />
+                        <span>Bỏ theo dõi</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={13} className="text-purple-400" />
+                        <span>Theo dõi</span>
+                      </>
+                    )}
+                  </DropdownMenuItem>
+
+                  {/* Divider */}
+                  <div className="h-px bg-white/5 my-1 mx-2" />
+
+                  {/* 1.5 Chia sẻ liên kết */}
+                  <DropdownMenuItem
+                    onClick={handleShare}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                  >
+                    <Share2 size={13} className="text-blue-400" />
+                    <span>Chia sẻ liên kết</span>
+                  </DropdownMenuItem>
+
+                  {/* Divider */}
+                  <div className="h-px bg-white/5 my-1 mx-2" />
+
+                  {/* 2. Không hiện nghệ sĩ này nữa */}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleBlockArtist({ name: title, image: displayImage })
+                      setIsHidden(true)
+                      triggerToast('Đã thêm nghệ sĩ vào danh sách chặn!')
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                  >
+                    <Ban size={13} className="text-red-400/80" />
+                    <span>Không hiện nghệ sĩ này nữa</span>
+                  </DropdownMenuItem>
+                </div>
+              </DropdownMenuContent>
+            }
+          />
         </div>
         
         {/* Centered Artist Info */}
@@ -217,10 +428,26 @@ export default function MusicCard({
       </div>
     )
 
+    const artistCardWithToast = (
+      <>
+        {artistCard}
+        {showToast && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+          </div>
+        )}
+      </>
+    )
+
     if (href) {
-      return <Link href={href} className="w-full block">{artistCard}</Link>
+      return <Link href={href} className="w-full block">{artistCardWithToast}</Link>
     }
-    return artistCard
+    return artistCardWithToast
   }
 
   const card = variant === 'compact' ? (
@@ -228,16 +455,7 @@ export default function MusicCard({
       className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}
     >
       <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 relative">
-        {displayImage ? (
-          <img src={displayImage} alt={title} className="w-full h-full object-cover" />
-        ) : (
-          <div 
-            className="w-full h-full flex items-center justify-center text-xl font-bold"
-            style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`, color: 'rgba(255,255,255,0.3)' }}
-          >
-            {title.charAt(0)}
-          </div>
-        )}
+        {renderCover(true)}
         {/* Compact play overlay */}
         <div 
           className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -287,327 +505,299 @@ export default function MusicCard({
               : 'vw-album-art'
         )}
         style={{
-          background: displayImage ? 'none' : `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
           aspectRatio: '1/1',
         }}
       >
-        {displayImage ? (
-          <img
-            src={displayImage}
-            alt={title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span style={{ color: 'var(--vw-text-secondary)' }}>
-            {title.charAt(0).toUpperCase()}
-          </span>
-        )}
+        {renderCover(false)}
 
         {/* Hover overlay with control buttons */}
-        <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover:opacity-100",
-            isMenuOpen ? "opacity-100" : ""
-          )}
-        >
-          {/* 1. Heart (Like) button on the LEFT */}
-          <button
-            onClick={handleLike}
-            className="relative w-9 h-9 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{
-              backgroundColor: 'rgba(23,15,35,0.85)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.75)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}
-            title={isLibraryPage && (type === 'album' || type === 'playlist') ? (type === 'album' ? "Xóa album" : "Xóa danh sách phát") : (isLiked ? `Unlike ${title}` : `Like ${title}`)}
-            aria-label={isLiked ? `Unlike ${title}` : `Like ${title}`}
-            aria-pressed={isLiked}
-          >
-            <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
-            {isLiked && (
-              <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-            )}
-          </button>
-
-          {/* 2. Play button in the MIDDLE */}
-          <button
-            onClick={handlePlay}
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{
-              backgroundColor: '#9B4DE0',
-              boxShadow: '0 4px 16px rgba(155,77,224,0.4)',
-            }}
-            aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
-          >
-            {isCurrentlyPlaying
-              ? <svg width="16" height="16" viewBox="0 0 16 16" fill="white"><rect x="3" y="2" width="3" height="12" rx="1"/><rect x="10" y="2" width="3" height="12" rx="1"/></svg>
-              : <Play size={16} fill="white" className="text-white ml-0.5" />
-            }
-          </button>
-
-          {/* 3. Three dots / Delete button on the RIGHT */}
-          {onDelete && type !== 'album' && type !== 'playlist' ? (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onDelete(id)
-              }}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-red-500 hover:text-white cursor-pointer"
+        <CardHoverOverlay
+          isLiked={isLiked}
+          onLike={handleLike}
+          isCurrentlyPlaying={isCurrentlyPlaying}
+          onPlay={handlePlay}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          className="group-hover:opacity-100"
+          likeTitle={isLibraryPage && (type === 'album' || type === 'playlist') ? (type === 'album' ? "Xóa album" : "Xóa danh sách phát") : (isLiked ? `Unlike ${title}` : `Like ${title}`)}
+          onDelete={onDelete && type !== 'album' && type !== 'playlist' ? (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onDelete(id)
+          } : undefined}
+          deleteLabel={deleteLabel}
+          menuContent={
+            <DropdownMenuContent
+              align="start"
+              alignOffset={12}
+              side="right"
+              sideOffset={10}
+              className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
               style={{
-                backgroundColor: 'rgba(23,15,35,0.85)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.75)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
               }}
-              title={deleteLabel || "Xóa"}
-              aria-label={deleteLabel || "Xóa"}
             >
-              <Trash2 size={14} />
-            </button>
-          ) : (
-            <DropdownMenu onOpenChange={setIsMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-                  style={{
-                    backgroundColor: 'rgba(23,15,35,0.85)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.75)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                  }}
-                  aria-label="More options"
-                >
-                  <MoreHorizontal size={14} />
-                </button>
-              </DropdownMenuTrigger>
+              <div className="py-2 px-2 flex flex-col gap-1 text-left">
+                {type === 'album' ? (
+                  <>
+                    {/* 1. Phát tiếp theo */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <SkipForward size={13} className="text-purple-400" />
+                      <span>Phát tiếp theo</span>
+                    </DropdownMenuItem>
 
-              <DropdownMenuContent
-                align="end"
-                side="bottom"
-                className="w-56 rounded-2xl overflow-hidden border-0 p-0 z-50"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
-                  backdropFilter: 'blur(24px)',
-                  WebkitBackdropFilter: 'blur(24px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
-                }}
-              >
-                <div className="py-2 px-2 flex flex-col gap-1 text-left">
-                  {type === 'album' ? (
-                    <>
-                      {/* 1. Phát tiếp theo */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <SkipForward size={13} className="text-purple-400" />
-                        <span>Phát tiếp theo</span>
-                      </DropdownMenuItem>
+                    {/* 2. Thêm vào hàng chờ */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <ListPlus size={13} className="text-purple-400" />
+                      <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
 
-                      {/* 2. Thêm vào hàng chờ */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <ListPlus size={13} className="text-purple-400" />
-                        <span>Thêm vào hàng chờ</span>
-                      </DropdownMenuItem>
+                    {/* 3. Thêm vào Playlist */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Plus size={13} className="text-purple-400" />
+                      <span>Thêm vào Playlist</span>
+                    </DropdownMenuItem>
 
-                      {/* 3. Thêm vào Playlist */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <Plus size={13} className="text-purple-400" />
-                        <span>Thêm vào Playlist</span>
-                      </DropdownMenuItem>
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
 
-                      {/* Divider */}
-                      <div className="h-px bg-white/5 my-1 mx-2" />
+                    {/* 4. Đi đến Nghệ sĩ */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleGoToArtist()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <User size={13} className="text-purple-400" />
+                      <span>Đi đến Nghệ sĩ</span>
+                    </DropdownMenuItem>
 
-                      {/* 4. Đi đến Nghệ sĩ */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleGoToArtist()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <User size={13} className="text-purple-400" />
-                        <span>Đi đến Nghệ sĩ</span>
-                      </DropdownMenuItem>
+                    {/* 4.5 Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết</span>
+                    </DropdownMenuItem>
 
-                      {/* 5. Xóa khỏi thư viện / Thêm vào thư viện */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (isLibraryPage && onDelete) {
-                            onDelete(id)
-                          } else {
-                            toggleSaveAlbum({
-                              id,
-                              title,
-                              subtitle,
-                              image: displayImage,
-                              href: href || `/album/${id}`
-                            })
-                          }
-                        }}
-                        className={cn(
-                          "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-98 outline-none",
-                          isLiked
-                            ? "text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
-                            : "text-white/80 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
-                        )}
-                      >
-                        {isLiked ? (
-                          <>
-                            <Trash2 size={13} className="text-red-400/80" />
-                            <span>Xóa khỏi Thư viện</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus size={13} className="text-purple-400" />
-                            <span>Thêm vào Thư viện</span>
-                          </>
-                        )}
-                      </DropdownMenuItem>
-
-                      {/* 6. Không gợi ý album này nữa */}
-                      {onHideSuggestion && (
+                    {/* 5. Xóa khỏi thư viện / Thêm vào thư viện */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (isLibraryPage && onDelete) {
+                          onDelete(id)
+                        } else {
+                          toggleSaveAlbum({
+                            id,
+                            title,
+                            subtitle,
+                            image: displayImage,
+                            href: href || `/album/${id}`
+                          })
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-98 outline-none",
+                        isLiked
+                          ? "text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
+                          : "text-white/80 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                      )}
+                    >
+                      {isLiked ? (
                         <>
-                          <div className="h-px bg-white/5 my-1 mx-2" />
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onHideSuggestion(id)
-                            }}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
-                          >
-                            <Ban size={13} className="text-red-400/80" />
-                            <span>Không gợi ý album này nữa</span>
-                          </DropdownMenuItem>
+                          <Trash2 size={13} className="text-red-400/80" />
+                          <span>Xóa khỏi Thư viện</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={13} className="text-purple-400" />
+                          <span>Thêm vào Thư viện</span>
                         </>
                       )}
-                    </>
-                  ) : type === 'playlist' ? (
-                    <>
-                      {/* 1. Phát tiếp theo */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <SkipForward size={13} className="text-purple-400" />
-                        <span>Phát tiếp theo</span>
-                      </DropdownMenuItem>
+                    </DropdownMenuItem>
 
-                      {/* 2. Thêm vào hàng chờ */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <ListPlus size={13} className="text-purple-400" />
-                        <span>Thêm vào hàng chờ</span>
-                      </DropdownMenuItem>
+                    {/* 6. Chặn album này */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleBlockAlbum({ id, title, artist: subtitle, albumArt: displayImage })
+                        setIsHidden(true)
+                        triggerToast('Đã thêm album vào danh sách chặn!')
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                    >
+                      <Ban size={13} className="text-red-400/80" />
+                      <span>Chặn album này</span>
+                    </DropdownMenuItem>
 
-                      {/* Divider */}
-                      <div className="h-px bg-white/5 my-1 mx-2" />
+                    {/* 6. Không gợi ý album này nữa */}
+                    {onHideSuggestion && (
+                      <>
+                        <div className="h-px bg-white/5 my-1 mx-2" />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onHideSuggestion(id)
+                          }}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                        >
+                          <Ban size={13} className="text-red-400/80" />
+                          <span>Không gợi ý album này nữa</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                ) : type === 'playlist' ? (
+                  <>
+                    {/* 1. Phát tiếp theo */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <SkipForward size={13} className="text-purple-400" />
+                      <span>Phát tiếp theo</span>
+                    </DropdownMenuItem>
 
-                      {/* 3. Xóa danh sách phát */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (onDelete) {
-                            onDelete(id)
-                          }
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
-                      >
-                        <Trash2 size={13} className="text-red-400/80" />
-                        <span>Xóa danh sách phát</span>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <>
-                      {/* 1. Phát tiếp theo */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <SkipForward size={13} className="text-purple-400" />
-                        <span>Phát tiếp theo</span>
-                      </DropdownMenuItem>
+                    {/* 2. Thêm vào hàng chờ */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <ListPlus size={13} className="text-purple-400" />
+                      <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
 
-                      {/* 2. Thêm vào hàng chờ */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <ListPlus size={13} className="text-purple-400" />
-                        <span>Thêm vào hàng chờ</span>
-                      </DropdownMenuItem>
+                    {/* 2.5 Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết</span>
+                    </DropdownMenuItem>
 
-                      {/* 3. Thêm vào Playlist */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <Plus size={13} className="text-purple-400" />
-                        <span>Thêm vào Playlist</span>
-                      </DropdownMenuItem>
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
 
-                      {/* Divider */}
-                      <div className="h-px bg-white/5 my-1 mx-2" />
+                    {/* 3. Xóa danh sách phát */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (onDelete) {
+                          onDelete(id)
+                        }
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                    >
+                      <Trash2 size={13} className="text-red-400/80" />
+                      <span>Xóa danh sách phát</span>
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    {/* 1. Phát tiếp theo */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <SkipForward size={13} className="text-purple-400" />
+                      <span>Phát tiếp theo</span>
+                    </DropdownMenuItem>
 
-                      {/* 4. Đi đến Nghệ sĩ */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleGoToArtist()
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                      >
-                        <User size={13} className="text-purple-400" />
-                        <span>Đi đến Nghệ sĩ</span>
-                      </DropdownMenuItem>
+                    {/* 2. Thêm vào hàng chờ */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <ListPlus size={13} className="text-purple-400" />
+                      <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
 
-                      {/* 5. Không phát bài này nữa */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setIsHidden(true)
-                        }}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
-                      >
-                        <Ban size={13} className="text-red-400/80" />
-                        <span>Không phát bài này nữa</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+                    {/* 3. Thêm vào Playlist */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Plus size={13} className="text-purple-400" />
+                      <span>Thêm vào Playlist</span>
+                    </DropdownMenuItem>
+
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
+
+                    {/* 4. Đi đến Nghệ sĩ */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleGoToArtist()
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <User size={13} className="text-purple-400" />
+                      <span>Đi đến Nghệ sĩ</span>
+                    </DropdownMenuItem>
+
+                    {/* 4.5 Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết</span>
+                    </DropdownMenuItem>
+
+                    {/* 5. Không phát bài này nữa */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const targetTrack = track || { id, title, artist: subtitle, albumArt: displayImage, duration: 0, url: '' }
+                        toggleBlockTrack(targetTrack)
+                        setIsHidden(true)
+                        triggerToast('Đã thêm bài hát vào danh sách chặn!')
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                    >
+                      <Ban size={13} className="text-red-400/80" />
+                      <span>Không phát bài này nữa</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </div>
+            </DropdownMenuContent>
+          }
+        />
 
         {/* Now playing indicator */}
         {isCurrentlyPlaying && (
@@ -680,9 +870,25 @@ export default function MusicCard({
     </div>
   )
 
+  const finalCard = (
+    <>
+      {card}
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+        </div>
+      )}
+    </>
+  )
+
   if (href) {
-    return <Link href={href}>{card}</Link>
+    return <Link href={href}>{finalCard}</Link>
   }
 
-  return card
+  return finalCard
 }

@@ -170,28 +170,6 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
             </div>
           </div>
 
-          {/* Social Login (Shared) */}
-          <div className="grid grid-cols-4 gap-3 mb-8">
-            {[
-              { icon: <GoogleIcon size={20} />, label: 'Google', id: 'google-auth' },
-              { icon: <FacebookIcon size={20} />, label: 'Facebook', id: 'facebook-auth' },
-              { icon: <AppleIcon size={20} />, label: 'Apple', id: 'apple-auth' },
-              { icon: <PhoneIcon size={20} />, label: 'Phone', id: 'phone-auth' },
-            ].map((p) => (
-              <button key={p.id} type="button" className="flex flex-col items-center justify-center gap-2 py-4 rounded-xl text-[10px] font-bold transition-all duration-300 bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1 hover:shadow-lg">
-                {p.icon}
-                <span className="uppercase tracking-wider">{p.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Divider (Shared) */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/65">{t.orContinueWith} Email</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          </div>
-
           {/* Dynamic Forms Area */}
           <div className="relative flex-1">
             {mode === 'login' ? (
@@ -267,6 +245,34 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                 </button>
               </form>
             )}
+          </div>
+
+          {/* Divider (Shared) */}
+          <div className="flex items-center gap-4 mt-8 mb-6">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/65">
+              {mode === 'login' ? t.orSignInWith : t.orSignUpWith}
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          </div>
+
+          {/* Social Login (Shared) - Minimized at the bottom */}
+          <div className="flex items-center justify-center gap-4 mb-2">
+            {[
+              { icon: <GoogleIcon size={20} />, label: 'Google', id: 'google-auth' },
+              { icon: <FacebookIcon size={20} />, label: 'Facebook', id: 'facebook-auth' },
+              { icon: <AppleIcon size={20} />, label: 'Apple', id: 'apple-auth' },
+              { icon: <PhoneIcon size={20} />, label: 'Phone', id: 'phone-auth' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                aria-label={`Sign in with ${p.label}`}
+                className="w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:scale-110 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              >
+                {p.icon}
+              </button>
+            ))}
           </div>
 
           {/* Footer (Shared Toggle) */}

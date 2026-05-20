@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/i18n-store'
 import { useState, useEffect, useRef } from 'react'
 import { searchMusic, searchAlbums } from '@/lib/music-api'
 import { useToast } from '@/components/ui/use-toast'
-import { ChevronDown, ChevronRight, RotateCw, Clock } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronRight, RotateCw, Clock } from 'lucide-react'
 import {
   SectionHeader,
   AiBadge,
@@ -46,7 +46,7 @@ export default function HomePage({
   const [madeForYou, setMadeForYou] = useState<any[]>([])
   const [topAlbums, setTopAlbums] = useState<any[]>(initialTopAlbums)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
-  const [visibleCount, setVisibleCount] = useState(10)
+  const [visibleCount, setVisibleCount] = useState(5)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isFirstRender = useRef(true)
 
@@ -58,7 +58,7 @@ export default function HomePage({
       const picksData = await searchMusic(randomTerm, 25)
       if (picksData.length > 0) {
         setQuickPicks(picksData)
-        setVisibleCount(10) // Reset expanded list when new music is loaded
+        setVisibleCount(5) // Reset expanded list when new music is loaded
       }
     } catch (error) {
       console.error('Error refreshing quick picks:', error)
@@ -291,9 +291,9 @@ export default function HomePage({
           </div>
         </div>
 
-        {/* Show more button */}
-        {visibleCount < 25 && quickPicks.length > visibleCount && (
-          <div className="flex justify-center mt-8">
+        {/* Expand / Collapse buttons */}
+        {(visibleCount > 5 || (visibleCount < 25 && quickPicks.length > visibleCount)) && (
+          <div className="flex justify-center items-center gap-4 mt-8">
             <style dangerouslySetInnerHTML={{ __html: `
               @keyframes pulse-glow {
                 0%, 100% { box-shadow: 0 8px 32px rgba(10,7,18,0.5), 0 0 15px rgba(155,77,224,0.3); }
@@ -303,31 +303,59 @@ export default function HomePage({
                 animation: pulse-glow 2s infinite;
                 border-color: rgba(155,77,224,0.7) !important;
               }
+              .glow-button-secondary:hover {
+                animation: pulse-glow 2s infinite;
+                border-color: rgba(255,255,255,0.4) !important;
+              }
             `}} />
-            <button
-              onClick={() => setVisibleCount(prev => Math.min(prev + 5, 25))}
-              className="group glow-button flex items-center gap-2.5 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 backdrop-blur-xl active:scale-95 cursor-pointer relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(155,77,224,0.18) 0%, rgba(22,17,30,0.8) 100%)',
-                border: '1px solid rgba(155,77,224,0.35)',
-                color: '#ffffff',
-                boxShadow: '0 8px 32px rgba(10, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-              }}
-            >
-              {/* Subtle hover background highlight effect */}
-              <div 
-                className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-              />
-              
-              <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
-                Xem thêm
-              </span>
-              
-              <ChevronDown 
-                size={16} 
-                className="relative z-10 text-purple-300 transition-transform duration-500 group-hover:translate-y-0.5 ease-out" 
-              />
-            </button>
+            
+            {visibleCount > 5 && (
+              <button
+                onClick={() => setVisibleCount(5)}
+                className="group glow-button-secondary flex items-center gap-2.5 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 backdrop-blur-xl active:scale-95 cursor-pointer relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(22,17,30,0.8) 100%)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.8)',
+                  boxShadow: '0 8px 32px rgba(10, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                />
+                <ChevronUp 
+                  size={16} 
+                  className="relative z-10 text-white/60 transition-transform duration-500 group-hover:-translate-y-0.5 ease-out" 
+                />
+                <span className="relative z-10 transition-transform duration-300 group-hover:-translate-x-0.5">
+                  Thu gọn
+                </span>
+              </button>
+            )}
+
+            {visibleCount < 25 && quickPicks.length > visibleCount && (
+              <button
+                onClick={() => setVisibleCount(prev => Math.min(prev + 5, 25))}
+                className="group glow-button flex items-center gap-2.5 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 backdrop-blur-xl active:scale-95 cursor-pointer relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(155,77,224,0.18) 0%, rgba(22,17,30,0.8) 100%)',
+                  border: '1px solid rgba(155,77,224,0.35)',
+                  color: '#ffffff',
+                  boxShadow: '0 8px 32px rgba(10, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                }}
+              >
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+                />
+                <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
+                  Xem thêm
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  className="relative z-10 text-purple-300 transition-transform duration-500 group-hover:translate-y-0.5 ease-out" 
+                />
+              </button>
+            )}
           </div>
         )}
       </section>

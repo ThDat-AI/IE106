@@ -36,7 +36,7 @@ function LegalContent() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sectionEls = activeTabData.sections.map((s) => document.getElementById(s.id))
+      const sectionEls = activeTabData.sections.map((s: any) => document.getElementById(s.id))
       for (let i = sectionEls.length - 1; i >= 0; i--) {
         const el = sectionEls[i]
         if (el && el.getBoundingClientRect().top <= 160) {
@@ -116,37 +116,32 @@ function LegalContent() {
         {/* Sticky table of contents */}
         <aside className="lg:col-span-1 sticky top-24 order-2 lg:order-1 space-y-4">
           <SectionHeader title={t.contentsLabel} />
-          <div className="space-y-1.5">
-            {activeTabData.sections.map((s) => (
+          <div className="relative border-l border-white/10 ml-2 pl-4 py-1 space-y-4">
+            {activeTabData.sections.map((s: any) => (
               <button
                 key={s.id}
                 onClick={() => scrollTo(s.id)}
                 className={`
-                  group w-full flex items-start gap-3 px-5 py-4 rounded-2xl transition-all duration-300 relative overflow-hidden border cursor-pointer font-bold text-left text-[13px] leading-relaxed
+                  group w-full flex items-center gap-3 text-left transition-all duration-300 cursor-pointer text-[13px] relative font-bold leading-relaxed py-1
                   ${activeSection === s.id
-                    ? 'bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_4px_20px_rgba(155,77,224,0.1)]'
-                    : 'bg-white/10 border border-white/15 text-white/90 hover:bg-white/[0.18] hover:border-white/30 hover:text-white'
+                    ? 'text-purple-300'
+                    : 'text-white/60 hover:text-white'
                   }
                 `}
               >
-                {activeSection === s.id && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
-                )}
-                <span className={`transition-colors shrink-0 mt-1.5 ${activeSection === s.id ? 'text-purple-300' : 'text-white/60 group-hover:text-white'}`}>
-                  <div 
-                    className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                    style={{ 
-                      backgroundColor: activeSection === s.id ? '#C4B5FD' : 'rgba(255,255,255,0.2)',
-                      transform: activeSection === s.id ? 'scale(1)' : 'scale(0.5)'
-                    }}
-                  />
-                </span>
-                <span className={`transition-colors relative z-10 break-words flex-1 ${activeSection === s.id ? 'text-white' : 'text-white/90 group-hover:text-white'}`}>
+                {/* Center dot on the border line */}
+                <span 
+                  className={`
+                    absolute -left-[20px] w-2 h-2 rounded-full border transition-all duration-300 shrink-0
+                    ${activeSection === s.id
+                      ? 'bg-purple-400 border-purple-300 scale-125 shadow-[0_0_8px_#C4B5FD]'
+                      : 'bg-transparent border-white/20 group-hover:border-white/40 group-hover:scale-110'
+                    }
+                  `}
+                />
+                <span className="group-hover:underline transition-all underline-offset-4 decoration-white/25 relative z-10 break-words flex-1">
                   {s.heading}
                 </span>
-                {activeSection === s.id && (
-                  <div className="ml-auto mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#C4B5FD] shrink-0" />
-                )}
               </button>
             ))}
           </div>
@@ -166,7 +161,7 @@ function LegalContent() {
             </h2>
             
             <div className="space-y-12">
-              {activeTabData.sections.map((s, i) => (
+              {activeTabData.sections.map((s: any, i: number) => (
                 <section
                   key={s.id}
                   id={s.id}

@@ -1,13 +1,19 @@
 "use client"
 
-import { RefreshCw, Play, ChevronRight, Loader2, RotateCw } from 'lucide-react'
+import { RefreshCw, Play, ChevronRight, Loader2, RotateCw, Heart, MoreHorizontal, Trash2, Plus, Ban, Share2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import MusicCard from '@/components/music/music-card'
-import { SAMPLE_TRACKS, type Track } from '@/lib/player-store'
+import { SAMPLE_TRACKS, type Track, isArtistFollowed, toggleFollowArtist } from '@/lib/player-store'
 import { searchMusic, searchArtistImage } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import {
   PageHero,
   AccentBar,
@@ -19,12 +25,38 @@ import {
 
 const GENRE_CATEGORIES = ['Tất cả', 'Pop', 'Hip-hop', 'EDM', 'Tập trung', 'Thư giãn']
 
+const ARTIST_POOL = [
+  { name: 'Sơn Tùng M-TP', href: '/artist/son-tung-mtp' },
+  { name: 'Hoàng Thùy Linh', href: '/artist/hoang-thuy-linh' },
+  { name: 'Đen Vâu', href: '/artist/den' },
+  { name: 'GREY D', href: '/artist/grey-d' },
+  { name: 'MONO', href: '/artist/mono' },
+  { name: 'tlinh', href: '/artist/tlinh' },
+  { name: 'HIEUTHUHAI', href: '/artist/hieuthuhai' },
+  { name: 'Mỹ Tâm', href: '/artist/my-tam' },
+  { name: 'Vũ.', href: '/artist/vu' },
+  { name: 'AMEE', href: '/artist/amee' },
+  { name: 'MCK', href: '/artist/mck' },
+  { name: 'Wren Evans', href: '/artist/wren-evans' },
+  { name: 'Min', href: '/artist/min' },
+  { name: 'Bích Phương', href: '/artist/bich-phuong' },
+  { name: 'JustaTee', href: '/artist/justatee' },
+  { name: 'Soobin Hoàng Sơn', href: '/artist/soobin' },
+  { name: 'Karik', href: '/artist/karik' },
+  { name: 'Phan Mạnh Quỳnh', href: '/artist/phan-manh-quynh' },
+  { name: 'Phương Ly', href: '/artist/phuong-ly' },
+  { name: 'Đức Phúc', href: '/artist/duc-phuc' },
+  { name: 'Erik', href: '/artist/erik' },
+]
+
 export default function YourVibePage() {
   const { t } = useTranslation()
   const [mixes, setMixes] = useState<Track[]>([])
   const [discovered, setDiscovered] = useState<Track[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMixes, setIsLoadingMixes] = useState(false)
+  const [isLoadingDiscovered, setIsLoadingDiscovered] = useState(false)
+  const [isLoadingArtists, setIsLoadingArtists] = useState(false)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
 
   const INITIAL_ARTISTS = [
@@ -73,6 +105,64 @@ export default function YourVibePage() {
       console.error(err)
     } finally {
       setIsLoadingMixes(false)
+    }
+  }
+
+  async function handleRefreshDiscovered() {
+    setIsLoadingDiscovered(true)
+    try {
+      const keywords = [
+        'Nhạc trẻ mới nhất',
+        'Nhạc trẻ hot nhất',
+        'V-Pop mới phát hành',
+        'Indie Việt mới',
+        'Rap Việt mới nhất',
+        'Nhạc Lofi Việt',
+        'Acoustic Việt'
+      ]
+      const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)]
+      const discoveredData = await searchMusic(randomKeyword, 4)
+      setDiscovered(discoveredData)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoadingDiscovered(false)
+    }
+  }
+
+  async function handleRefreshArtists() {
+    setIsLoadingArtists(true)
+    try {
+      const shuffled = [...ARTIST_POOL].sort(() => 0.5 - Math.random())
+      const selected = shuffled.slice(0, 8)
+      
+      const withPlays = selected.map((artist, idx) => ({
+        id: `ta-ref-${idx}-${Math.random().toString(36).substr(2, 9)}`,
+        title: artist.name,
+        plays: Math.floor(Math.random() * 40) + 12,
+        href: artist.href,
+        image: ''
+      }))
+      
+      withPlays.sort((a, b) => b.plays - a.plays)
+      
+      const artistImages = await Promise.all(
+        withPlays.map(a => searchArtistImage(a.title))
+      )
+      
+      const formattedArtists = withPlays.map((a, i) => ({
+        id: a.id,
+        title: a.title,
+        subtitle: `${a.plays} ${t.playsThisMonth}`,
+        href: a.href,
+        image: artistImages[i]
+      }))
+
+      setTopArtists(formattedArtists)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoadingArtists(false)
     }
   }
 
@@ -217,12 +307,28 @@ export default function YourVibePage() {
       {/* Recently Discovered + Top Artists row */}
       <div className="grid grid-cols-2 gap-8">
         <section>
-          <h2 className="font-display font-bold flex items-center gap-3 mb-6" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
-            <AccentBar height={6} color="pink" />
-            {t.recentlyDiscovered}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display font-bold flex items-center gap-3" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
+              <AccentBar height={6} color="pink" />
+              {t.recentlyDiscovered}
+            </h2>
+            <button
+              onClick={handleRefreshDiscovered}
+              disabled={isLoadingDiscovered || isLoading}
+              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/5 hover:bg-pink-500/10 border border-white/10 hover:border-pink-500/20 text-white/80 hover:text-pink-300 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer"
+            >
+              <RotateCw
+                size={12}
+                className={cn(
+                  "transition-transform duration-700",
+                  isLoadingDiscovered ? "animate-spin text-pink-400" : "group-hover:rotate-180"
+                )}
+              />
+              <span>Làm mới</span>
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            {isLoading ? (
+            {isLoading || isLoadingDiscovered ? (
               Array(4).fill(0).map((_, i) => (
                 <div key={i} className="h-24 rounded-2xl bg-white/5 animate-pulse" />
               ))
@@ -242,97 +348,47 @@ export default function YourVibePage() {
         </section>
 
         <section>
-          <h2 className="font-display font-bold flex items-center gap-3 mb-6" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
-            <AccentBar height={6} color="blue" />
-            {t.topArtists}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display font-bold flex items-center gap-3" style={{ fontSize: 24, color: '#ffffff', letterSpacing: '-0.3px' }}>
+              <AccentBar height={6} color="blue" />
+              {t.topArtists}
+            </h2>
+            <button
+              onClick={handleRefreshArtists}
+              disabled={isLoadingArtists || isLoading}
+              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/5 hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/20 text-white/80 hover:text-blue-300 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer"
+            >
+              <RotateCw
+                size={12}
+                className={cn(
+                  "transition-transform duration-700",
+                  isLoadingArtists ? "animate-spin text-blue-400" : "group-hover:rotate-180"
+                )}
+              />
+              <span>Làm mới</span>
+            </button>
+          </div>
           <div className="space-y-3">
-            {topArtists.map((artist, i) => {
-              const isTop4 = i < 4
-              const rc = RANK_COLORS[i]
-              return (
-                <Link
-                  key={artist.id}
-                  href={artist.href}
-                  className="group flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
-                  style={{ 
-                    background: isTop4 
-                      ? 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' 
-                      : 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)', 
-                    backdropFilter: 'blur(15px)',
-                    border: isTop4 ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)',
-                    boxShadow: '0 8px 30px -5px rgba(0,0,0,0.3)'
-                  }}
+            {isLoadingArtists || isLoading ? (
+              Array(8).fill(0).map((_, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/5 border border-white/5 animate-pulse h-[78px]"
                 >
-                  {/* Hover Highlight */}
-                  <div className="absolute inset-0 bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  
-                  {/* Shimmer for Top 1 */}
-                  {i === 0 && (
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
-                      style={{ 
-                        background: 'linear-gradient(90deg, transparent, rgba(58,190,249,0.15), transparent)', 
-                        transform: 'translateX(-100%) skewX(-15deg)', 
-                        animation: 'shimmer 2.5s infinite' 
-                      }} 
-                    />
-                  )}
-
-                  {/* Rank number */}
-                  <span 
-                    className="font-display font-bold w-10 text-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3 z-10" 
-                    style={{ 
-                      color: rc ? rc.text : 'rgba(255,255,255,0.8)',
-                      fontSize: i === 0 ? '28px' : i === 1 ? '24px' : i === 2 ? '22px' : i === 3 ? '20px' : '18px',
-                      textShadow: rc ? `0 0 ${i === 0 ? 25 : 20}px ${rc.glow}` : 'none'
-                    }}
-                  >
-                    {i + 1}
-                  </span>
-                  
-                  {/* Avatar */}
-                  <div
-                    className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center font-bold overflow-hidden z-10 relative"
-                    style={{ 
-                      background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', 
-                      color: 'rgba(255,255,255,0.7)', 
-                      border: rc ? `2px solid ${rc.border}` : '1px solid rgba(255,255,255,0.1)',
-                      boxShadow: rc ? `0 0 ${i === 0 ? 25 : 20}px ${rc.glow.replace('0.5', '0.4').replace('0.4', '0.3')}` : '0 4px 10px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    {artist.image ? (
-                      <img src={artist.image} alt={artist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                    ) : (
-                      artist.title.charAt(0)
-                    )}
+                  <div className="w-10 h-6 bg-white/10 rounded shrink-0" />
+                  <div className="w-12 h-12 rounded-full bg-white/10 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-white/10 rounded w-2/3" />
+                    <div className="h-3 bg-white/10 rounded w-1/3" />
                   </div>
-                  
-                  <div className="flex-1 min-w-0 z-10">
-                    <p
-                      className="text-base font-semibold truncate transition-colors group-hover:text-white"
-                      style={{
-                        color: 'var(--vw-text-primary)',
-                        fontFamily: 'var(--font-display)',
-                        letterSpacing: '-0.3px',
-                      }}
-                    >
-                      {artist.title}
-                    </p>
-                    <p
-                      className="text-xs truncate mt-0.5"
-                      style={{ color: 'var(--vw-text-secondary)' }}
-                    >
-                      {artist.subtitle}
-                    </p>
-                  </div>
-                  
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white/10 z-10">
-                    <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-white" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                  </div>
-                </Link>
-              );
-            })}
+                  <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
+                </div>
+              ))
+            ) : (
+              topArtists.map((artist, i) => (
+                <YourVibeArtistRow key={artist.id} artist={artist} index={i} />
+              ))
+            )}
           </div>
         </section>
       </div>
@@ -372,7 +428,7 @@ export default function YourVibePage() {
                   letterSpacing: '-1px', 
                   lineHeight: 1,
                 }}>{stat.value}</p>
-                <p className="text-sm mt-3 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>{stat.sub}</p>
+                <p className="text-sm mt-3 font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>{stat.sub}</p>
               </div>
             )
           })}
@@ -380,5 +436,263 @@ export default function YourVibePage() {
       </section>
 
     </div>
+  )
+}
+
+function YourVibeArtistRow({ artist, index }: { artist: any; index: number }) {
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  
+  const isTop4 = index < 4
+  const rc = RANK_COLORS[index]
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined') {
+      const shareUrl = `${window.location.origin}${artist.href}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        triggerToast('Đã sao chép liên kết nghệ sĩ vào khay nhớ tạm!')
+      } else {
+        triggerToast('Chia sẻ liên kết thành công!')
+      }
+    }
+  }
+
+  useEffect(() => {
+    setIsFollowing(isArtistFollowed(artist.title))
+
+    const handleFollowingUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ artistName: string; isFollowing: boolean }>
+      if (customEvent.detail && customEvent.detail.artistName === artist.title) {
+        setIsFollowing(customEvent.detail.isFollowing)
+      }
+    }
+
+    window.addEventListener('vw_following_updated', handleFollowingUpdated)
+    return () => window.removeEventListener('vw_following_updated', handleFollowingUpdated)
+  }, [artist.title])
+
+  if (isHidden) return null
+
+  const handleFollow = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newState = toggleFollowArtist(artist.title)
+    setIsFollowing(newState)
+  }
+
+  return (
+    <Link
+      href={artist.href}
+      className="group flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+      style={{ 
+        background: isTop4 
+          ? 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' 
+          : 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)', 
+        backdropFilter: 'blur(15px)',
+        border: isTop4 ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)',
+        boxShadow: '0 8px 30px -5px rgba(0,0,0,0.3)'
+      }}
+    >
+      {/* Hover Highlight */}
+      <div className="absolute inset-0 bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      
+      {/* Shimmer for Top 1 */}
+      {index === 0 && (
+        <div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+          style={{ 
+            background: 'linear-gradient(90deg, transparent, rgba(58,190,249,0.15), transparent)', 
+            transform: 'translateX(-100%) skewX(-15deg)', 
+            animation: 'shimmer 2.5s infinite' 
+          }} 
+        />
+      )}
+
+      {/* Rank number */}
+      <span 
+        className="font-display font-bold w-10 text-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3 z-10" 
+        style={{ 
+          color: rc ? rc.text : 'rgba(255,255,255,0.8)',
+          fontSize: index === 0 ? '28px' : index === 1 ? '24px' : index === 2 ? '22px' : index === 3 ? '20px' : '18px',
+          textShadow: rc ? `0 0 ${index === 0 ? 25 : 20}px ${rc.glow}` : 'none'
+        }}
+      >
+        {index + 1}
+      </span>
+      
+      {/* Avatar */}
+      <div
+        className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center font-bold overflow-hidden z-10 relative"
+        style={{ 
+          background: 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)', 
+          color: 'rgba(255,255,255,0.7)', 
+          border: rc ? `2px solid ${rc.border}` : '1px solid rgba(255,255,255,0.1)',
+          boxShadow: rc ? `0 0 ${index === 0 ? 25 : 20}px ${rc.glow.replace('0.5', '0.4').replace('0.4', '0.3')}` : '0 4px 10px rgba(0,0,0,0.3)'
+        }}
+      >
+        {artist.image ? (
+          <img src={artist.image} alt={artist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        ) : (
+          artist.title.charAt(0)
+        )}
+      </div>
+      
+      <div className="flex-1 min-w-0 z-10">
+        <p
+          className="text-base font-semibold truncate transition-colors group-hover:text-white"
+          style={{
+            color: 'var(--vw-text-primary)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.3px',
+          }}
+        >
+          {artist.title}
+        </p>
+        <p
+          className="text-xs truncate mt-0.5"
+          style={{ color: 'var(--vw-text-secondary)' }}
+        >
+          {artist.subtitle}
+        </p>
+      </div>
+      
+      {/* Interactive Controls (Heart & 3-dots) */}
+      <div className="relative flex items-center gap-2 shrink-0 z-20 h-8 min-w-[72px] justify-end">
+        {/* Heart Follow Button */}
+        <button
+          onClick={handleFollow}
+          className={cn(
+            "w-8 h-8 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer text-white/60 hover:text-white bg-white/5",
+            isFollowing 
+              ? "text-red-500 bg-red-500/10 opacity-100" 
+              : "opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
+          )}
+          title={isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
+        >
+          <Heart size={13} fill={isFollowing ? "currentColor" : "none"} />
+          {isFollowing && (
+            <span className="w-1 h-1 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
+          )}
+        </button>
+
+        {/* 3-dots Options Button */}
+        <DropdownMenu onOpenChange={setIsMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer text-white/60 hover:text-white bg-white/5",
+                isMenuOpen 
+                  ? "opacity-100 bg-white/10 text-white pointer-events-auto" 
+                  : "opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
+              )}
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            alignOffset={12}
+            side="right"
+            sideOffset={10}
+            className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
+            style={{
+              background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            <div className="py-2 px-2 flex flex-col gap-1 text-left">
+              {/* 1. Theo dõi / Bỏ theo dõi */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleFollow(e)
+                }}
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-98 outline-none",
+                  isFollowing
+                    ? "text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
+                    : "text-white/80 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                )}
+              >
+                {isFollowing ? (
+                  <>
+                    <Trash2 size={13} className="text-red-400/80" />
+                    <span>Bỏ theo dõi</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus size={13} className="text-purple-400" />
+                    <span>Theo dõi</span>
+                  </>
+                )}
+              </DropdownMenuItem>
+
+              {/* 2. Chia sẻ liên kết */}
+              <DropdownMenuItem
+                onClick={handleShare}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <Share2 size={13} className="text-blue-400" />
+                <span>Chia sẻ liên kết</span>
+              </DropdownMenuItem>
+
+              {/* Divider */}
+              <div className="h-px bg-white/5 my-1 mx-2" />
+
+              {/* 3. Không hiện nghệ sĩ này nữa */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsHidden(true)
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+              >
+                <Ban size={13} className="text-red-400/80" />
+                <span>Không hiện nghệ sĩ này nữa</span>
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Chevron Icon (only visible when buttons are hidden/normal) */}
+        <div className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 absolute right-0",
+          isMenuOpen 
+            ? "opacity-0 pointer-events-none" 
+            : "group-hover:opacity-0 group-hover:pointer-events-none"
+        )}>
+          <ChevronRight size={18} style={{ color: 'rgba(255,255,255,0.3)' }} />
+        </div>
+      </div>
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+        </div>
+      )}
+    </Link>
   )
 }

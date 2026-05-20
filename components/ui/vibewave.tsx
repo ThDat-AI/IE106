@@ -19,8 +19,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ChevronRight, ChevronLeft, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban, Share2 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
+import { CardHoverOverlay } from '@/components/music/card-hover-overlay'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
 import {
   DropdownMenu,
@@ -399,6 +400,28 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
   const [isLiked, setIsLiked] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const [showToast, setShowToast] = React.useState(false)
+  const [toastMessage, setToastMessage] = React.useState('')
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined' && track) {
+      const shareUrl = `${window.location.origin}/search?q=${encodeURIComponent(track.title)}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        triggerToast('Đã sao chép liên kết vào khay nhớ tạm!')
+      } else {
+        triggerToast('Chia sẻ liên kết thành công!')
+      }
+    }
+  }
 
   React.useEffect(() => {
     if (!track) return
@@ -491,69 +514,23 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
         />
         
         {/* Hover overlay with control buttons */}
-        <div
-          className={`absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover/pod:opacity-100 ${isMenuOpen ? 'opacity-100' : ''}`}
-        >
-          {/* 1. Heart (Like) button on the LEFT */}
-          <button
-            onClick={handleLike}
-            className="relative w-9 h-9 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{
-              backgroundColor: 'rgba(23,15,35,0.85)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.75)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}
-            aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
-            aria-pressed={isLiked}
-          >
-            <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
-            {isLiked && (
-              <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-            )}
-          </button>
-
-          {/* 2. Play button in the MIDDLE */}
-          <button
-            onClick={handlePlayClick}
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{ 
-              backgroundColor: rc.text, 
-              boxShadow: `0 0 20px ${rc.glow}` 
-            }}
-            aria-label={isCurrentlyPlaying ? `Tạm dừng ${track.title}` : `Phát ${track.title}`}
-          >
-            {isCurrentlyPlaying ? (
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="black">
-                <rect x="3" y="2" width="3" height="12" rx="1"/>
-                <rect x="10" y="2" width="3" height="12" rx="1"/>
-              </svg>
-            ) : (
-              <Play size={18} fill="#000" className="ml-0.5 text-black" />
-            )}
-          </button>
-
-          {/* 3. Three dots button on the RIGHT */}
-          <DropdownMenu onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-                style={{
-                  backgroundColor: 'rgba(23,15,35,0.85)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'rgba(255,255,255,0.75)',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                }}
-                aria-label="More options"
-              >
-                <MoreHorizontal size={14} />
-              </button>
-            </DropdownMenuTrigger>
-
+        <CardHoverOverlay
+          isLiked={isLiked}
+          onLike={handleLike}
+          isCurrentlyPlaying={isCurrentlyPlaying}
+          onPlay={handlePlayClick}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          className="group-hover/pod:opacity-100"
+          playButtonBgColor={rc.text}
+          playButtonIconColor="black"
+          menuContent={
             <DropdownMenuContent
-              align="end"
-              side="bottom"
-              className="w-56 rounded-2xl overflow-hidden border-0 p-0 z-50"
+              align="start"
+              alignOffset={12}
+              side="right"
+              sideOffset={10}
+              className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
               style={{
                 background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
                 backdropFilter: 'blur(24px)',
@@ -610,10 +587,19 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
                   <User size={13} className="text-purple-400" />
                   <span>Đi đến Nghệ sĩ</span>
                 </DropdownMenuItem>
+
+                {/* 4.5 Chia sẻ liên kết */}
+                <DropdownMenuItem
+                  onClick={handleShare}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                >
+                  <Share2 size={13} className="text-blue-400" />
+                  <span>Chia sẻ liên kết</span>
+                </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          }
+        />
 
         {/* Now playing dynamic indicator on image corner */}
         {isCurrentlyPlaying && (
@@ -702,6 +688,16 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
           </p>
         </div>
       </div>
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -719,7 +715,29 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
   const [isLiked, setIsLiked] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [isHidden, setIsHidden] = React.useState(false)
+  const [showToast, setShowToast] = React.useState(false)
+  const [toastMessage, setToastMessage] = React.useState('')
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined' && track) {
+      const shareUrl = `${window.location.origin}/search?q=${encodeURIComponent(track.title)}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        triggerToast('Đã sao chép liên kết vào khay nhớ tạm!')
+      } else {
+        triggerToast('Chia sẻ liên kết thành công!')
+      }
+    }
+  }
 
   React.useEffect(() => {
     if (!track) return
@@ -819,65 +837,23 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
         )}
 
         {/* Hover overlay with control buttons */}
-        <div
-          className={`absolute inset-0 flex items-center justify-center gap-3.5 transition-opacity duration-200 z-10 bg-black/50 opacity-0 group-hover/glass:opacity-100 ${isMenuOpen ? 'opacity-100' : ''}`}
-        >
-          {/* 1. Heart (Like) button on the LEFT */}
-          <button
-            onClick={handleLike}
-            className="relative w-9 h-9 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{
-              backgroundColor: 'rgba(23,15,35,0.85)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.75)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}
-            aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
-            aria-pressed={isLiked}
-          >
-            <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
-            {isLiked && (
-              <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-            )}
-          </button>
-
-          {/* 2. Play button in the MIDDLE */}
-          <button
-            onClick={handlePlay}
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-            style={{ 
-              backgroundColor: accentColor, 
-              boxShadow: `0 4px 20px ${accentGlow}` 
-            }}
-            aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
-          >
-            {isCurrentlyPlaying
-              ? <svg width="16" height="16" viewBox="0 0 16 16" fill="white"><rect x="3" y="2" width="3" height="12" rx="1"/><rect x="10" y="2" width="3" height="12" rx="1"/></svg>
-              : <Play size={16} fill="white" className="text-white ml-0.5" />
-            }
-          </button>
-
-          {/* 3. Three dots button on the RIGHT */}
-          <DropdownMenu onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
-                style={{
-                  backgroundColor: 'rgba(23,15,35,0.85)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'rgba(255,255,255,0.75)',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                }}
-                aria-label="More options"
-              >
-                <MoreHorizontal size={14} />
-              </button>
-            </DropdownMenuTrigger>
-
+        <CardHoverOverlay
+          isLiked={isLiked}
+          onLike={handleLike}
+          isCurrentlyPlaying={isCurrentlyPlaying}
+          onPlay={handlePlay}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          className="group-hover/glass:opacity-100"
+          playButtonBgColor={accentColor}
+          playButtonGlowColor={accentGlow}
+          menuContent={
             <DropdownMenuContent
-              align="end"
-              side="bottom"
-              className="w-56 rounded-2xl overflow-hidden border-0 p-0 z-50"
+              align="start"
+              alignOffset={12}
+              side="right"
+              sideOffset={10}
+              className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
               style={{
                 background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
                 backdropFilter: 'blur(24px)',
@@ -935,6 +911,15 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
                   <span>Đi đến Nghệ sĩ</span>
                 </DropdownMenuItem>
 
+                {/* 4.5 Chia sẻ liên kết */}
+                <DropdownMenuItem
+                  onClick={handleShare}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                >
+                  <Share2 size={13} className="text-blue-400" />
+                  <span>Chia sẻ liên kết</span>
+                </DropdownMenuItem>
+
                 {/* 5. Không phát bài này nữa */}
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -948,8 +933,8 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          }
+        />
 
         {/* Now-playing bars */}
         {isCurrentlyPlaying && (
@@ -1019,6 +1004,16 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
           {track.artist}
         </p>
       </div>
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -1105,7 +1100,7 @@ export function MusicShelf({ children, className = '' }: MusicShelfProps) {
       {/* Scroll Container with Premium Masking */}
       <div
         ref={scrollRef}
-        className="flex gap-5 overflow-x-auto pb-8 pt-2 px-1 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        className="flex gap-5 overflow-x-auto pb-8 pt-2 pl-6 pr-1 scroll-pl-6 scrollbar-hide snap-x snap-mandatory scroll-smooth"
         style={{ 
           WebkitOverflowScrolling: 'touch',
           ...maskStyle

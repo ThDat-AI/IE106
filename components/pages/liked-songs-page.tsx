@@ -168,21 +168,6 @@ export default function LikedSongsPage({
             }}
           />
         </div>
-
-        {/* Song count badge */}
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-xl"
-          style={{
-            backgroundColor: 'rgba(244,63,94,0.08)',
-            border: '1px solid rgba(244,63,94,0.2)',
-          }}
-        >
-          <Heart size={13} style={{ color: '#FB7185' }} />
-          <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {filtered.length}
-            {searchQ ? ` / ${tracks.length}` : ''} bài
-          </span>
-        </div>
       </section>
 
       {/* ── Tracks Table ── */}

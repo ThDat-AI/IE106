@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Shuffle, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, SkipForward, ListPlus, Plus, Trash2, Check, Info } from 'lucide-react'
+import { Play, Shuffle, MoreHorizontal, Clock, ExternalLink, ChevronLeft, Calendar, Music2, SkipForward, ListPlus, Plus, Trash2, Check, Info, Share2 } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
 import { usePlayerStore, type Track } from '@/lib/player-store'
@@ -85,6 +85,21 @@ export default function AlbumDetailPage({
     setIsLiked(!exists)
     setTimeout(() => setToastMessage(null), 3000)
     window.dispatchEvent(new Event('vw_albums_updated'))
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined' && albumInfo) {
+      const shareUrl = `${window.location.origin}/album/${albumInfo.id}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        setToastMessage({ text: 'Đã sao chép liên kết album vào khay nhớ tạm!', type: 'success' })
+      } else {
+        setToastMessage({ text: 'Chia sẻ liên kết thành công!', type: 'success' })
+      }
+      setTimeout(() => setToastMessage(null), 3000)
+    }
   }
 
   useEffect(() => {
@@ -375,6 +390,18 @@ export default function AlbumDetailPage({
                     >
                       <Plus size={13} className="text-purple-400" />
                       <span>Thêm vào Playlist</span>
+                    </DropdownMenuItem>
+
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
+
+                    {/* 3.5 Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết</span>
                     </DropdownMenuItem>
 
                     {/* Divider */}

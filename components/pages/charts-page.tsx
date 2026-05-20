@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Share2 } from 'lucide-react'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
 import { getTopSongsByRegion, searchMusic } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
@@ -68,10 +68,32 @@ interface ChartRowProps {
 function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   const { currentTrack } = usePlayerStore()
   const isActive = currentTrack?.id === item.id
   const rc = RANK_COLORS[index] ?? null
   const trend = index % 3 === 0 ? 'up' : index % 5 === 0 ? 'down' : 'same'
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined' && item) {
+      const shareUrl = `${window.location.origin}/search?q=${encodeURIComponent(item.title)}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        triggerToast('Đã sao chép liên kết vào khay nhớ tạm!')
+      } else {
+        triggerToast('Chia sẻ liên kết thành công!')
+      }
+    }
+  }
 
   useEffect(() => {
     setIsLiked(isTrackLiked(item.id))
@@ -275,10 +297,30 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
                 <User size={13} className="text-purple-400" />
                 <span>Đi đến Nghệ sĩ</span>
               </DropdownMenuItem>
+
+              {/* 4.5 Chia sẻ liên kết */}
+              <DropdownMenuItem
+                onClick={handleShare}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <Share2 size={13} className="text-blue-400" />
+                <span>Chia sẻ liên kết</span>
+              </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }

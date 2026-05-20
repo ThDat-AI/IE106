@@ -1,14 +1,20 @@
 "use client"
 
-import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music, ChevronDown, ChevronUp, Shuffle } from 'lucide-react'
+import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music, ChevronDown, ChevronUp, Shuffle, Share2, Ban, Trash2, Plus } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
-import { usePlayerStore, type Track } from '@/lib/player-store'
+import { usePlayerStore, type Track, isArtistFollowed, toggleFollowArtist } from '@/lib/player-store'
 import { useState, useEffect } from 'react'
 import { searchMusic, searchAlbums, searchArtistImage, getArtistTracksById, getArtistAlbumsById } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import { AmbientOrbs, GlassPanel, SectionHeader, PageHero } from '@/components/ui/vibewave'
 import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 
 function slugToName(slug: string) {
   if (!slug) return ''
@@ -75,6 +81,20 @@ export default function ArtistPage({
       triggerToast('Chia sẻ liên kết nghệ sĩ thành công!')
     }
   }
+
+  useEffect(() => {
+    setIsFollowing(isArtistFollowed(name))
+
+    const handleFollowingUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ artistName: string; isFollowing: boolean }>
+      if (customEvent.detail && customEvent.detail.artistName === name) {
+        setIsFollowing(customEvent.detail.isFollowing)
+      }
+    }
+
+    window.addEventListener('vw_following_updated', handleFollowingUpdated)
+    return () => window.removeEventListener('vw_following_updated', handleFollowingUpdated)
+  }, [name])
 
   useEffect(() => {
     async function loadArtistData() {
@@ -196,8 +216,9 @@ export default function ArtistPage({
 
               <button
                 onClick={() => {
-                  setIsFollowing(!isFollowing)
-                  triggerToast(isFollowing ? `Đã bỏ theo dõi nghệ sĩ ${name}` : `Đã theo dõi nghệ sĩ ${name}!`)
+                  const newState = toggleFollowArtist(name)
+                  setIsFollowing(newState)
+                  triggerToast(newState ? `Đã theo dõi nghệ sĩ ${name}!` : `Đã bỏ theo dõi nghệ sĩ ${name}`)
                 }}
                 className={cn(
                   "flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm border-2 transition-all duration-300 cursor-pointer",
@@ -209,6 +230,91 @@ export default function ArtistPage({
                 <UserPlus size={18} />
                 {isFollowing ? (t.following || 'Following') : (t.follow || 'Follow')}
               </button>
+
+              <DropdownMenu onOpenChange={setIsHeroMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={cn(
+                      "flex items-center justify-center w-[52px] h-[52px] rounded-full border-2 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-sm shrink-0",
+                      isHeroMenuOpen 
+                        ? "border-[#9B4DE0]/40 text-[#9B4DE0] bg-[#9B4DE0]/10 shadow-[0_0_12px_rgba(155,77,224,0.15)]" 
+                        : "border-white/20 text-white hover:bg-white/5"
+                    )}
+                    aria-label="Tùy chọn thêm"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  alignOffset={12}
+                  side="right"
+                  sideOffset={10}
+                  className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  }}
+                >
+                  <div className="py-2 px-2 flex flex-col gap-1 text-left">
+                    {/* 1. Theo dõi / Bỏ theo dõi */}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const newState = toggleFollowArtist(name)
+                        setIsFollowing(newState)
+                        triggerToast(newState ? `Đã theo dõi nghệ sĩ ${name}!` : `Đã bỏ theo dõi nghệ sĩ ${name}`)
+                      }}
+                      className={cn(
+                        "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-98 outline-none",
+                        isFollowing
+                          ? "text-red-400/80 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
+                          : "text-white/80 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white"
+                      )}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <Trash2 size={13} className="text-red-400/80" />
+                          <span>Bỏ theo dõi</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={13} className="text-purple-400" />
+                          <span>Theo dõi</span>
+                        </>
+                      )}
+                    </DropdownMenuItem>
+
+                    {/* 2. Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết nghệ sĩ</span>
+                    </DropdownMenuItem>
+
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
+
+                    {/* 3. Không hiện nghệ sĩ này nữa */}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        triggerToast(`Đã thêm nghệ sĩ ${name} vào danh sách ẩn. Quay lại trang chủ...`)
+                        setTimeout(() => {
+                          window.location.href = '/'
+                        }, 1500)
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+                    >
+                      <Ban size={13} className="text-red-400/80" />
+                      <span>Không hiện nghệ sĩ này nữa</span>
+                    </DropdownMenuItem>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
             </div>
           </div>

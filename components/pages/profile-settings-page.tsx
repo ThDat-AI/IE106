@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Camera, Check, ChevronRight, Volume2, Type, Globe,
-  Palette, Moon, User, Bell, Shield, Music, Zap, Sparkles, Trash2, Mail, AlertTriangle
+  Palette, Moon, User, Bell, Shield, Music, Zap, Sparkles, Trash2, Mail, AlertTriangle, Lock
 } from 'lucide-react'
 import { useI18nStore, useTranslation } from '@/lib/i18n-store'
 import { PageHero, GlassPanel, AmbientOrbs, AiBadge, AccentBar } from '@/components/ui/vibewave'
@@ -107,10 +107,12 @@ export default function ProfileSettingsPage() {
   const setGlobalLanguage = useI18nStore((state) => state.setLanguage)
 
   const TABS = [
-    { id: 'profile', label: t.account, icon: User },
+    { id: 'profile', label: t.profile, icon: User },
+    { id: 'security', label: t.security, icon: Lock },
     { id: 'playback', label: t.playback, icon: Music },
     { id: 'appearance', label: t.appearance, icon: Palette },
     { id: 'notifications', label: t.notifications, icon: Bell },
+    { id: 'privacy', label: t.privacy, icon: Shield },
   ] as const
 
   const [activeTab, setActiveTab] = useState<string>('profile')
@@ -210,16 +212,24 @@ export default function ProfileSettingsPage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                    flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[15px] font-bold transition-all duration-300 whitespace-nowrap group cursor-pointer border
+                    relative flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[15px] font-bold transition-all duration-300 whitespace-nowrap group cursor-pointer border overflow-hidden
                     ${isActive 
-                      ? 'bg-purple-500/10 border-purple-500/30 text-purple-300 shadow-[0_4px_20px_rgba(155,77,224,0.1)]' 
+                      ? 'bg-purple-500/15 border-purple-500/40 text-purple-200 shadow-[0_4px_20px_rgba(155,77,224,0.15)]' 
                       : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/[0.12] hover:border-white/25 hover:text-white'
                     }
                   `}
                 >
-                  <Icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 opacity-80'}`} />
+                  {isActive && (
+                    <>
+                      {/* Left glowing vertical bar for desktop */}
+                      <span className="hidden lg:block absolute left-0 top-3.5 bottom-3.5 w-[3px] rounded-r-full bg-[#9B4DE0] shadow-[0_0_10px_#9B4DE0]" />
+                      {/* Bottom glowing horizontal bar for mobile */}
+                      <span className="lg:hidden absolute bottom-0 left-5 right-5 h-[3px] rounded-t-full bg-[#9B4DE0] shadow-[0_0_10px_#9B4DE0]" />
+                    </>
+                  )}
+                  <Icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110 text-purple-300' : 'group-hover:scale-110 opacity-80'}`} />
                   {tab.label}
-                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-450 shadow-[0_0_8px_#C4B5FD]" />}
+                  {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#A78BFA] shadow-[0_0_8px_#A78BFA] animate-pulse" />}
                 </button>
               )
             })}
@@ -326,72 +336,80 @@ export default function ProfileSettingsPage() {
                       {t.cancel}
                     </button>
                   </div>
+                </form>
+              )}
 
-                  {/* Change Password Section */}
-                  <div className="mt-16 pt-12 border-t border-white/5 animate-in fade-in duration-300">
-                    <SectionHeader title={t.changePassword} icon={Shield} color="pink" />
-                    
-                    <div className="space-y-6 max-w-md">
-                      <div className="space-y-4">
-                        {/* Current Password */}
-                        <div className="space-y-2">
-                          <label htmlFor="current-password" className="text-sm font-bold text-white/75 px-1">{t.currentPassword}</label>
-                          <input
-                            id="current-password"
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            className={inputClasses}
-                            placeholder="••••••••"
-                          />
-                        </div>
-                        {/* New Password */}
-                        <div className="space-y-2">
-                          <label htmlFor="new-password" className="text-sm font-bold text-white/75 px-1">{t.newPassword}</label>
-                          <input
-                            id="new-password"
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className={inputClasses}
-                            placeholder="••••••••"
-                          />
-                        </div>
-                        {/* Confirm New Password */}
-                        <div className="space-y-2">
-                          <label htmlFor="confirm-new-password" className="text-sm font-bold text-white/75 px-1">{t.confirmNewPassword}</label>
-                          <input
-                            id="confirm-new-password"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={inputClasses}
-                            placeholder="••••••••"
-                          />
-                        </div>
+              {/* ─── SECURITY TAB ─────────────────────────────── */}
+              {activeTab === 'security' && (
+                <form onSubmit={handleSavePassword} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.changePassword} icon={Lock} color="pink" />
+                  
+                  <div className="space-y-6 max-w-md">
+                    <div className="space-y-4">
+                      {/* Current Password */}
+                      <div className="space-y-2">
+                        <label htmlFor="current-password" className="text-sm font-bold text-white/75 px-1">{t.currentPassword}</label>
+                        <input
+                          id="current-password"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          className={inputClasses}
+                          placeholder="••••••••"
+                        />
                       </div>
-
-                      {passwordError && (
-                        <p className="text-sm font-semibold px-1 animate-in fade-in duration-200 text-[#ff7d7d]">
-                          {passwordError}
-                        </p>
-                      )}
-
-                      <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
-                        <button
-                          type="button"
-                          onClick={handleSavePassword}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-[15px] font-bold transition-all duration-300 hover:opacity-90 active:scale-95 shadow-lg shadow-purple-500/25"
-                          style={{ backgroundColor: '#9B4DE0', color: 'white' }}
-                        >
-                          {passwordSaved ? <><Check size={18} /> {t.passwordChanged}</> : <><Sparkles size={18} /> {t.changePassword}</>}
-                        </button>
+                      {/* New Password */}
+                      <div className="space-y-2">
+                        <label htmlFor="new-password" className="text-sm font-bold text-white/75 px-1">{t.newPassword}</label>
+                        <input
+                          id="new-password"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className={inputClasses}
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      {/* Confirm New Password */}
+                      <div className="space-y-2">
+                        <label htmlFor="confirm-new-password" className="text-sm font-bold text-white/75 px-1">{t.confirmNewPassword}</label>
+                        <input
+                          id="confirm-new-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className={inputClasses}
+                          placeholder="••••••••"
+                        />
                       </div>
                     </div>
+
+                    {passwordError && (
+                      <p className="text-sm font-semibold px-1 animate-in fade-in duration-200 text-[#ff7d7d]">
+                        {passwordError}
+                      </p>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
+                      <button
+                        type="submit"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-[15px] font-bold transition-all duration-300 hover:opacity-90 active:scale-95 shadow-lg shadow-purple-500/25"
+                        style={{ backgroundColor: '#9B4DE0', color: 'white' }}
+                      >
+                        {passwordSaved ? <><Check size={18} /> {t.passwordChanged}</> : <><Sparkles size={18} /> {t.changePassword}</>}
+                      </button>
+                    </div>
                   </div>
+                </form>
+              )}
+
+              {/* ─── PRIVACY TAB ─────────────────────────────── */}
+              {activeTab === 'privacy' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <SectionHeader title={t.privacy} icon={Shield} color="purple" />
 
                   {/* Danger zone */}
-                  <div className="mt-16 pt-12 border-t border-white/5">
+                  <div className="mt-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
                         <Trash2 size={16} className="text-[#ff7d7d]" />
@@ -437,7 +455,7 @@ export default function ProfileSettingsPage() {
                       </div>
                     </div>
                   </div>
-                </form>
+                </div>
               )}
 
               {/* ─── PLAYBACK TAB ─────────────────────────────── */}

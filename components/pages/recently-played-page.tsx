@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Search, History, Play, Shuffle, Music2, CalendarDays, Clock } from 'lucide-react'
+import { Search, History, Play, Shuffle, Music2, Clock } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import { type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
@@ -146,7 +146,7 @@ export default function RecentlyPlayedPage({
           eyebrowIcon={<History size={13} />}
           eyebrowLabel={t.recentlyPlayed}
           title={t.recentlyPlayed}
-          subtitle={t.historySub}
+          subtitle={language === 'vi' ? `${initialTracks.length} bài hát bạn đã nghe` : `${initialTracks.length} songs you've listened to`}
           gradientClass="from-white to-white"
           titleColor="#FFFFFF"
           subtitleColor="rgba(255, 255, 255, 0.85)"
@@ -237,21 +237,6 @@ export default function RecentlyPlayedPage({
             }}
           />
         </div>
-
-        {/* Track count badge */}
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-xl"
-          style={{
-            backgroundColor: 'rgba(155, 77, 224, 0.08)',
-            border: '1px solid rgba(155, 77, 224, 0.2)',
-          }}
-        >
-          <CalendarDays size={13} style={{ color: '#9B4DE0' }} />
-          <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {filtered.length}
-            {searchQ ? ` / ${initialTracks.length}` : ''} {language === 'vi' ? 'bài gần đây' : 'recent tracks'}
-          </span>
-        </div>
       </section>
 
       {/* ── Time-grouped Track Sections ── */}
@@ -277,70 +262,72 @@ export default function RecentlyPlayedPage({
           </GlassPanel>
         </section>
       ) : (
-        groups.map(({ group, tracks }) => {
-          const gc = GROUP_COLORS[group] ?? GROUP_COLORS['Trước đó']
-          const displayLabel = GROUP_LABELS[group] ? (language === 'vi' ? GROUP_LABELS[group].vi : GROUP_LABELS[group].en) : group
-          return (
-            <section key={group}>
-              {/* Group heading */}
-              <div className="flex items-center gap-3 mb-4">
-                <AccentBar height={6} color={
-                  group === 'Hôm nay' ? 'blue' :
-                  group === 'Hôm qua' ? 'green' :
-                  group === '7 ngày qua' ? 'red' :
-                  group === 'Trước đó' ? 'yellow' : 'indigo'
-                } />
-                <h2
-                  className="font-display font-semibold"
-                  style={{ fontSize: 18, color: gc.text, letterSpacing: '-0.3px' }}
-                >
-                  {displayLabel}
-                </h2>
-                <span
-                  className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider"
-                  style={{ backgroundColor: gc.bg, color: '#FFFFFF', border: `1px solid ${gc.border}` }}
-                >
-                  {tracks.length} {language === 'vi' ? 'bài' : 'tracks'}
-                </span>
-              </div>
-
-              <GlassPanel variant="dark" className="vw-playlist-table">
-                {/* Table header */}
-                <div
-                  className="flex items-center gap-4 px-3 pb-2 pt-3"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="w-6 flex items-center justify-center shrink-0">
-                    <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
-                  </div>
-                  <div className="flex-1 flex items-center gap-4 min-w-0">
-                    <div className="w-10 shrink-0" />
-                    <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
-                  </div>
-                  <div className="hidden md:block w-40 shrink-0">
-                    <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
-                  </div>
-                  <div className="w-20 flex justify-end shrink-0 pr-4">
-                    <Clock size={14} style={{ color: 'var(--vw-text-muted)' }} />
-                  </div>
+        <div className="space-y-16">
+          {groups.map(({ group, tracks }) => {
+            const gc = GROUP_COLORS[group] ?? GROUP_COLORS['Trước đó']
+            const displayLabel = GROUP_LABELS[group] ? (language === 'vi' ? GROUP_LABELS[group].vi : GROUP_LABELS[group].en) : group
+            return (
+              <section key={group}>
+                {/* Group heading */}
+                <div className="flex items-center gap-3 mb-4">
+                  <AccentBar height={6} color={
+                    group === 'Hôm nay' ? 'blue' :
+                    group === 'Hôm qua' ? 'green' :
+                    group === '7 ngày qua' ? 'red' :
+                    group === 'Trước đó' ? 'yellow' : 'indigo'
+                  } />
+                  <h2
+                    className="font-display font-semibold"
+                    style={{ fontSize: 18, color: gc.text, letterSpacing: '-0.3px' }}
+                  >
+                    {displayLabel}
+                  </h2>
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider"
+                    style={{ backgroundColor: gc.bg, color: '#FFFFFF', border: `1px solid ${gc.border}` }}
+                  >
+                    {tracks.length} {language === 'vi' ? 'bài' : 'tracks'}
+                  </span>
                 </div>
 
-                {/* Track rows */}
-                <div className="py-2">
-                  {tracks.map(({ track, originalIndex }) => (
-                    <TrackRow
-                      key={track.id}
-                      index={originalIndex + 1}
-                      track={track}
-                      showAlbum
-                      variant={getGroupVariant(group) as any}
-                    />
-                  ))}
-                </div>
-              </GlassPanel>
-            </section>
-          )
-        })
+                <GlassPanel variant="dark" className="vw-playlist-table">
+                  {/* Table header */}
+                  <div
+                    className="flex items-center gap-4 px-3 pb-2 pt-3"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  >
+                    <div className="w-6 flex items-center justify-center shrink-0">
+                      <span className="text-[11px] font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--vw-text-muted)' }}>#</span>
+                    </div>
+                    <div className="flex-1 flex items-center gap-4 min-w-0">
+                      <div className="w-10 shrink-0" />
+                      <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.titleLabel}</span>
+                    </div>
+                    <div className="hidden md:block w-40 shrink-0">
+                      <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--vw-text-muted)' }}>{t.albumLabel}</span>
+                    </div>
+                    <div className="w-20 flex justify-end shrink-0 pr-4">
+                      <Clock size={14} style={{ color: 'var(--vw-text-muted)' }} />
+                    </div>
+                  </div>
+
+                  {/* Track rows */}
+                  <div className="py-2">
+                    {tracks.map(({ track, originalIndex }) => (
+                      <TrackRow
+                        key={track.id}
+                        index={originalIndex + 1}
+                        track={track}
+                        showAlbum
+                        variant={getGroupVariant(group) as any}
+                      />
+                    ))}
+                  </div>
+                </GlassPanel>
+              </section>
+            )
+          })}
+        </div>
       )}
     </div>
   )

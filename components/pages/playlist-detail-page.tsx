@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Shuffle, MoreHorizontal, Clock, Plus, ChevronLeft, Music2, Info, Edit3, Trash2, X, Search, Loader2, Check, RotateCw, Camera, Sparkles, SkipForward, ListPlus } from 'lucide-react'
+import { Play, Shuffle, MoreHorizontal, Clock, Plus, ChevronLeft, Music2, Info, Edit3, Trash2, X, Search, Loader2, Check, RotateCw, Camera, Sparkles, SkipForward, ListPlus, TrendingUp, Share2 } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
 import {
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/vibewave'
 import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
 import { cn } from '@/lib/utils'
+import { Portal } from '@/components/ui/portal'
 
 function slugToTitle(slug: string) {
   try {
@@ -260,6 +261,21 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
     }, 1000)
   }
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined' && playlist) {
+      const shareUrl = `${window.location.origin}/playlist/${playlist.id}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        setToastMessage({ text: 'Đã sao chép liên kết danh sách phát vào khay nhớ tạm!', type: 'success' })
+      } else {
+        setToastMessage({ text: 'Chia sẻ liên kết thành công!', type: 'success' })
+      }
+      setTimeout(() => setToastMessage(null), 3000)
+    }
+  }
+
   // Add song to playlist
   const handleAddSong = (track: Track) => {
     if (tracks.some(t => t.id === track.id)) {
@@ -417,15 +433,30 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             <div
               className="w-64 h-64 md:w-72 md:h-72 rounded-[2rem] shrink-0 flex items-center justify-center text-8xl font-display font-bold shadow-2xl relative z-10 border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 overflow-hidden"
               style={{
-                background: playlist.image ? 'none' : 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
+                background: playlist.image || tracks.some(t => t.albumArt) ? 'none' : 'linear-gradient(135deg, #9B4DE0 0%, #2A1F3D 100%)',
                 color: 'rgba(255,255,255,0.7)',
               }}
             >
               {playlist.image ? (
                 <img src={playlist.image} alt={playlist.title} className="w-full h-full object-cover" />
-              ) : (
-                playlist.title.charAt(0).toUpperCase()
-              )}
+              ) : (() => {
+                const validArts = tracks.map(t => t.albumArt).filter((art): art is string => !!art)
+                if (validArts.length >= 4) {
+                  return (
+                    <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+                      <img src={validArts[0]} alt="" className="w-full h-full object-cover" />
+                      <img src={validArts[1]} alt="" className="w-full h-full object-cover" />
+                      <img src={validArts[2]} alt="" className="w-full h-full object-cover" />
+                      <img src={validArts[3]} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )
+                } else if (validArts.length > 0) {
+                  return (
+                    <img src={validArts[0]} alt={playlist.title} className="w-full h-full object-cover" />
+                  )
+                }
+                return playlist.title.charAt(0).toUpperCase()
+              })()}
 
               {/* Play or edit button overlay */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 rounded-[2rem] z-20">
@@ -541,7 +572,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
               ) : (
                 <button
                   onClick={() => setIsAddSongsOpen(true)}
-                  className="flex items-center gap-3 px-8 py-4.5 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-[#b57cf6] to-[#8d54f6] hover:from-[#c59eff] hover:to-[#a074ff] transition-all cursor-pointer shadow-lg shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:scale-[1.03] active:scale-[0.97]"
+                  className="flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-[#b57cf6] to-[#8d54f6] hover:from-[#c59eff] hover:to-[#a074ff] transition-all cursor-pointer shadow-lg shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:scale-[1.03] active:scale-[0.97] shrink-0"
                 >
                   <Plus size={22} />
                   <span>Thêm bài hát đầu tiên</span>
@@ -609,6 +640,18 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     >
                       <ListPlus size={13} className="text-purple-400" />
                       <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
+
+                    {/* Divider */}
+                    <div className="h-px bg-white/5 my-1 mx-2" />
+
+                    {/* 2.5 Chia sẻ liên kết */}
+                    <DropdownMenuItem
+                      onClick={handleShare}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Share2 size={13} className="text-blue-400" />
+                      <span>Chia sẻ liên kết</span>
                     </DropdownMenuItem>
 
                     {/* Divider */}
@@ -842,11 +885,12 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
 
       {/* Edit Playlist Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
-            onClick={() => setIsEditModalOpen(false)}
-          />
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#070509]/80 backdrop-blur-md transition-opacity duration-300"
+              onClick={() => setIsEditModalOpen(false)}
+            />
 
           <div
             className="relative w-full max-w-md bg-[#130E1B]/95 border border-white/10 rounded-[32px] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden z-10 transition-all duration-300"
@@ -989,15 +1033,17 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Add Songs Modal */}
       {isAddSongsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#070509]/85 backdrop-blur-md transition-opacity duration-300"
-            onClick={() => setIsAddSongsOpen(false)}
-          />
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-[#070509]/85 backdrop-blur-md transition-opacity duration-300"
+              onClick={() => setIsAddSongsOpen(false)}
+            />
 
           <div
             className="relative w-full max-w-xl bg-[#130E1B]/95 border border-white/10 rounded-[32px] p-6 md:p-8 shadow-[0_24px_64px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-hidden z-10 transition-all duration-300 flex flex-col max-h-[85vh]"
@@ -1049,6 +1095,23 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     <X size={16} />
                   </button>
                 )}
+              </div>
+              
+              {/* Popular Search Suggestions */}
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-white/45 flex items-center gap-1 font-medium select-none">
+                  <TrendingUp size={12} className="text-purple-400 animate-pulse" />
+                  Xu hướng:
+                </span>
+                {['Sơn Tùng M-TP', 'Vũ.', 'Đen Vâu', 'tlinh', 'Wren Evans'].map((kw) => (
+                  <button
+                    key={kw}
+                    onClick={() => setSearchSongsQ(kw)}
+                    className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/20 text-white/60 hover:text-purple-300 transition-all duration-200 cursor-pointer active:scale-95 text-[11px] font-medium"
+                  >
+                    {kw}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1116,12 +1179,31 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                   </p>
                 </div>
               ) : (
-                <div className="py-16 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-3">
-                    <Search size={20} className="text-purple-400" />
+                <div className="py-16 flex flex-col items-center justify-center text-center relative overflow-hidden rounded-3xl bg-[#1A1423]/20 border border-white/5 p-6 shadow-inner">
+                  {/* Decorative glowing background light */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-purple-500/[0.03] rounded-full blur-[50px] pointer-events-none" />
+                  
+                  {/* Premium animated multi-layer icon */}
+                  <div className="relative w-20 h-20 flex items-center justify-center mb-5">
+                    {/* Pulsing ring 1 */}
+                    <div className="absolute inset-0 rounded-3xl bg-purple-500/5 border border-purple-500/10 animate-ping [animation-duration:3s]" />
+                    {/* Pulsing ring 2 */}
+                    <div className="absolute inset-2 rounded-2.5xl bg-purple-500/10 border border-purple-500/20 animate-pulse" />
+                    
+                    {/* The Icon Container */}
+                    <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-[0_8px_32px_rgba(155,77,224,0.15)] backdrop-blur-md transition-transform duration-500">
+                      <Search size={22} className="text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                      {/* Floating music note icon overlay */}
+                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-400/35 flex items-center justify-center text-[10px] text-indigo-300 animate-bounce">
+                        ♬
+                      </div>
+                    </div>
                   </div>
-                  <h5 className="text-sm font-display font-bold text-white/80">Nhập từ khóa tìm kiếm</h5>
-                  <p className="text-xs text-white/40 max-w-xs mt-1 px-4">
+                  
+                  <h5 className="relative z-10 text-sm font-display font-bold text-white/90 tracking-wide">
+                    Nhập từ khóa tìm kiếm
+                  </h5>
+                  <p className="relative z-10 text-xs text-white/50 max-w-xs mt-1.5 px-4 leading-relaxed">
                     Nhập tên bài hát hoặc nghệ sĩ để bắt đầu chọn lọc những tác phẩm âm nhạc cho riêng mình.
                   </p>
                 </div>
@@ -1129,6 +1211,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Confirm Delete Playlist Modal */}

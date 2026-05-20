@@ -33,7 +33,7 @@ const GENRES = [
 const FILTER_TABS = [
   { id: 'all',     labelKey: 'all'   },
   { id: 'tracks',  labelKey: 'songsLabel'  },
-  { id: 'artists', labelKey: 'topArtists'  },
+  { id: 'artists', labelKey: 'artists'  },
   { id: 'albums',  labelKey: 'albums'    },
 ]
 

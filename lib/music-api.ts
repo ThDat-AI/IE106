@@ -18,6 +18,7 @@ export interface Track {
   duration: number
   url: string
   lyrics?: string
+  genre?: string
 }
 
 export async function searchMusic(term: string, limit = 20, country = 'VN'): Promise<Track[]> {
@@ -334,4 +335,35 @@ export function getMockLyrics(title: string, artist: string): string {
     `[00:30.00] We support all your favorite artists.\n` +
     `[00:35.00] Keep listening and stay vibing.\n` +
     `[00:40.00] VibeWave: Your music, your way.`
+}
+
+export async function searchArtists(term: string, limit = 10, country = 'VN'): Promise<any[]> {
+  try {
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=musicArtist&limit=${limit}&country=${country}`
+    )
+
+    if (response.status === 429) {
+      console.error('iTunes API rate limit exceeded (429).')
+      return []
+    }
+
+    const text = await response.text()
+    const data = JSON.parse(text)
+
+    if (!data.results) return []
+
+    return Promise.all(data.results.map(async (item: any) => {
+      const artwork = await searchArtistImage(item.artistName)
+      return {
+        id: String(item.artistId),
+        name: item.artistName,
+        genre: item.primaryGenreName || 'Nghệ sĩ',
+        image: artwork || undefined
+      }
+    }))
+  } catch (error) {
+    console.error('Error fetching artists from iTunes:', error)
+    return []
+  }
 }
