@@ -437,7 +437,7 @@ export default function LibraryPage({
                   relative flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold 
                   transition-all duration-300 flex-1 sm:flex-none overflow-hidden cursor-pointer group
                   ${isActive 
-                    ? 'bg-gradient-to-r from-purple-800 via-violet-800 to-indigo-800 border border-purple-700/50 text-white shadow-lg shadow-purple-900/40' 
+                    ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/40 text-white shadow-lg shadow-purple-500/20' 
                     : 'bg-[#191322] border border-white/10 text-slate-200 hover:bg-[#251d33] hover:border-white/20 hover:text-white'
                   }
                 `}

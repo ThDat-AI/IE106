@@ -5,6 +5,8 @@ import { Plus, Search, X, Loader2, Music, Ban, Check, Trash2, TrendingUp } from 
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n-store'
 import { searchTracks, searchAlbums, searchArtists } from '@/lib/music-api'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import {
   getBlockedTracks,
   getBlockedAlbums,
@@ -42,12 +44,7 @@ export default function BlockedPage() {
   const [isSearching, setIsSearching] = useState(false)
 
   // Toast notification state
-  const [toast, setToast] = useState<{ text: string; type: 'success' | 'info' } | null>(null)
-
-  const showToast = (text: string, type: 'success' | 'info' = 'success') => {
-    setToast({ text, type })
-    setTimeout(() => setToast(null), 3000)
-  }
+  const { toast } = useToast()
 
   // Load blocked items from localStorage on mount and register custom event
   const reloadBlockedData = () => {
@@ -108,7 +105,15 @@ export default function BlockedPage() {
       albumArt: trackItem.albumArt || trackItem.artworkUrl100
     }
     toggleBlockTrack(songObj)
-    showToast(`Đã chặn bài hát "${trackItem.title}"!`)
+    toast({
+      title: "Đã chặn bài hát",
+      description: `Đã chặn bài hát "${trackItem.title}"!`,
+      action: (
+        <ToastAction altText="Hoàn tác" onClick={() => toggleBlockTrack(songObj)}>
+          Hoàn tác
+        </ToastAction>
+      )
+    })
   }
 
   const handleBlockAlbumInModal = (albumItem: any) => {
@@ -119,7 +124,15 @@ export default function BlockedPage() {
       albumArt: albumItem.albumArt
     }
     toggleBlockAlbum(albumObj)
-    showToast(`Đã chặn album "${albumItem.title}"!`)
+    toast({
+      title: "Đã chặn album",
+      description: `Đã chặn album "${albumItem.title}"!`,
+      action: (
+        <ToastAction altText="Hoàn tác" onClick={() => toggleBlockAlbum(albumObj)}>
+          Hoàn tác
+        </ToastAction>
+      )
+    })
   }
 
   const handleBlockArtistInModal = (artistItem: any) => {
@@ -130,19 +143,54 @@ export default function BlockedPage() {
       image: artistItem.image
     }
     toggleBlockArtist(artistObj)
-    showToast(`Đã chặn nghệ sĩ "${artistItem.name}"!`)
+    toast({
+      title: "Đã chặn nghệ sĩ",
+      description: `Đã chặn nghệ sĩ "${artistItem.name}"!`,
+      action: (
+        <ToastAction altText="Hoàn tác" onClick={() => toggleBlockArtist(artistObj)}>
+          Hoàn tác
+        </ToastAction>
+      )
+    })
   }
 
   const handleUnblockItem = (item: BlockedItem) => {
     if (item.type === 'track') {
-      toggleBlockTrack({ id: item.id, title: item.title, artist: item.subtitle })
-      showToast(`Đã bỏ chặn bài hát "${item.title}"!`)
+      const songObj = { id: item.id, title: item.title, artist: item.subtitle, albumArt: item.image }
+      toggleBlockTrack(songObj)
+      toast({
+        title: "Đã bỏ chặn bài hát",
+        description: `Đã bỏ chặn bài hát "${item.title}"!`,
+        action: (
+          <ToastAction altText="Hoàn tác" onClick={() => toggleBlockTrack(songObj)}>
+            Hoàn tác
+          </ToastAction>
+        )
+      })
     } else if (item.type === 'album') {
-      toggleBlockAlbum({ id: item.id, title: item.title, artist: item.subtitle })
-      showToast(`Đã bỏ chặn album "${item.title}"!`)
+      const albumObj = { id: item.id, title: item.title, artist: item.subtitle, albumArt: item.image }
+      toggleBlockAlbum(albumObj)
+      toast({
+        title: "Đã bỏ chặn album",
+        description: `Đã bỏ chặn album "${item.title}"!`,
+        action: (
+          <ToastAction altText="Hoàn tác" onClick={() => toggleBlockAlbum(albumObj)}>
+            Hoàn tác
+          </ToastAction>
+        )
+      })
     } else if (item.type === 'artist') {
-      toggleBlockArtist({ name: item.title })
-      showToast(`Đã bỏ chặn nghệ sĩ "${item.title}"!`)
+      const artistObj = { name: item.title, image: item.image }
+      toggleBlockArtist(artistObj)
+      toast({
+        title: "Đã bỏ chặn nghệ sĩ",
+        description: `Đã bỏ chặn nghệ sĩ "${item.title}"!`,
+        action: (
+          <ToastAction altText="Hoàn tác" onClick={() => toggleBlockArtist(artistObj)}>
+            Hoàn tác
+          </ToastAction>
+        )
+      })
     }
   }
 
@@ -161,9 +209,9 @@ export default function BlockedPage() {
   )
 
   const tabsConfig = [
-    { id: 'songs', label: t.blockedSongs || 'Bài hát đã chặn', count: blockedSongs.length },
-    { id: 'albums', label: t.blockedAlbums || 'Album đã chặn', count: blockedAlbums.length },
-    { id: 'artists', label: t.blockedArtists || 'Nghệ sĩ đã chặn', count: blockedArtists.length }
+    { id: 'songs', label: t.songs || 'Bài hát', count: blockedSongs.length },
+    { id: 'albums', label: t.albums || 'Album', count: blockedAlbums.length },
+    { id: 'artists', label: t.artists || 'Nghệ sĩ', count: blockedArtists.length }
   ]
 
   return (
@@ -173,13 +221,32 @@ export default function BlockedPage() {
       <PageHero
         title={t.blockList || 'Danh sách chặn'}
         subtitle={t.blockListDesc || 'Quản lý danh sách các bài hát, album và nghệ sĩ đã bị chặn.'}
+        gradientClass="!text-white"
+        subtitleColor="rgba(255, 255, 255, 0.75)"
+        action={
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="group relative flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold text-sm text-white overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(155,77,224,0.2)] hover:shadow-[0_0_30px_rgba(155,77,224,0.4)] cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[#9B4DE0] to-[#7C3AED] transition-transform duration-300 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#aa62ee] to-[#8b44e3] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Plus size={18} className="relative z-10 transition-transform duration-300 group-hover:rotate-90" />
+            <span className="relative z-10 tracking-wide">
+              {activeTab === 'songs' 
+                ? (t.searchToBlockSong || 'Chặn thêm bài hát') 
+                : activeTab === 'albums' 
+                  ? (t.searchToBlockAlbum || 'Chặn thêm album') 
+                  : (t.searchToBlockArtist || 'Chặn thêm nghệ sĩ')}
+            </span>
+          </button>
+        }
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[-30px] relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 relative z-10">
         {/* Actions & Search Top Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-3xl bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2.5 rounded-2xl bg-[#120E18]/60 backdrop-blur-xl border border-white/5 shadow-xl relative z-10">
           {/* Tab buttons */}
-          <div className="flex items-center gap-1.5 p-1 bg-black/25 rounded-2xl border border-white/5 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 w-full sm:w-auto p-1.5 rounded-xl bg-white/[0.02] overflow-x-auto scrollbar-hide">
             {tabsConfig.map(tab => {
               const isActive = activeTab === tab.id
               return (
@@ -189,19 +256,27 @@ export default function BlockedPage() {
                     setActiveTab(tab.id as Tab)
                     setFilterQuery('')
                   }}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 relative cursor-pointer active:scale-95 shrink-0 whitespace-nowrap",
-                    isActive
-                      ? "text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-md shadow-purple-900/30"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                  )}
+                  className={`
+                    relative flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold 
+                    transition-all duration-300 flex-1 sm:flex-none overflow-hidden cursor-pointer group
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 border border-purple-500/40 text-white shadow-lg shadow-purple-500/20' 
+                      : 'bg-[#191322] border border-white/10 text-slate-200 hover:bg-[#251d33] hover:border-white/20 hover:text-white'
+                    }
+                  `}
                 >
-                  <span>{tab.label}</span>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0 animate-pulse shadow-[0_0_4px_#ffffff]" />
+                  )}
+                  <span className="relative z-10">{tab.label}</span>
                   <span
-                    className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded-md font-extrabold transition-all",
-                      isActive ? "bg-white/20 text-white" : "bg-white/5 text-white/50"
-                    )}
+                    className={`
+                      relative z-10 text-[11px] px-2.5 py-0.5 rounded-full font-bold transition-all duration-300
+                      ${isActive 
+                        ? 'bg-white text-purple-950 shadow-[0_2px_4px_rgba(0,0,0,0.15)]' 
+                        : 'bg-[#2d223c] text-slate-200 group-hover:bg-[#382b4a] group-hover:text-white'
+                      }
+                    `}
                   >
                     {tab.count}
                   </span>
@@ -210,38 +285,28 @@ export default function BlockedPage() {
             })}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Search filter in current page */}
-            <div className="relative group">
-              <Search
-                size={14}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-purple-400 transition-colors z-10"
-              />
-              <input
-                type="text"
-                value={filterQuery}
-                onChange={e => setFilterQuery(e.target.value)}
-                placeholder={t.searchToBlockPlaceholder || 'Tìm kiếm để chặn...'}
-                className="w-full sm:w-[240px] pl-9 pr-4 py-2.5 rounded-xl text-xs outline-none transition-all bg-white/[0.03] border border-white/10 text-white placeholder-slate-400 focus:bg-white/[0.06] focus:border-purple-500/50"
-              />
-              {filterQuery && (
-                <button
-                  onClick={() => setFilterQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-
-            {/* Block New Item Button */}
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-[#120E18] hover:bg-purple-500 hover:text-white shadow-lg transition-all duration-300 cursor-pointer active:scale-95 border border-white/10"
-            >
-              <Plus size={14} />
-              <span>Chặn thêm mục mới</span>
-            </button>
+          {/* Search filter in current page */}
+          <div className="relative w-full sm:w-auto group">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+            <Search
+              size={16}
+              className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-purple-400 transition-colors duration-300 z-10"
+            />
+            <input
+              type="text"
+              value={filterQuery}
+              onChange={e => setFilterQuery(e.target.value)}
+              placeholder={t.searchToBlockPlaceholder || 'Tìm kiếm để chặn...'}
+              className="w-full sm:w-[320px] pl-11 pr-10 py-3 rounded-xl text-sm outline-none transition-all duration-300 bg-white/[0.03] border border-white/10 text-white placeholder-slate-400 hover:bg-white/[0.05] hover:border-white/20 focus:bg-white/[0.07] focus:border-purple-500/50 focus:shadow-[0_0_20px_rgba(155,77,224,0.15)] relative z-10"
+            />
+            {filterQuery && (
+              <button
+                onClick={() => setFilterQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors cursor-pointer z-20"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -533,17 +598,7 @@ export default function BlockedPage() {
         </Portal>
       )}
 
-      {/* Floating Premium Toast Notifications */}
-      {toast && (
-        <div className="fixed bottom-8 right-8 z-[60] flex items-center gap-3 px-6 py-4 rounded-2xl bg-[#120E18]/95 border border-purple-500/35 shadow-[0_12px_40px_rgba(155,77,224,0.2)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center bg-purple-500/15 border border-purple-500/25 text-purple-400 shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-          </div>
-          <span className="text-xs font-semibold text-white/95">{toast.text}</span>
-        </div>
-      )}
+
     </div>
   )
 }

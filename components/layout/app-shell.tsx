@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Header from './header'
 import Sidebar from './sidebar'
 import BottomPlayer from './bottom-player'
 import Footer from './footer'
 import QueuePanel from './queue-panel'
 import { usePlayerStore } from '@/lib/player-store'
+import { getTrackByTitle } from '@/lib/music-api'
+
+import { Toaster } from '@/components/ui/toaster'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -15,7 +18,24 @@ interface AppShellProps {
 
 export default function AppShell({ children, showFooter = true }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const { isQueueOpen } = usePlayerStore()
+  const { isQueueOpen, setTrack, setQueue } = usePlayerStore()
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadDefaultTrack = async () => {
+      const defaultTrack = await getTrackByTitle('Thêm bao nhiêu lâu', 'VN')
+      if (cancelled || !defaultTrack) return
+
+      setQueue([defaultTrack])
+      setTrack(defaultTrack)
+    }
+
+    loadDefaultTrack()
+    return () => {
+      cancelled = true
+    }
+  }, [setQueue, setTrack])
 
   return (
     <div className="min-h-screen bg-vw-bg relative overflow-hidden">
@@ -49,6 +69,7 @@ export default function AppShell({ children, showFooter = true }: AppShellProps)
 
         <BottomPlayer sidebarCollapsed={sidebarCollapsed} />
         <QueuePanel />
+        <Toaster />
       </div>
     </div>
   )

@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, ArrowRight, Mail, Lock, User, Music2, Headphones, Radio, Disc3 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
+import { isUserLoggedIn, signInDemo } from '@/lib/auth'
 import { AmbientOrbs, GlassPanel } from '@/components/ui/vibewave'
 
 /* ── SVG brand icons (Simple Icons-accurate paths) ── */
@@ -74,19 +76,26 @@ function FloatingNotes() {
 
 export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'login' | 'register' }) {
   const { t } = useTranslation()
+  const router = useRouter()
   const [mode, setMode] = useState<'login' | 'register'>(initialMode)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   
   // Login State
-  const [loginEmail, setLoginEmail] = useState('')
-  const [loginPassword, setLoginPassword] = useState('')
+  const [loginEmail, setLoginEmail] = useState('demo@vibewave.test')
+  const [loginPassword, setLoginPassword] = useState('Password123')
   const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({})
 
   // Register State
-  const [regForm, setRegForm] = useState({ name: '', email: '', password: '' })
+  const [regForm, setRegForm] = useState({ name: 'Demo User', email: 'demo@vibewave.test', password: 'Password123' })
   const [regErrors, setRegErrors] = useState<Partial<typeof regForm>>({})
+
+  useEffect(() => {
+    if (isUserLoggedIn()) {
+      router.replace('/')
+    }
+  }, [router])
 
   function validateLogin() {
     const e: typeof loginErrors = {}
@@ -112,7 +121,10 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
     if (Object.keys(errs).length > 0) { setLoginErrors(errs); return }
     setLoginErrors({})
     setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+    setTimeout(() => {
+      signInDemo()
+      router.replace('/')
+    }, 700)
   }
 
   function handleRegisterSubmit(e: React.FormEvent) {
@@ -121,7 +133,10 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
     if (Object.keys(errs).length > 0) { setRegErrors(errs); return }
     setRegErrors({})
     setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+    setTimeout(() => {
+      signInDemo()
+      router.replace('/')
+    }, 700)
   }
 
   const inputContainerStyle = (fieldName: string, hasError: boolean) => ({

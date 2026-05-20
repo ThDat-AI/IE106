@@ -188,7 +188,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
                 className="text-white/70 hover:text-white transition-colors duration-300 active:scale-90"
                 aria-label={t.previous}
               >
-                <SkipBack size={24} fill="currentColor" strokeWidth={0} />
+                <SkipBack size={24} fill="currentColor" />
               </button>
 
               <button
@@ -211,7 +211,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
                 className="text-white/70 hover:text-white transition-colors duration-300 active:scale-90"
                 aria-label={t.next}
               >
-                <SkipForward size={24} fill="currentColor" strokeWidth={0} />
+                <SkipForward size={24} fill="currentColor" />
               </button>
 
               <button

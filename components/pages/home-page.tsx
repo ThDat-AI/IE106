@@ -1,13 +1,16 @@
 "use client"
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
+import ContinueListeningSection from '@/components/music/continue-listening-section'
 import { usePlayerStore, SAMPLE_TRACKS, type Track } from '@/lib/player-store'
 import { useTranslation } from '@/lib/i18n-store'
 import { useState, useEffect, useRef } from 'react'
 import { searchMusic, searchAlbums } from '@/lib/music-api'
 import { useToast } from '@/components/ui/use-toast'
+import { isUserLoggedIn } from '@/lib/auth'
 import { ChevronDown, ChevronUp, ChevronRight, RotateCw, Clock } from 'lucide-react'
 import {
   SectionHeader,
@@ -40,25 +43,37 @@ export default function HomePage({
 }) {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [trending, setTrending] = useState<Track[]>(initialTrending)
   const [quickPicks, setQuickPicks] = useState<Track[]>(initialQuickPicks.length > 0 ? initialQuickPicks : SAMPLE_TRACKS)
-  const [continueListening, setContinueListening] = useState<any[]>([])
-  const [madeForYou, setMadeForYou] = useState<any[]>([])
+  const [allTabPicks, setAllTabPicks] = useState<Track[]>(initialQuickPicks.length > 0 ? initialQuickPicks : [])
   const [topAlbums, setTopAlbums] = useState<any[]>(initialTopAlbums)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
   const [visibleCount, setVisibleCount] = useState(5)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isFirstRender = useRef(true)
 
+  useEffect(() => {
+    if (!isUserLoggedIn()) {
+      router.replace('/login')
+      return
+    }
+    setAuthChecked(true)
+  }, [router])
+
   const handleRefreshQuickPicks = async (genre: string) => {
     setIsRefreshing(true)
     try {
       const terms = GENRE_SEARCH_TERMS[genre] || GENRE_SEARCH_TERMS['Tất cả']
       const randomTerm = terms[Math.floor(Math.random() * terms.length)]
-      const picksData = await searchMusic(randomTerm, 25)
+      const picksData = await searchMusic(randomTerm, 25, 'VN')
       if (picksData.length > 0) {
         setQuickPicks(picksData)
         setVisibleCount(5) // Reset expanded list when new music is loaded
+        if (genre === 'Tất cả') {
+          setAllTabPicks(picksData)
+        }
       }
     } catch (error) {
       console.error('Error refreshing quick picks:', error)
@@ -76,6 +91,8 @@ export default function HomePage({
   }, [activeGenre])
 
   useEffect(() => {
+    if (!authChecked) return
+
     async function loadMusic() {
       if (trending.length === 0) {
         const trendingData = await searchMusic('Sơn Tùng M-TP', 4)
@@ -83,39 +100,27 @@ export default function HomePage({
       }
 
       if (initialQuickPicks.length === 0) {
-        const picksData = await searchMusic('V-Pop Hits 2024', 25)
-        if (picksData.length > 0) setQuickPicks(picksData)
+        const terms = GENRE_SEARCH_TERMS['Tất cả']
+        const randomTerm = terms[Math.floor(Math.random() * terms.length)]
+        const picksData = await searchMusic(randomTerm, 25, 'VN')
+        if (picksData.length > 0) {
+          setQuickPicks(picksData)
+          setAllTabPicks(picksData)
+        }
       }
 
       if (topAlbums.length === 0) {
-        const albumSearchTerms = ['Hoàng Thùy Linh', 'Đen Vâu', 'Vũ.', 'Mỹ Tâm', 'Sơn Tùng M-TP']
-        const randomTerm = albumSearchTerms[Math.floor(Math.random() * albumSearchTerms.length)]
-        const albumsData = await searchAlbums(randomTerm, 6)
+        const albumSearchTerms = ['Hoàng Thùy Linh', 'Đen Vâu', 'Vũ.', 'Mỹ Tâm', 'Sơn Tùng M-TP', 'Bích Phương']
+        const selectedTerms = albumSearchTerms.sort(() => Math.random() - 0.5).slice(0, 6)
+        const albumsByArtist = await Promise.all(selectedTerms.map((term) => searchAlbums(term, 1, 'VN')))
+        const albumsData = albumsByArtist.flat().filter(Boolean)
         setTopAlbums(albumsData)
       }
-
-      const artists = ['Đen Vâu', 'Hoàng Thùy Linh', 'Lyly', 'Phùng Khánh Linh', 'Vũ.', 'Jack - J97']
-      const randomArtist = artists[Math.floor(Math.random() * artists.length)]
-      const continueData = await searchMusic(randomArtist, 6)
-      setContinueListening(continueData.map(t => ({
-        id: t.id,
-        title: t.title,
-        subtitle: t.artist,
-        type: 'track',
-        track: t
-      })))
-
-      const madeData = await searchMusic('Indie Việt', 10)
-      setMadeForYou(madeData.map(t => ({
-        id: t.id,
-        title: t.title,
-        subtitle: t.artist,
-        type: 'track',
-        track: t
-      })))
     }
     loadMusic()
   }, [])
+
+  const currentAllTabPicks = activeGenre === 'Tất cả' ? quickPicks : allTabPicks
 
   const greeting = (() => {
     const h = new Date().getHours()
@@ -123,6 +128,8 @@ export default function HomePage({
     if (h < 18) return t.goodAfternoon
     return t.goodEvening
   })()
+
+  if (!authChecked) return null
 
   return (
     <div className="space-y-16">
@@ -146,21 +153,7 @@ export default function HomePage({
       </section>
 
       {/* Continue Listening — highest priority */}
-      <section aria-labelledby="continue-listening-heading">
-        <SectionHeader title={t.continueListening} href="/library/recent" />
-        <MusicShelf>
-          {continueListening.map((item) => (
-            <MusicCard
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              subtitle={item.subtitle}
-              type={item.type}
-              track={item.track}
-            />
-          ))}
-        </MusicShelf>
-      </section>
+      <ContinueListeningSection />
 
       {/* Top Albums Section */}
       <section aria-labelledby="top-albums-heading">
@@ -216,10 +209,10 @@ export default function HomePage({
           </Link>
         </div>
         <MusicShelf>
-          {madeForYou.map((item, i) => (
+          {currentAllTabPicks.slice(0, 6).map((track, i) => (
             <GlassMusicCard
-              key={item.id}
-              track={item.track}
+              key={track.id}
+              track={track}
               rankIndex={i}
             />
           ))}

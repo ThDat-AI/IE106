@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { Search, Settings, User, LogOut, Bell, ChevronDown, Ban } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n-store'
+import { isUserLoggedIn, signOutDemo } from '@/lib/auth'
 
 const SEARCH_SUGGESTIONS = [
   { type: 'track', label: 'Blinding Lights', sub: 'The Weeknd' },
@@ -21,6 +22,18 @@ export default function Header() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    setIsLoggedIn(isUserLoggedIn())
+  }, [])
+
+  const handleSignOut = () => {
+    signOutDemo()
+    setIsLoggedIn(false)
+    setShowProfile(false)
+    router.push('/login')
+  }
   const profileRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
@@ -168,194 +181,212 @@ export default function Header() {
       </div>
 
       {/* Right: User */}
-      <div ref={profileRef} className="relative flex items-center gap-3">
-      <div ref={notificationsRef} className="relative flex items-center">
-        <button
-          onClick={() => setShowNotifications(!showNotifications)}
-          className="relative p-2 rounded-lg transition-vw hover:bg-white/[0.08]"
-          aria-label={t.notifications}
-          aria-expanded={showNotifications}
-          aria-haspopup="true"
-        >
-          <Bell size={18} style={{ color: showNotifications ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)' }} />
-          <span
-            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: '#9B4DE0' }}
-            aria-hidden="true"
-          />
-        </button>
-
-        {showNotifications && (
-          <div
-            className="absolute top-full right-0 mt-3 w-80 rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-            style={{
-              backgroundColor: 'rgba(22, 16, 31, 0.94)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
-            }}
-          >
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <h3 className="font-display text-sm font-bold tracking-widest text-white/95 uppercase">
-                {t.notifications || 'Notifications'}
-              </h3>
-              <button
-                className="text-[10px] font-bold text-vw-purple hover:text-white transition-colors uppercase tracking-wider px-2 py-1 rounded-md hover:bg-white/5"
-                onClick={() => setShowNotifications(false)}
-              >
-                {t.markAllAsRead || 'Mark all as read'}
-              </button>
-            </div>
-
-            <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-              {/* Welcome Notification */}
-              <div className="p-5 flex gap-4 hover:bg-white/[0.06] transition-vw group cursor-pointer border-b border-white/[0.08] bg-white/[0.03]">
-                <div
-                  className="w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    background: 'linear-gradient(135deg, #9B4DE0 0%, #6D28D9 100%)',
-                    boxShadow: '0 8px 20px rgba(155,77,224,0.4)',
-                  }}
-                >
-                  <User size={22} className="text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[15px] font-bold text-white leading-tight">
-                      {t.welcomeNotificationTitle || 'Welcome to VibeWave!'}
-                    </p>
-                    <div className="w-2 h-2 rounded-full bg-vw-purple animate-pulse" />
-                  </div>
-                  <p className="text-xs text-white/75 leading-relaxed">
-                    {(t.welcomeNotificationDesc || "Hello {name}, we've missed you! Enjoy your personalized music journey today.").replace('{name}', 'Alex Johnson')}
-                  </p>
-                  <span className="text-[9px] text-vw-purple/85 mt-2.5 block font-bold uppercase tracking-[0.1em]">
-                    {t.justNow || 'Just now'} • System
-                  </span>
-                </div>
-              </div>
-
-              {/* Sample notifications */}
-              {[
-                {
-                  icon: <Bell size={18} />,
-                  title: t.newAlbumNotificationTitle || 'New Album Release',
-                  desc: (t.newAlbumNotificationDesc || '{artist} just dropped "{album}". Check it out!').replace('{artist}', 'The Weeknd').replace('{album}', 'Dawn FM'),
-                  time: (t.hoursAgo || '{count} hours ago').replace('{count}', '2'),
-                  color: '#818cf8'
-                },
-                {
-                  icon: <Settings size={18} />,
-                  title: t.systemUpdateNotificationTitle || 'System Update',
-                  desc: (t.systemUpdateNotificationDesc || 'VibeWave is now faster and smoother than ever. Version {version} is live.').replace('{version}', '2.4.0'),
-                  time: t.yesterday || 'Yesterday',
-                  color: '#4ade80'
-                }
-              ].map((notif, i) => (
-                <div key={i} className="p-4 flex gap-4 hover:bg-white/[0.08] transition-vw group cursor-pointer border-b border-white/[0.06]">
-                  <div
-                    className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110"
-                    style={{
-                      backgroundColor: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      color: notif.color
-                    }}
-                  >
-                    {notif.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white/95 leading-tight">
-                      {notif.title}
-                    </p>
-                    <p className="text-xs text-white/60 mt-1 leading-relaxed line-clamp-2">
-                      {notif.desc}
-                    </p>
-                    <span className="text-[10px] text-white/45 mt-2 block uppercase tracking-tighter font-semibold">
-                      {notif.time}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
+      <div className="relative flex items-center gap-3">
+        {!isLoggedIn ? (
+          <div className="flex items-center gap-3">
             <Link
-              href="/notifications"
-              className="w-full py-3 text-xs font-bold text-white/60 hover:text-white/90 transition-colors uppercase tracking-widest bg-white/[0.04] hover:bg-white/[0.08] text-center block border-t border-white/10"
-              onClick={() => setShowNotifications(false)}
+              href="/login"
+              className="rounded-full px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
             >
-              {t.viewAllNotifications || 'View All Notifications'}
+              {t.signIn}
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-full bg-vw-purple px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-500"
+            >
+              {t.createAccount}
             </Link>
           </div>
-        )}
-      </div>
-
-        <button
-          onClick={() => setShowProfile(!showProfile)}
-          className="flex items-center gap-2 p-1.5 rounded-lg transition-vw hover:bg-white/5"
-          aria-label="User profile menu"
-          aria-expanded={showProfile}
-          aria-haspopup="true"
-        >
-          <img
-            src="/UserAvatar.jpg"
-            alt="Alex Johnson"
-            className="w-8 h-8 rounded-full object-cover"
-            style={{ border: '2px solid rgba(255,255,255,0.1)' }}
-          />
-          <ChevronDown
-            size={14}
-            style={{
-              color: 'rgba(255,255,255,0.45)',
-              transform: showProfile ? 'rotate(180deg)' : 'rotate(0)',
-              transition: 'transform 0.15s ease',
-            }}
-          />
-        </button>
-
-        {showProfile && (
-          <div
-            className="absolute top-full right-0 mt-2 w-52 rounded-2xl py-2 z-50"
-            style={{
-              backgroundColor: 'rgba(22, 16, 31, 0.94)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            }}
-            role="menu"
-          >
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.98)' }}>Alex Johnson</div>
-              <div className="text-xs mt-0.5 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>alex@example.com</div>
-            </div>
-            {[
-              { icon: User, label: t.profileAndSettings, href: '/profile' },
-              { icon: Ban, label: t.blockList, href: '/blocked' },
-            ].map(({ icon: Icon, label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                role="menuitem"
-                onClick={() => setShowProfile(false)}
-                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/[0.08]"
+        ) : (
+          <>
+            <div ref={notificationsRef} className="relative flex items-center">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 rounded-lg transition-vw hover:bg-white/[0.08]"
+                aria-label={t.notifications}
+                aria-expanded={showNotifications}
+                aria-haspopup="true"
               >
-                <Icon size={15} style={{ color: 'rgba(255,255,255,0.75)' }} />
-                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{label}</span>
-              </Link>
-            ))}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
-              <Link
-                href="/login"
-                role="menuitem"
-                onClick={() => setShowProfile(false)}
-                className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/[0.08]"
-              >
-                <LogOut size={15} style={{ color: 'rgba(255,255,255,0.55)' }} />
-                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.signOut}</span>
-              </Link>
+                <Bell size={18} style={{ color: showNotifications ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)' }} />
+                <span
+                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: '#9B4DE0' }}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {showNotifications && (
+                <div
+                  className="absolute top-full right-0 mt-3 w-80 rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                  style={{
+                    backgroundColor: 'rgba(22, 16, 31, 0.94)',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+                  }}
+                >
+                  <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                    <h3 className="font-display text-sm font-bold tracking-widest text-white/95 uppercase">
+                      {t.notifications || 'Notifications'}
+                    </h3>
+                    <button
+                      className="text-[10px] font-bold text-vw-purple hover:text-white transition-colors uppercase tracking-wider px-2 py-1 rounded-md hover:bg-white/5"
+                      onClick={() => setShowNotifications(false)}
+                    >
+                      {t.markAllAsRead || 'Mark all as read'}
+                    </button>
+                  </div>
+
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                    {/* Welcome Notification */}
+                    <div className="p-5 flex gap-4 hover:bg-white/[0.06] transition-vw group cursor-pointer border-b border-white/[0.08] bg-white/[0.03]">
+                      <div
+                        className="w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110 group-hover:rotate-3"
+                        style={{
+                          background: 'linear-gradient(135deg, #9B4DE0 0%, #6D28D9 100%)',
+                          boxShadow: '0 8px 20px rgba(155,77,224,0.4)',
+                        }}
+                      >
+                        <User size={22} className="text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-[15px] font-bold text-white leading-tight">
+                            {t.welcomeNotificationTitle || 'Welcome to VibeWave!'}
+                          </p>
+                          <div className="w-2 h-2 rounded-full bg-vw-purple animate-pulse" />
+                        </div>
+                        <p className="text-xs text-white/75 leading-relaxed">
+                          {(t.welcomeNotificationDesc || "Hello {name}, we've missed you! Enjoy your personalized music journey today.").replace('{name}', 'Alex Johnson')}
+                        </p>
+                        <span className="text-[9px] text-vw-purple/85 mt-2.5 block font-bold uppercase tracking-[0.1em]">
+                          {t.justNow || 'Just now'} • System
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Sample notifications */}
+                    {[
+                      {
+                        icon: <Bell size={18} />,
+                        title: t.newAlbumNotificationTitle || 'New Album Release',
+                        desc: (t.newAlbumNotificationDesc || '{artist} just dropped "{album}". Check it out!').replace('{artist}', 'The Weeknd').replace('{album}', 'Dawn FM'),
+                        time: (t.hoursAgo || '{count} hours ago').replace('{count}', '2'),
+                        color: '#818cf8'
+                      },
+                      {
+                        icon: <Settings size={18} />,
+                        title: t.systemUpdateNotificationTitle || 'System Update',
+                        desc: (t.systemUpdateNotificationDesc || 'VibeWave is now faster and smoother than ever. Version {version} is live.').replace('{version}', '2.4.0'),
+                        time: t.yesterday || 'Yesterday',
+                        color: '#4ade80'
+                      }
+                    ].map((notif, i) => (
+                      <div key={i} className="p-4 flex gap-4 hover:bg-white/[0.08] transition-vw group cursor-pointer border-b border-white/[0.06]">
+                        <div
+                          className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-vw group-hover:scale-110"
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.08)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: notif.color
+                          }}
+                        >
+                          {notif.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white/95 leading-tight">
+                            {notif.title}
+                          </p>
+                          <p className="text-xs text-white/60 mt-1 leading-relaxed line-clamp-2">
+                            {notif.desc}
+                          </p>
+                          <span className="text-[10px] text-white/45 mt-2 block uppercase tracking-tighter font-semibold">
+                            {notif.time}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link
+                    href="/notifications"
+                    className="w-full py-3 text-xs font-bold text-white/60 hover:text-white/90 transition-colors uppercase tracking-widest bg-white/[0.04] hover:bg-white/[0.08] text-center block border-t border-white/10"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    {t.viewAllNotifications || 'View All Notifications'}
+                  </Link>
+                </div>
+              )}
             </div>
-          </div>
+
+            <button
+              onClick={() => setShowProfile(!showProfile)}
+              className="flex items-center gap-2 p-1.5 rounded-lg transition-vw hover:bg-white/5"
+              aria-label="User profile menu"
+              aria-expanded={showProfile}
+              aria-haspopup="true"
+            >
+              <img
+                src="/UserAvatar.jpg"
+                alt="Alex Johnson"
+                className="w-8 h-8 rounded-full object-cover"
+                style={{ border: '2px solid rgba(255,255,255,0.1)' }}
+              />
+              <ChevronDown
+                size={14}
+                style={{
+                  color: 'rgba(255,255,255,0.45)',
+                  transform: showProfile ? 'rotate(180deg)' : 'rotate(0)',
+                  transition: 'transform 0.15s ease',
+                }}
+              />
+            </button>
+
+            {showProfile && (
+              <div
+                className="absolute top-full right-0 mt-2 w-52 rounded-2xl py-2 z-50"
+                style={{
+                  backgroundColor: 'rgba(22, 16, 31, 0.94)',
+                  backdropFilter: 'blur(30px)',
+                  WebkitBackdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                }}
+                role="menu"
+              >
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.98)' }}>Alex Johnson</div>
+                  <div className="text-xs mt-0.5 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>alex@example.com</div>
+                </div>
+                {[
+                  { icon: User, label: t.profileAndSettings, href: '/profile' },
+                  { icon: Ban, label: t.blockList, href: '/blocked' },
+                ].map(({ icon: Icon, label, href }) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    role="menuitem"
+                    onClick={() => setShowProfile(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 transition-vw hover:bg-white/[0.08]"
+                  >
+                    <Icon size={15} style={{ color: 'rgba(255,255,255,0.75)' }} />
+                    <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>{label}</span>
+                  </Link>
+                ))}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 4 }}>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-vw hover:bg-white/[0.08]"
+                  >
+                    <LogOut size={15} style={{ color: 'rgba(255,255,255,0.55)' }} />
+                    <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.signOut}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </header>

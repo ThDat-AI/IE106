@@ -60,10 +60,18 @@ export async function searchMusic(term: string, limit = 20, country = 'VN'): Pro
   }
 }
 
+export async function getTrackByTitle(title: string, country = 'VN'): Promise<Track | null> {
+  const results = await searchMusic(title, 10, country)
+  if (results.length === 0) return null
+  const exactMatch = results.find((track) => track.title.toLowerCase().trim() === title.toLowerCase().trim())
+  return exactMatch ?? results[0]
+}
+
 export async function searchAlbums(term: string, limit = 10, country = 'VN'): Promise<any[]> {
   try {
+    const fetchLimit = Math.max(limit * 2, 20)
     const response = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=${limit}&country=${country}`
+      `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=${fetchLimit}&country=${country}`
     )
 
     if (response.status === 429) {
@@ -82,7 +90,9 @@ export async function searchAlbums(term: string, limit = 10, country = 'VN'): Pr
 
     if (!data.results) return []
 
-    return data.results.map((item: any) => ({
+    const albumResults = data.results.filter((item: any) => item.collectionType === 'Album')
+
+    return albumResults.slice(0, limit).map((item: any) => ({
       id: String(item.collectionId),
       title: item.collectionName,
       artist: item.artistName,

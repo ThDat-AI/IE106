@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Play, Heart, Trash2, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban, Share2 } from 'lucide-react'
-import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, isAlbumSaved, toggleSaveAlbum, isArtistFollowed, toggleFollowArtist, toggleBlockTrack, toggleBlockAlbum, toggleBlockArtist } from '@/lib/player-store'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, isAlbumSaved, toggleSaveAlbum, isArtistFollowed, toggleFollowArtist, toggleBlockTrack, toggleBlockAlbum, toggleBlockArtist, isTrackBlocked, isAlbumBlocked, isArtistBlocked } from '@/lib/player-store'
 import { cn } from '@/lib/utils'
 import { CardHoverOverlay } from './card-hover-overlay'
 import { searchMusic } from '@/lib/music-api'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -63,15 +65,35 @@ export default function MusicCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [localTracks, setLocalTracks] = useState<Track[]>([])
-  const [showToast, setShowToast] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+  const { toast } = useToast()
 
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg)
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 3000)
-  }
+  useEffect(() => {
+    // Check initial blocked status
+    let blocked = false
+    if (type === 'track') blocked = isTrackBlocked(id)
+    else if (type === 'album') blocked = isAlbumBlocked(id)
+    else if (type === 'artist') blocked = isArtistBlocked(title)
+    setIsHidden(blocked)
+
+    // Listen to block updates
+    const handleBlockedUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent
+      const detail = customEvent.detail
+      if (!detail) return
+      
+      if (type === 'track' && detail.type === 'track' && detail.id === id) {
+        setIsHidden(detail.isBlocked)
+      } else if (type === 'album' && detail.type === 'album' && detail.id === id) {
+        setIsHidden(detail.isBlocked)
+      } else if (type === 'artist' && detail.type === 'artist' && detail.name.toLowerCase() === title.toLowerCase()) {
+        setIsHidden(detail.isBlocked)
+      }
+    }
+
+    window.addEventListener('vw_blocked_updated', handleBlockedUpdated)
+    return () => window.removeEventListener('vw_blocked_updated', handleBlockedUpdated)
+  }, [id, title, type])
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -93,9 +115,15 @@ export default function MusicCard({
       
       if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl)
-        triggerToast('Đã sao chép liên kết vào khay nhớ tạm!')
+        toast({
+          title: "Đã sao chép",
+          description: "Đã sao chép liên kết vào khay nhớ tạm!",
+        })
       } else {
-        triggerToast('Chia sẻ liên kết thành công!')
+        toast({
+          title: "Chia sẻ thành công",
+          description: "Chia sẻ liên kết thành công!",
+        })
       }
     }
   }
@@ -243,6 +271,20 @@ export default function MusicCard({
           console.error('Failed to play artist:', err)
         }
       }
+    } else if (type === 'album' || type === 'playlist') {
+      try {
+        const tracks = playlistTracks && playlistTracks.length > 0
+          ? playlistTracks
+          : await searchMusic(title, 10)
+
+        if (tracks && tracks.length > 0) {
+          const store = usePlayerStore.getState()
+          store.setTrack(tracks[0])
+          store.setQueue(tracks)
+        }
+      } catch (err) {
+        console.error(`Failed to play ${type}:`, err)
+      }
     }
   }
 
@@ -313,7 +355,11 @@ export default function MusicCard({
       >
         {/* Circular Image Container */}
         <div 
-          className="relative w-full aspect-square rounded-full overflow-hidden mb-3 border border-white/10 shadow-lg transition-shadow duration-200 group-hover:shadow-[0_12px_30px_rgba(155,77,224,0.25)]"
+          onClick={handlePlay}
+          role="button"
+          tabIndex={0}
+          aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
+          className="relative w-full aspect-square rounded-full overflow-hidden mb-3 border border-white/10 shadow-lg transition-shadow duration-200 group-hover:shadow-[0_12px_30px_rgba(155,77,224,0.25)] cursor-pointer"
         >
           {displayImage ? (
             <img
@@ -401,14 +447,22 @@ export default function MusicCard({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation()
-                      toggleBlockArtist({ name: title, image: displayImage })
-                      setIsHidden(true)
-                      triggerToast('Đã thêm nghệ sĩ vào danh sách chặn!')
+                      const artistObj = { name: title, image: displayImage }
+                      toggleBlockArtist(artistObj)
+                      toast({
+                        title: "Đã chặn nghệ sĩ",
+                        description: `Đã thêm nghệ sĩ "${title}" vào danh sách chặn.`,
+                        action: (
+                          <ToastAction altText="Hoàn tác" onClick={() => toggleBlockArtist(artistObj)}>
+                            Hoàn tác
+                          </ToastAction>
+                        )
+                      })
                     }}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
                   >
                     <Ban size={13} className="text-red-400/80" />
-                    <span>Không hiện nghệ sĩ này nữa</span>
+                    <span>Chặn nghệ sĩ này</span>
                   </DropdownMenuItem>
                 </div>
               </DropdownMenuContent>
@@ -417,7 +471,13 @@ export default function MusicCard({
         </div>
         
         {/* Centered Artist Info */}
-        <div className="px-2 w-full">
+        <div
+          onClick={handlePlay}
+          role="button"
+          tabIndex={0}
+          aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
+          className="px-2 w-full cursor-pointer"
+        >
           <p className="text-sm font-semibold truncate text-white group-hover:text-purple-400 transition-colors">
             {title}
           </p>
@@ -428,33 +488,23 @@ export default function MusicCard({
       </div>
     )
 
-    const artistCardWithToast = (
-      <>
-        {artistCard}
-        {showToast && (
-          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6 9 17l-5-5"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-white/90">{toastMessage}</span>
-          </div>
-        )}
-      </>
-    )
-
     if (href) {
-      return <Link href={href} className="w-full block">{artistCardWithToast}</Link>
+      return <Link href={href} className="w-full block">{artistCard}</Link>
     }
-    return artistCardWithToast
+    return artistCard
   }
 
   const card = variant === 'compact' ? (
     <div
       className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}
     >
-      <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 relative">
+      <div
+        onClick={handlePlay}
+        role="button"
+        tabIndex={0}
+        aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
+        className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-white/5 relative cursor-pointer"
+      >
         {renderCover(true)}
         {/* Compact play overlay */}
         <div 
@@ -463,7 +513,13 @@ export default function MusicCard({
           <Play size={14} fill="white" className="text-white" />
         </div>
       </div>
-      <div className="min-w-0 flex-1">
+      <div
+        onClick={handlePlay}
+        role="button"
+        tabIndex={0}
+        aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
+        className="min-w-0 flex-1 cursor-pointer"
+      >
         <p className="text-sm font-bold text-white/90 truncate group-hover:text-purple-400 transition-colors">{title}</p>
         <p className="text-xs text-white/70 font-medium truncate">{subtitle}</p>
       </div>
@@ -496,8 +552,12 @@ export default function MusicCard({
     >
       {/* Art square */}
       <div
+        onClick={handlePlay}
+        role="button"
+        tabIndex={0}
+        aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
         className={cn(
-          "relative w-full flex items-center justify-center text-4xl font-display font-bold overflow-hidden",
+          "relative w-full flex items-center justify-center text-4xl font-display font-bold overflow-hidden cursor-pointer",
           type === 'track' 
             ? 'vw-song-art' 
             : type === 'playlist' 
@@ -642,9 +702,17 @@ export default function MusicCard({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation()
-                        toggleBlockAlbum({ id, title, artist: subtitle, albumArt: displayImage })
-                        setIsHidden(true)
-                        triggerToast('Đã thêm album vào danh sách chặn!')
+                        const albumObj = { id, title, artist: subtitle, albumArt: displayImage }
+                        toggleBlockAlbum(albumObj)
+                        toast({
+                          title: "Đã chặn album",
+                          description: `Đã thêm album "${title}" vào danh sách chặn.`,
+                          action: (
+                            <ToastAction altText="Hoàn tác" onClick={() => toggleBlockAlbum(albumObj)}>
+                              Hoàn tác
+                            </ToastAction>
+                          )
+                        })
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
                     >
@@ -652,22 +720,7 @@ export default function MusicCard({
                       <span>Chặn album này</span>
                     </DropdownMenuItem>
 
-                    {/* 6. Không gợi ý album này nữa */}
-                    {onHideSuggestion && (
-                      <>
-                        <div className="h-px bg-white/5 my-1 mx-2" />
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onHideSuggestion(id)
-                          }}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
-                        >
-                          <Ban size={13} className="text-red-400/80" />
-                          <span>Không gợi ý album này nữa</span>
-                        </DropdownMenuItem>
-                      </>
-                    )}
+
                   </>
                 ) : type === 'playlist' ? (
                   <>
@@ -784,13 +837,20 @@ export default function MusicCard({
                         e.stopPropagation()
                         const targetTrack = track || { id, title, artist: subtitle, albumArt: displayImage, duration: 0, url: '' }
                         toggleBlockTrack(targetTrack)
-                        setIsHidden(true)
-                        triggerToast('Đã thêm bài hát vào danh sách chặn!')
+                        toast({
+                          title: "Đã chặn bài hát",
+                          description: `Đã thêm "${title}" vào danh sách chặn.`,
+                          action: (
+                            <ToastAction altText="Hoàn tác" onClick={() => toggleBlockTrack(targetTrack)}>
+                              Hoàn tác
+                            </ToastAction>
+                          )
+                        })
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
                     >
                       <Ban size={13} className="text-red-400/80" />
-                      <span>Không phát bài này nữa</span>
+                      <span>Chặn bài hát này</span>
                     </DropdownMenuItem>
                   </>
                 )}
@@ -818,7 +878,13 @@ export default function MusicCard({
       </div>
 
       {/* Info */}
-      <div className="p-3">
+      <div
+        onClick={handlePlay}
+        role="button"
+        tabIndex={0}
+        aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
+        className="p-3 cursor-pointer"
+      >
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes marquee-scroll {
             0%, 15% { transform: translateX(0); }
@@ -870,25 +936,9 @@ export default function MusicCard({
     </div>
   )
 
-  const finalCard = (
-    <>
-      {card}
-      {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6 9 17l-5-5"/>
-            </svg>
-          </div>
-          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
-        </div>
-      )}
-    </>
-  )
-
   if (href) {
-    return <Link href={href}>{finalCard}</Link>
+    return <Link href={href}>{card}</Link>
   }
 
-  return finalCard
+  return card
 }

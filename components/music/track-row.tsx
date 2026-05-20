@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Ban, X, Check, Share2 } from 'lucide-react'
-import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
+import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, toggleBlockTrack, isTrackBlocked } from '@/lib/player-store'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -40,17 +42,31 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
   const [playlists, setPlaylists] = useState<any[]>([])
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('')
   const [newPlaylistDesc, setNewPlaylistDesc] = useState('')
-  const [toast, setToast] = useState<{ text: string, type: 'success' | 'info' } | null>(null)
   const [mounted, setMounted] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  function triggerToast(text: string, type: 'success' | 'info') {
-    setToast({ text, type })
-    setTimeout(() => setToast(null), 3000)
-  }
+  useEffect(() => {
+    // Check initial blocked status
+    setIsHidden(isTrackBlocked(track.id))
+
+    // Listen to block updates
+    const handleBlockedUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent
+      const detail = customEvent.detail
+      if (!detail) return
+      
+      if (detail.type === 'track' && detail.id === track.id) {
+        setIsHidden(detail.isBlocked)
+      }
+    }
+
+    window.addEventListener('vw_blocked_updated', handleBlockedUpdated)
+    return () => window.removeEventListener('vw_blocked_updated', handleBlockedUpdated)
+  }, [track.id])
 
   const handleAddToPlaylist = (playlistId: string, playlistTitle: string) => {
     const stored = localStorage.getItem('vw_saved_playlists')
@@ -81,13 +97,19 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
     })
 
     if (trackAlreadyExists) {
-      triggerToast(`Bài hát "${track.title}" đã có trong danh sách phát!`, 'info')
+      toast({
+        title: "Đã có trong danh sách",
+        description: `Bài hát "${track.title}" đã có trong danh sách phát!`,
+      })
       return
     }
 
     localStorage.setItem('vw_saved_playlists', JSON.stringify(updated))
     window.dispatchEvent(new Event('vw_playlists_updated'))
-    triggerToast(`Đã thêm "${track.title}" vào danh sách phát "${playlistTitle}"!`, 'success')
+    toast({
+      title: "Đã thêm vào Playlist",
+      description: `Đã thêm "${track.title}" vào danh sách phát "${playlistTitle}"!`,
+    })
     setIsModalOpen(false)
   }
 
@@ -115,7 +137,10 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
     const updated = [newPlaylist, ...allPlaylists]
     localStorage.setItem('vw_saved_playlists', JSON.stringify(updated))
     window.dispatchEvent(new Event('vw_playlists_updated'))
-    triggerToast(`Đã tạo danh sách phát "${title}" và thêm bài hát!`, 'success')
+    toast({
+      title: "Đã tạo Playlist",
+      description: `Đã tạo danh sách phát "${title}" và thêm bài hát!`,
+    })
     
     // Reset inputs
     setNewPlaylistTitle('')
@@ -164,9 +189,15 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
       const shareUrl = `${window.location.origin}/search?q=${encodeURIComponent(track.title)}`
       if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl)
-        triggerToast('Đã sao chép liên kết bài hát vào khay nhớ tạm!', 'success')
+        toast({
+          title: "Đã sao chép",
+          description: "Đã sao chép liên kết bài hát vào khay nhớ tạm!",
+        })
       } else {
-        triggerToast('Chia sẻ liên kết thành công!', 'success')
+        toast({
+          title: "Chia sẻ thành công",
+          description: "Chia sẻ liên kết thành công!",
+        })
       }
     }
   }
@@ -214,8 +245,10 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
   return (
     <>
       <div
+        onClick={handlePlay}
+        role="button"
         className={cn(
-          "flex items-center gap-4 px-3 py-2.5 rounded-lg group transition-vw hover:bg-white/10",
+          "flex items-center gap-4 px-3 py-2.5 rounded-lg group transition-vw hover:bg-white/10 cursor-pointer",
           isActive ? "bg-[var(--vw-active-bg)]" : ""
         )}
         style={{
@@ -226,7 +259,10 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
         <div className="w-6 flex items-center justify-center shrink-0 relative">
           {/* Play button shown on hover */}
           <button
-            onClick={handlePlay}
+            onClick={(e) => {
+              e.stopPropagation()
+              handlePlay()
+            }}
             aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
             className="hidden group-hover:flex items-center justify-center"
           >
@@ -351,6 +387,7 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
           <DropdownMenu onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button
+                onClick={(e) => e.stopPropagation()}
                 aria-label="More options"
                 className={cn(
                   "transition-vw cursor-pointer hover:text-white opacity-0 group-hover:opacity-100",
@@ -449,12 +486,21 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
-                    setIsHidden(true)
+                    toggleBlockTrack(track)
+                    toast({
+                      title: "Đã chặn bài hát",
+                      description: `Đã thêm "${track.title}" vào danh sách chặn.`,
+                      action: (
+                        <ToastAction altText="Hoàn tác" onClick={() => toggleBlockTrack(track)}>
+                          Hoàn tác
+                        </ToastAction>
+                      )
+                    })
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
                 >
                   <Ban size={13} className="text-red-400/80" />
-                  <span>Không phát bài này nữa</span>
+                  <span>Chặn bài hát này</span>
                 </DropdownMenuItem>
   
                 {/* 6. Xóa khỏi danh sách phát (Nếu có onRemove) */}
@@ -666,17 +712,7 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
             </div>
           )}
       
-          {/* Toast notification */}
-          {toast && (
-            <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[10001] transition-all duration-300 animate-in fade-in slide-in-from-top-5">
-              <div className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border ${toast.type === 'success' ? 'border-emerald-500/30 shadow-[0_10px_30px_rgba(16,185,129,0.15)]' : 'border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)]'} backdrop-blur-xl`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-purple-500/10 border-purple-500/20 text-purple-400'}`}>
-                  {toast.type === 'success' ? <Check size={14} /> : <Ban size={14} />}
-                </div>
-                <span className="text-sm font-medium text-white/90">{toast.text}</span>
-              </div>
-            </div>
-          )}
+
         </>,
         document.body
       )}

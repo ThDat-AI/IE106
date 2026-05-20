@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Share2 } from 'lucide-react'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
+import { cn } from '@/lib/utils'
 import { getTopSongsByRegion, searchMusic } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
 import {
@@ -213,10 +214,12 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           onClick={handleLikeClick}
           aria-label={isLiked ? 'Unlike' : 'Like'}
           aria-pressed={isLiked}
-          className="relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-all duration-200 cursor-pointer hover:bg-white/5 rounded-full"
+          className={cn(
+            "relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-all duration-200 cursor-pointer hover:bg-white/10 rounded-full opacity-0 group-hover/row:opacity-100",
+            isLiked ? "opacity-100" : ""
+          )}
           style={{
-            color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.4)',
-            opacity: isHovered || isLiked ? 1 : 0,
+            color: isLiked ? '#EF4444' : 'rgba(255,255,255,0.75)',
           }}
         >
           <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
@@ -230,8 +233,10 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           <DropdownMenuTrigger asChild>
             <button
               aria-label="More options"
-              className="flex items-center justify-center p-1.5 transition-all duration-200 cursor-pointer text-white/40 hover:text-white rounded-full hover:bg-white/5"
-              style={{ opacity: isHovered ? 1 : 0 }}
+              className={cn(
+                "flex items-center justify-center p-1.5 transition-all duration-200 cursor-pointer rounded-full text-white/70 hover:text-white hover:bg-white/10 opacity-0 group-hover/row:opacity-100",
+                isHovered || isMenuOpen ? "opacity-100" : ""
+              )}
             >
               <MoreHorizontal size={14} />
             </button>
@@ -312,13 +317,27 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
       </div>
 
       {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6 9 17l-5-5"/>
-            </svg>
+        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-center gap-3 px-6 py-3.5">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-white/90">{toastMessage}</span>
           </div>
-          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+          <div className="h-0.5 w-full bg-purple-500/10 overflow-hidden">
+            <div
+              className="h-full w-full bg-gradient-to-r from-purple-500 to-violet-400 origin-left"
+              style={{ animation: 'toast-progress 3s linear forwards' }}
+            />
+          </div>
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes toast-progress {
+              from { transform: scaleX(1); }
+              to   { transform: scaleX(0); }
+            }
+          `}} />
         </div>
       )}
     </div>

@@ -310,7 +310,7 @@ export default function ArtistPage({
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
                     >
                       <Ban size={13} className="text-red-400/80" />
-                      <span>Không hiện nghệ sĩ này nữa</span>
+                      <span>Chặn nghệ sĩ này</span>
                     </DropdownMenuItem>
                   </div>
                 </DropdownMenuContent>
@@ -518,7 +518,7 @@ export default function ArtistPage({
 
         {/* Toast Notification */}
         {showToast && (
-          <div className="fixed bottom-24 right-6 px-5 py-3.5 rounded-2xl text-xs font-semibold text-white z-50 animate-in fade-in slide-in-from-bottom-5 duration-300"
+          <div className="fixed bottom-24 right-6 z-50 overflow-hidden rounded-2xl animate-in fade-in slide-in-from-bottom-5 duration-300"
             style={{
               background: 'linear-gradient(135deg, rgba(155,77,224,0.95) 0%, rgba(26,20,36,0.97) 100%)',
               backdropFilter: 'blur(24px)',
@@ -526,7 +526,21 @@ export default function ArtistPage({
               boxShadow: '0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(155,77,224,0.2)',
             }}
           >
-            {toastMessage}
+            <div className="px-5 py-3.5 text-xs font-semibold text-white">
+              {toastMessage}
+            </div>
+            <div className="h-0.5 w-full bg-purple-500/20 overflow-hidden">
+              <div
+                className="h-full w-full bg-white/50 origin-left"
+                style={{ animation: 'toast-progress 3s linear forwards' }}
+              />
+            </div>
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes toast-progress {
+                from { transform: scaleX(1); }
+                to   { transform: scaleX(0); }
+              }
+            `}} />
           </div>
         )}
       </div>

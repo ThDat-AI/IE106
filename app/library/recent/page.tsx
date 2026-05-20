@@ -47,6 +47,32 @@ export default async function Page() {
     }
   })
 
+  const customTitles = [
+    'Thêm bao nhiêu lâu',
+    'Đi về nhà',
+    'Mang tiền về cho mẹ',
+    'Ngày mai người ta lấy chồng',
+    'Con trai cưng',
+    'Lặng',
+  ]
+
+  const customRecentTracks = await Promise.all(customTitles.map(async (title, idx) => {
+    const results = await searchTracks(title, 1)
+    if (results.length > 0) {
+      return {
+        ...results[0],
+        playedAt: recentTracks[idx]?.playedAt || new Date().toISOString(),
+      }
+    }
+    return recentTracks[idx]
+  }))
+
+  for (let i = 0; i < customRecentTracks.length; i += 1) {
+    if (customRecentTracks[i]) {
+      recentTracks[i] = customRecentTracks[i]
+    }
+  }
+
   return (
     <AppShell>
       <Suspense fallback={<div className="p-8 text-white/50">Loading history...</div>}>

@@ -667,7 +667,7 @@ function YourVibeArtistRow({ artist, index }: { artist: any; index: number }) {
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
               >
                 <Ban size={13} className="text-red-400/80" />
-                <span>Không hiện nghệ sĩ này nữa</span>
+                <span>Chặn nghệ sĩ này</span>
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
@@ -684,13 +684,27 @@ function YourVibeArtistRow({ artist, index }: { artist: any; index: number }) {
         </div>
       </div>
       {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6 9 17l-5-5"/>
-            </svg>
+        <div className="fixed bottom-6 right-6 z-50 overflow-hidden rounded-2xl bg-[#16121E]/95 border border-purple-500/30 shadow-[0_10px_30px_rgba(155,77,224,0.15)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-center gap-3 px-6 py-3.5">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center border bg-purple-500/10 border-purple-500/20 text-purple-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-white/90">{toastMessage}</span>
           </div>
-          <span className="text-sm font-medium text-white/90">{toastMessage}</span>
+          <div className="h-0.5 w-full bg-purple-500/10 overflow-hidden">
+            <div
+              className="h-full w-full bg-gradient-to-r from-purple-500 to-violet-400 origin-left"
+              style={{ animation: 'toast-progress 3s linear forwards' }}
+            />
+          </div>
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes toast-progress {
+              from { transform: scaleX(1); }
+              to   { transform: scaleX(0); }
+            }
+          `}} />
         </div>
       )}
     </Link>
