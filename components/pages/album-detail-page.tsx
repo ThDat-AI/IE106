@@ -461,6 +461,7 @@ export default function AlbumDetailPage({
                   index={i + 1}
                   track={track}
                   showAlbum={false}
+                  playlistTracks={tracks}
                 />
               ))}
             </div>

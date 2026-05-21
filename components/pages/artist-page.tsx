@@ -360,7 +360,7 @@ export default function ArtistPage({
                 ))
               ) : tracks.length > 0 ? (
                 tracks.slice(0, visibleTracks).map((track, i) => (
-                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum hideGoToArtist />
+                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum hideGoToArtist playlistTracks={tracks} />
                 ))
               ) : (
                 <div className="p-12 text-center text-white/30 italic">

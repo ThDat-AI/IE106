@@ -222,7 +222,7 @@ export default function LikedSongsPage({
               </div>
             ) : (
               filtered.map((track, index) => (
-                <TrackRow key={track.id} index={index + 1} track={track} showAlbum variant="rose" />
+                <TrackRow key={track.id} index={index + 1} track={track} showAlbum variant="rose" playlistTracks={filtered} />
               ))
             )}
           </div>

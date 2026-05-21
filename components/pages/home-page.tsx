@@ -279,7 +279,7 @@ export default function HomePage({
           </div>
           <div className="py-2">
             {quickPicks.slice(0, visibleCount).map((track, i) => (
-              <TrackRow key={track.id} index={i + 1} track={track} showAlbum />
+              <TrackRow key={track.id} index={i + 1} track={track} showAlbum playlistTracks={quickPicks} />
             ))}
           </div>
         </div>

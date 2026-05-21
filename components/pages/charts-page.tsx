@@ -219,7 +219,7 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           aria-label={isLiked ? 'Unlike' : 'Like'}
           aria-pressed={isLiked}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-all duration-200 cursor-pointer hover:bg-white/10 rounded-full opacity-0 group-hover/row:opacity-100",
+            "relative flex items-center justify-center w-8 h-8 transition-all duration-200 cursor-pointer hover:bg-white/10 rounded-full opacity-0 group-hover/row:opacity-100",
             isLiked ? "opacity-100" : ""
           )}
           style={{
@@ -227,9 +227,6 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           }}
         >
           <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
-          {isLiked && (
-            <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-          )}
         </button>
 
         {/* 3-dots dropdown */}

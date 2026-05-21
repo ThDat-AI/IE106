@@ -320,6 +320,7 @@ export default function RecentlyPlayedPage({
                         track={track}
                         showAlbum
                         variant={getGroupVariant(group) as any}
+                        playlistTracks={filtered}
                       />
                     ))}
                   </div>

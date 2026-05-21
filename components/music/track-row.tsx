@@ -23,6 +23,7 @@ interface TrackRowProps {
   removeLabel?: string
   hideGoToArtist?: boolean
   variant?: 'purple' | 'rose' | 'blue' | 'green' | 'red' | 'yellow'
+  playlistTracks?: Track[]
 }
 
 function formatTime(secs: number) {
@@ -31,11 +32,11 @@ function formatTime(secs: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function TrackRow({ index, track, showAlbum = true, onRemove, removeLabel, hideGoToArtist, variant = 'purple' }: TrackRowProps) {
+export default function TrackRow({ index, track, showAlbum = true, onRemove, removeLabel, hideGoToArtist, variant = 'purple', playlistTracks }: TrackRowProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
-  const { setTrack, currentTrack, isPlaying, togglePlay, playNext, addToQueue } = usePlayerStore()
+  const { setTrack, setQueue, currentTrack, isPlaying, togglePlay, playNext, addToQueue } = usePlayerStore()
 
   // Custom states for Add to Playlist Modal
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -141,6 +142,9 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
     if (isActive) {
       togglePlay()
     } else {
+      if (playlistTracks && playlistTracks.length > 0) {
+        setQueue(playlistTracks)
+      }
       setTrack(track)
     }
   }
@@ -270,7 +274,7 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
             aria-label={isLiked ? 'Unlike' : 'Like'}
             aria-pressed={isLiked}
             className={cn(
-              "relative flex flex-col items-center justify-center gap-0.5 w-8 h-8 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100",
+              "relative flex items-center justify-center w-8 h-8 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100",
               isLiked ? "opacity-100" : ""
             )}
             style={{
@@ -278,9 +282,6 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
             }}
           >
             <Heart size={14} fill={isLiked ? '#EF4444' : 'none'} />
-            {isLiked && (
-              <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-            )}
           </button>
   
           <span className="text-xs tabular-nums" style={{ color: 'var(--vw-text-muted)' }}>

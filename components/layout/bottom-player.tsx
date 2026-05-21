@@ -112,9 +112,6 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
               )}
             >
               <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
-              {isLiked && (
-                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-              )}
             </button>
           </div>
 

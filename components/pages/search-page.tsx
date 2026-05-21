@@ -254,7 +254,7 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
             <GlassPanel variant="dark" className="p-3 border-white/5 bg-white/[0.02]">
               <div className="space-y-1">
                 {songResults.map((track, i) => (
-                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} />
+                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} playlistTracks={songResults} />
                 ))}
               </div>
             </GlassPanel>

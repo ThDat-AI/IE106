@@ -130,7 +130,7 @@ function SuggestedTrackItem({ track, isAdded, onAdd, setToastMessage }: Suggeste
           aria-label={isLiked ? 'Unlike' : 'Like'}
           aria-pressed={isLiked}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-0.5 w-10 h-10 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100 shrink-0",
+            "relative flex items-center justify-center w-10 h-10 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100 shrink-0",
             isLiked ? "opacity-100" : ""
           )}
           style={{
@@ -138,9 +138,6 @@ function SuggestedTrackItem({ track, isAdded, onAdd, setToastMessage }: Suggeste
           }}
         >
           <Heart size={18} fill={isLiked ? '#EF4444' : 'none'} />
-          {isLiked && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-          )}
         </button>
 
         {/* Add / Added Button */}
@@ -971,6 +968,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     showAlbum
                     onRemove={() => handleRemoveSong(track.id)}
                     removeLabel="Xóa khỏi danh sách phát"
+                    playlistTracks={tracks}
                   />
                 ))}
               </div>

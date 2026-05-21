@@ -52,7 +52,7 @@ export function CardHoverOverlay({
       {/* 1. Heart (Like) button on the LEFT */}
       <button
         onClick={onLike}
-        className="relative w-10 h-10 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer after:absolute after:inset-[-6px] after:rounded-full"
+        className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer after:absolute after:inset-[-6px] after:rounded-full"
         style={{
           backgroundColor: 'rgba(23,15,35,0.85)',
           border: '1px solid rgba(255,255,255,0.1)',
@@ -64,9 +64,6 @@ export function CardHoverOverlay({
         aria-pressed={isLiked}
       >
         <Heart size={15} fill={isLiked ? '#EF4444' : 'none'} />
-        {isLiked && (
-          <span className="w-1 h-1 rounded-full bg-[#EF4444] shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
-        )}
       </button>
 
       {/* 2. Play button in the MIDDLE */}
