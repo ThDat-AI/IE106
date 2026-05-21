@@ -32,6 +32,51 @@ const GENRE_SEARCH_TERMS: Record<string, string[]> = {
   'Thư giãn': ['Chill nhẹ nhàng', 'Nhạc Trịnh Lofi', 'Thư giãn đầu óc', 'Nhạc không lời nhẹ nhàng', 'Acoustic Việt']
 }
 
+const FALLBACK_ARTISTS = [
+  {
+    id: '1545544838',
+    title: 'Sơn Tùng M-TP',
+    subtitle: 'Pop / V-Pop',
+    href: '/artist/son-tung-m-tp?id=1545544838',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/6e/8b/6e/6e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg'
+  },
+  {
+    id: '1480112440',
+    title: 'Đen Vâu',
+    subtitle: 'Hip-Hop / Rap',
+    href: '/artist/den-vau?id=1480112440',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/0e/8b/6e/0e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg'
+  },
+  {
+    id: '1617686561',
+    title: 'Mỹ Tâm',
+    subtitle: 'Pop',
+    href: '/artist/my-tam?id=1617686561',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/2b/ef/3c/2bef3c9f-3ef0-4c3e-953e-32d75f6bcba8/886447867253.jpg/600x600bb.jpg'
+  },
+  {
+    id: '1369025793',
+    title: 'Vũ.',
+    subtitle: 'Indie Pop',
+    href: '/artist/vu?id=1369025793',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2e/8b/6e/2e8b6e3f-6f9e-6f8b-6e3f-6f9e6f8b6e3f/cover.jpg/600x600bb.jpg'
+  },
+  {
+    id: '1492872981',
+    title: 'tlinh',
+    subtitle: 'Pop / R&B',
+    href: '/artist/tlinh?id=1492872981',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/73/8e/67/738e67a8-bd1b-32b8-62c3-1a7c58fcc496/198704157950_Cover.jpg/600x600bb.jpg'
+  },
+  {
+    id: '1520640482',
+    title: 'MCK',
+    subtitle: 'R&B / Hip-Hop',
+    href: '/artist/mck?id=1520640482',
+    image: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/bf/cd/d8/bfcdd810-7fa9-d2b3-5cd8-cdb92398555e/196292397858.jpg/600x600bb.jpg'
+  }
+]
+
 export default function HomePage({
   initialTrending = [],
   initialQuickPicks = [],
@@ -52,6 +97,10 @@ export default function HomePage({
   const [activeGenre, setActiveGenre] = useState('Tất cả')
   const [visibleCount, setVisibleCount] = useState(5)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [suggestedArtists, setSuggestedArtists] = useState<any[]>([])
+  const [allSuggestedPool, setAllSuggestedPool] = useState<any[]>([])
+  const [isRefreshingArtists, setIsRefreshingArtists] = useState(false)
+  const [isLoadingSuggestedArtists, setIsLoadingSuggestedArtists] = useState(true)
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -82,6 +131,41 @@ export default function HomePage({
     }
   }
 
+  function buildSuggestedArtistCards(tracks: Track[]) {
+    const uniqueArtists: any[] = []
+    const seenNames = new Set<string>()
+
+    for (const track of tracks) {
+      if (!track.artist) continue
+      const artistName = track.artist.trim()
+      const artistKey = artistName.toLowerCase()
+      if (seenNames.has(artistKey)) continue
+      seenNames.add(artistKey)
+
+      const artistId = track.artistId != null ? String(track.artistId) : artistKey
+
+      uniqueArtists.push({
+        id: artistId,
+        title: artistName,
+        subtitle: track.genre || 'Nghệ sĩ',
+        href: `/artist/${artistName.toLowerCase().replace(/\s+/g, '-')}${track.artistId ? `?id=${track.artistId}` : ''}`,
+        image: track.albumArt,
+      })
+    }
+
+    return uniqueArtists
+  }
+
+  function handleRefreshSuggestedArtists() {
+    if (allSuggestedPool.length === 0) return
+    setIsRefreshingArtists(true)
+    setTimeout(() => {
+      const shuffled = [...allSuggestedPool].sort(() => Math.random() - 0.5)
+      setSuggestedArtists(shuffled.slice(0, 6))
+      setIsRefreshingArtists(false)
+    }, 400)
+  }
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false
@@ -94,31 +178,72 @@ export default function HomePage({
     if (!authChecked) return
 
     async function loadMusic() {
-      if (trending.length === 0) {
-        const trendingData = await searchMusic('Sơn Tùng M-TP', 4)
-        if (trendingData.length > 0) setTrending(trendingData)
-      }
-
-      if (initialQuickPicks.length === 0) {
-        const terms = GENRE_SEARCH_TERMS['Tất cả']
-        const randomTerm = terms[Math.floor(Math.random() * terms.length)]
-        const picksData = await searchMusic(randomTerm, 25, 'VN')
-        if (picksData.length > 0) {
-          setQuickPicks(picksData)
-          setAllTabPicks(picksData)
+      // 1. Load Trending
+      try {
+        if (trending.length === 0) {
+          const trendingData = await searchMusic('Sơn Tùng M-TP', 4)
+          if (trendingData.length > 0) setTrending(trendingData)
         }
+      } catch (e) {
+        console.error('Error loading trending:', e)
       }
 
-      if (topAlbums.length === 0) {
-        const albumSearchTerms = ['Hoàng Thùy Linh', 'Đen Vâu', 'Vũ.', 'Mỹ Tâm', 'Sơn Tùng M-TP', 'Bích Phương']
-        const selectedTerms = albumSearchTerms.sort(() => Math.random() - 0.5).slice(0, 6)
-        const albumsByArtist = await Promise.all(selectedTerms.map((term) => searchAlbums(term, 1, 'VN')))
-        const albumsData = albumsByArtist.flat().filter(Boolean)
-        setTopAlbums(albumsData)
+      // 2. Load Quick Picks
+      try {
+        if (initialQuickPicks.length === 0) {
+          const terms = GENRE_SEARCH_TERMS['Tất cả']
+          const randomTerm = terms[Math.floor(Math.random() * terms.length)]
+          const picksData = await searchMusic(randomTerm, 25, 'VN')
+          if (picksData.length > 0) {
+            setQuickPicks(picksData)
+            setAllTabPicks(picksData)
+          }
+        }
+      } catch (e) {
+        console.error('Error loading quick picks:', e)
+      }
+
+      // 3. Load Top Albums
+      try {
+        if (topAlbums.length === 0) {
+          const albumSearchTerms = ['Hoàng Thùy Linh', 'Đen Vâu', 'Vũ.', 'Mỹ Tâm', 'Sơn Tùng M-TP', 'Bích Phương']
+          const selectedTerms = albumSearchTerms.sort(() => Math.random() - 0.5).slice(0, 6)
+          const albumsByArtist = await Promise.all(selectedTerms.map((term) => searchAlbums(term, 1, 'VN').catch(() => [])))
+          const albumsData = albumsByArtist.flat().filter(Boolean)
+          setTopAlbums(albumsData)
+        }
+      } catch (e) {
+        console.error('Error loading top albums:', e)
+      }
+
+      // 4. Load Suggested Artists
+      try {
+        if (allSuggestedPool.length === 0) {
+          setIsLoadingSuggestedArtists(true)
+          const related = await searchMusic('V-Pop', 50)
+          const artists = buildSuggestedArtistCards(related)
+          
+          if (artists.length > 0) {
+            setAllSuggestedPool(artists)
+            const shuffled = [...artists].sort(() => Math.random() - 0.5)
+            setSuggestedArtists(shuffled.slice(0, 6))
+          } else {
+            setAllSuggestedPool(FALLBACK_ARTISTS)
+            const shuffled = [...FALLBACK_ARTISTS].sort(() => Math.random() - 0.5)
+            setSuggestedArtists(shuffled.slice(0, 6))
+          }
+        }
+      } catch (e) {
+        console.error('Error loading suggested artists:', e)
+        setAllSuggestedPool(FALLBACK_ARTISTS)
+        const shuffled = [...FALLBACK_ARTISTS].sort(() => Math.random() - 0.5)
+        setSuggestedArtists(shuffled.slice(0, 6))
+      } finally {
+        setIsLoadingSuggestedArtists(false)
       }
     }
     loadMusic()
-  }, [])
+  }, [authChecked])
 
   const currentAllTabPicks = activeGenre === 'Tất cả' ? quickPicks : allTabPicks
 
@@ -217,6 +342,57 @@ export default function HomePage({
             />
           ))}
         </MusicShelf>
+      </section>
+
+      {/* Suggested Artists Section */}
+      <section aria-labelledby="suggested-artists-heading">
+        <SectionHeader
+          title={t.artistsYouMightLike ?? 'Nghệ sĩ bạn có thể thích'}
+          rightAction={
+            <button
+              onClick={handleRefreshSuggestedArtists}
+              disabled={isRefreshingArtists || isLoadingSuggestedArtists || allSuggestedPool.length === 0}
+              className={`group flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold border transition-all duration-300 active:scale-95 cursor-pointer backdrop-blur-md ${
+                isRefreshingArtists || isLoadingSuggestedArtists
+                  ? 'border-purple-500/30 text-purple-300/80 bg-purple-500/10 pointer-events-none'
+                  : 'border-white/10 hover:border-purple-500/30 text-white/80 hover:text-purple-300 bg-white/5 hover:bg-purple-500/10'
+              }`}
+              title="Làm mới nghệ sĩ"
+            >
+              <RotateCw
+                size={14}
+                className={`transition-transform duration-500 ${
+                  isRefreshingArtists || isLoadingSuggestedArtists ? 'animate-spin text-purple-400' : 'group-hover:rotate-180 text-white/80 group-hover:text-purple-400'
+                }`}
+              />
+              <span>{isLoadingSuggestedArtists ? 'Đang tải...' : t.refresh}</span>
+            </button>
+          }
+        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-6">
+          {isLoadingSuggestedArtists ? (
+            Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="h-56 rounded-3xl bg-white/5 animate-pulse" />
+            ))
+          ) : suggestedArtists.length > 0 ? (
+            suggestedArtists.map((artist, index) => (
+              <MusicCard
+                key={`${artist.id}-${index}`}
+                id={artist.id}
+                title={artist.title}
+                subtitle={artist.subtitle}
+                image={artist.image}
+                href={artist.href}
+                type="artist"
+                className="card-hover"
+              />
+            ))
+          ) : (
+            <div className="col-span-full rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-white/50">
+              Không tìm thấy nghệ sĩ gợi ý ngay bây giờ. Hãy thử làm mới lại.
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Quick Picks — track list */}
