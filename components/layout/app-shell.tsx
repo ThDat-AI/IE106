@@ -6,7 +6,7 @@ import Sidebar from './sidebar'
 import BottomPlayer from './bottom-player'
 import Footer from './footer'
 import QueuePanel from './queue-panel'
-import { usePlayerStore } from '@/lib/player-store'
+import { usePlayerStore, isTrackLiked } from '@/lib/player-store'
 import { getTrackByTitle } from '@/lib/music-api'
 
 import { Toaster } from '@/components/ui/toaster'
@@ -18,24 +18,38 @@ interface AppShellProps {
 
 export default function AppShell({ children, showFooter = true }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const { isQueueOpen, setTrack, setQueue } = usePlayerStore()
+  const { isQueueOpen } = usePlayerStore()
 
   useEffect(() => {
+    // If we already have a loaded song from iTunes/user (anything other than the initial dummy mock track 'st1'), do not reload
+    const currentActive = usePlayerStore.getState().currentTrack
+    if (currentActive && currentActive.id !== 'st1') {
+      return
+    }
+
     let cancelled = false
 
     const loadDefaultTrack = async () => {
       const defaultTrack = await getTrackByTitle('Thêm bao nhiêu lâu', 'VN')
       if (cancelled || !defaultTrack) return
 
-      setQueue([defaultTrack])
-      setTrack(defaultTrack)
+      // Double check in case the user played a track while fetching
+      const latestActive = usePlayerStore.getState().currentTrack
+      if (latestActive && latestActive.id !== 'st1') return
+
+      // Update the store state silently to avoid autoplay on initial mount
+      usePlayerStore.setState({
+        currentTrack: defaultTrack,
+        queue: [defaultTrack],
+        isLiked: isTrackLiked(defaultTrack.id)
+      })
     }
 
     loadDefaultTrack()
     return () => {
       cancelled = true
     }
-  }, [setQueue, setTrack])
+  }, [])
 
   return (
     <div className="min-h-screen bg-vw-bg relative overflow-hidden">

@@ -6,7 +6,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Heart, Shuffle, Repeat, ListMusic, Maximize2, Mic2
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import FullPlayer from './full-player'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +22,6 @@ interface BottomPlayerProps {
 
 export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerProps) {
   const { t } = useTranslation()
-  const audioRef = useRef<HTMLAudioElement>(null)
   const [isHovered, setIsHovered] = useState(false)
 
   const {
@@ -32,62 +31,17 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
     isRepeat, toggleRepeat, isQueueOpen, toggleQueue,
   } = usePlayerStore()
 
-  // Sync audio element with state
-  useEffect(() => {
-    if (!audioRef.current) return
-    if (isPlaying) {
-      audioRef.current.play().catch(() => {
-        // Handle autoplay policy restriction if needed
-      })
-    } else {
-      audioRef.current.pause()
-    }
-  }, [isPlaying, currentTrack])
-
-  useEffect(() => {
-    if (!audioRef.current) return
-    audioRef.current.volume = isMuted ? 0 : volume / 100
-  }, [volume, isMuted])
-
-  useEffect(() => {
-    function onSeek(e: Event) {
-      const customEvent = e as CustomEvent
-      if (customEvent.detail !== undefined) {
-        handleSeek(customEvent.detail)
-      }
-    }
-    window.addEventListener('vw_seek', onSeek)
-    return () => window.removeEventListener('vw_seek', onSeek)
-  }, [currentTrack])
-
-  const handleTimeUpdate = () => {
-    if (!audioRef.current || !currentTrack) return
-    const currentProgress = (audioRef.current.currentTime / audioRef.current.duration) * 100
-    if (!isNaN(currentProgress)) {
-      setProgress(currentProgress)
-    }
-  }
-
   const handleSeek = (val: number) => {
-    if (!audioRef.current || !currentTrack) return
-    const time = (val / 100) * audioRef.current.duration
-    audioRef.current.currentTime = time
     setProgress(val)
+    window.dispatchEvent(new CustomEvent('vw_seek', { detail: val }))
   }
 
   if (!currentTrack) return null
 
-  const elapsed = Math.round((progress / 100) * (audioRef.current?.duration || currentTrack.duration))
+  const elapsed = Math.round((progress / 100) * currentTrack.duration)
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={currentTrack.url}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={nextTrack}
-        autoPlay={isPlaying}
-      />
       {isFullPlayer && <FullPlayer />}
 
       <div

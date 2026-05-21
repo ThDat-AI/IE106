@@ -8,11 +8,11 @@ import { useTranslation } from '@/lib/i18n-store'
 import { isUserLoggedIn, signOutDemo } from '@/lib/auth'
 
 const SEARCH_SUGGESTIONS = [
-  { type: 'track', label: 'Blinding Lights', sub: 'The Weeknd' },
-  { type: 'artist', label: 'Dua Lipa', sub: 'Artist' },
-  { type: 'playlist', label: 'VibeWave Hits', sub: 'Featured Playlist' },
-  { type: 'album', label: 'After Hours', sub: 'The Weeknd' },
-  { type: 'track', label: 'Levitating', sub: 'Dua Lipa' },
+  { type: 'track', label: 'Lối Nhỏ', sub: 'Đen Vâu' },
+  { type: 'artist', label: 'Vũ.', sub: 'Nghệ sĩ' },
+  { type: 'playlist', label: 'V-Pop Thịnh Hành', sub: 'Danh sách phát' },
+  { type: 'album', label: 'Chúng Ta Của Tương Lai', sub: 'Sơn Tùng M-TP' },
+  { type: 'track', label: 'Bao Tiền Một Mớ Bình Yên', sub: '14 Casper & Bon' },
 ]
 
 export default function Header() {
@@ -23,9 +23,64 @@ export default function Header() {
   const [showProfile, setShowProfile] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [suggestions, setSuggestions] = useState<any[]>(SEARCH_SUGGESTIONS)
 
   useEffect(() => {
     setIsLoggedIn(isUserLoggedIn())
+  }, [])
+
+  useEffect(() => {
+    async function fetchArtwork() {
+      const updated = await Promise.all(
+        SEARCH_SUGGESTIONS.map(async (item) => {
+          try {
+            let term = item.label
+            if (item.type === 'track' || item.type === 'album') {
+              term = `${item.label} ${item.sub}`
+            }
+            const entity = item.type === 'artist' ? 'musicArtist' : item.type === 'album' ? 'album' : item.type === 'playlist' ? 'album' : 'song'
+            
+            const response = await fetch(
+              `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${entity}&limit=1&country=VN`
+            )
+            const data = await response.json()
+            if (data.results && data.results.length > 0) {
+              const res = data.results[0]
+              let artworkUrl = ''
+              if (item.type === 'artist') {
+                const songResponse = await fetch(
+                  `https://itunes.apple.com/search?term=${encodeURIComponent(item.label)}&entity=song&limit=1&country=VN`
+                )
+                const songData = await songResponse.json()
+                if (songData.results && songData.results.length > 0) {
+                  artworkUrl = songData.results[0].artworkUrl100.replace('100x100', '200x200')
+                }
+              } else {
+                artworkUrl = res.artworkUrl100?.replace('100x100', '200x200') || ''
+              }
+
+              if (artworkUrl) {
+                return { ...item, image: artworkUrl }
+              }
+            }
+          } catch (e) {
+            console.error(e)
+          }
+          // Default fallbacks if itunes fails or rate limits
+          const fallbacks: Record<string, string> = {
+            'Lối Nhỏ': 'https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/a3/9a/c3/a39ac3b1-ef17-db56-a197-0f9c2d1b7b75/194696016629.jpg/200x200bb.jpg',
+            'Vũ.': 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/44/2c/80/442c8033-0c46-7788-bce3-5f058097b69c/197187123963.jpg/200x200bb.jpg',
+            'V-Pop Thịnh Hành': 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/a4/be/81/a4be812d-1033-e5d5-fa42-c9a7d329067b/886447814986.jpg/200x200bb.jpg',
+            'Chúng Ta Của Tương Lai': 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/b8/02/76/b80276d4-8df6-9b87-d4fa-678b4081c7e9/886447990499.jpg/200x200bb.jpg',
+            'Bao Tiền Một Mớ Bình Yên': 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/e5/22/0c/e5220c8e-5b12-9c1a-55ba-09d2bc1fb58d/196626490697.jpg/200x200bb.jpg'
+          }
+          return { ...item, image: fallbacks[item.label] || '' }
+        })
+      )
+      setSuggestions(updated)
+    }
+
+    fetchArtwork()
   }, [])
 
   const handleSignOut = () => {
@@ -39,10 +94,10 @@ export default function Header() {
   const notificationsRef = useRef<HTMLDivElement>(null)
 
   const filtered = query.length > 0
-    ? SEARCH_SUGGESTIONS.filter(s =>
+    ? suggestions.filter(s =>
       s.label.toLowerCase().includes(query.toLowerCase())
     )
-    : SEARCH_SUGGESTIONS
+    : suggestions
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -155,15 +210,23 @@ export default function Header() {
                       router.push(`/search?q=${encodeURIComponent(item.label)}`)
                     }}
                   >
-                    <div
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold uppercase"
-                      style={{
-                        backgroundColor: 'rgba(155,77,224,0.2)',
-                        color: '#b26bf2',
-                      }}
-                    >
-                      {item.type === 'track' ? '♪' : item.type === 'artist' ? 'A' : item.type === 'playlist' ? '≡' : '◉'}
-                    </div>
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.label} 
+                        className="w-7 h-7 rounded-md object-cover border border-white/10 shrink-0" 
+                      />
+                    ) : (
+                      <div
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold uppercase shrink-0"
+                        style={{
+                          backgroundColor: 'rgba(155,77,224,0.2)',
+                          color: '#b26bf2',
+                        }}
+                      >
+                        {item.type === 'track' ? '♪' : item.type === 'artist' ? 'A' : item.type === 'playlist' ? '≡' : '◉'}
+                      </div>
+                    )}
                     <div>
                       <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.98)' }}>{item.label}</div>
                       <div className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.65)' }}>{item.sub}</div>

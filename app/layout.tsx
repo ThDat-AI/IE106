@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Poppins, Montserrat } from 'next/font/google'
 import './globals.css'
+import GlobalAudioEngine from '@/components/layout/global-audio-engine'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true} className={`${poppins.variable} ${montserrat.variable} bg-vw-bg`}>
       <body suppressHydrationWarning={true} className="font-sans antialiased bg-vw-bg text-primary-text">
         {children}
+        <GlobalAudioEngine />
       </body>
     </html>
   )

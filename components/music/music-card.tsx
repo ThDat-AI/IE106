@@ -384,7 +384,6 @@ export default function MusicCard({
       >
         {/* Circular Image Container */}
         <div 
-          onClick={handlePlay}
           role="button"
           tabIndex={0}
           aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
@@ -501,7 +500,6 @@ export default function MusicCard({
         
         {/* Centered Artist Info */}
         <div
-          onClick={handlePlay}
           role="button"
           tabIndex={0}
           aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
@@ -528,7 +526,7 @@ export default function MusicCard({
       className={cn('flex items-center gap-3 p-2 rounded-xl transition-vw group hover:bg-white/5', className)}
     >
       <div
-        onClick={handlePlay}
+        onClick={type === 'track' ? handlePlay : undefined}
         role="button"
         tabIndex={0}
         aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
@@ -543,7 +541,7 @@ export default function MusicCard({
         </div>
       </div>
       <div
-        onClick={handlePlay}
+        onClick={type === 'track' ? handlePlay : undefined}
         role="button"
         tabIndex={0}
         aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
@@ -581,7 +579,7 @@ export default function MusicCard({
     >
       {/* Art square */}
       <div
-        onClick={handlePlay}
+        onClick={type === 'track' ? handlePlay : undefined}
         role="button"
         tabIndex={0}
         aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}
@@ -812,21 +810,7 @@ export default function MusicCard({
                       <span>Thêm vào hàng chờ</span>
                     </DropdownMenuItem>
 
-                    {/* 2.2 Thêm vào Playlist */}
-                    <DropdownMenuItem
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        const tracks = await getTracks()
-                        if (tracks.length > 0) {
-                          setModalTracks(tracks)
-                          setIsModalOpen(true)
-                        }
-                      }}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                    >
-                      <Plus size={13} className="text-purple-400" />
-                      <span>Thêm vào Playlist</span>
-                    </DropdownMenuItem>
+
 
                     {/* 2.5 Chia sẻ liên kết */}
                     <DropdownMenuItem
@@ -982,7 +966,7 @@ export default function MusicCard({
 
       {/* Info */}
       <div
-        onClick={handlePlay}
+        onClick={type === 'track' ? handlePlay : undefined}
         role="button"
         tabIndex={0}
         aria-label={isCurrentlyPlaying ? `Pause ${title}` : `Play ${title}`}

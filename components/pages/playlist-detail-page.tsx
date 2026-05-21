@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Shuffle, MoreHorizontal, Clock, Plus, ChevronLeft, Music2, Info, Edit3, Trash2, X, Search, Loader2, Check, RotateCw, Camera, Sparkles, SkipForward, ListPlus, TrendingUp, Share2 } from 'lucide-react'
+import { Play, Shuffle, MoreHorizontal, Clock, Plus, ChevronLeft, Music2, Info, Edit3, Trash2, X, Search, Loader2, Check, RotateCw, Camera, Sparkles, SkipForward, ListPlus, TrendingUp, Share2, Heart, Ban, User } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import MusicCard from '@/components/music/music-card'
 import {
@@ -9,7 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { SAMPLE_TRACKS, usePlayerStore, type Track } from '@/lib/player-store'
+import { SAMPLE_TRACKS, usePlayerStore, type Track, isTrackLiked, toggleLikeTrack, toggleBlockTrack } from '@/lib/player-store'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { searchMusic } from '@/lib/music-api'
@@ -24,6 +24,244 @@ import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
 import { cn } from '@/lib/utils'
 import { Portal } from '@/components/ui/portal'
 import PlaylistModal from '@/components/music/playlist-modal'
+
+interface SuggestedTrackItemProps {
+  track: Track
+  isAdded: boolean
+  onAdd: (track: Track) => void
+  setToastMessage: (msg: any) => void
+}
+
+function SuggestedTrackItem({ track, isAdded, onAdd, setToastMessage }: SuggestedTrackItemProps) {
+  const [isLiked, setIsLiked] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { setTrack, playNext, addToQueue } = usePlayerStore()
+
+  useEffect(() => {
+    setIsLiked(isTrackLiked(track.id))
+
+    const handleLikesUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: string; isLiked: boolean }>
+      if (customEvent.detail && customEvent.detail.trackId === track.id) {
+        setIsLiked(customEvent.detail.isLiked)
+      }
+    }
+
+    window.addEventListener('vw_likes_updated', handleLikesUpdated)
+    return () => window.removeEventListener('vw_likes_updated', handleLikesUpdated)
+  }, [track.id])
+
+  function handleLikeClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const newLikedState = toggleLikeTrack(track)
+    setIsLiked(newLikedState)
+
+    // Sync player if currently active
+    const playerStore = usePlayerStore.getState()
+    if (playerStore.currentTrack?.id === track.id) {
+      usePlayerStore.setState({ isLiked: newLikedState })
+    }
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (typeof window !== 'undefined') {
+      const shareUrl = `${window.location.origin}/search?q=${encodeURIComponent(track.title)}`
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl)
+        setToastMessage({ text: 'Đã sao chép liên kết bài hát vào khay nhớ tạm!', type: 'success' })
+      } else {
+        setToastMessage({ text: 'Chia sẻ liên kết thành công!', type: 'success' })
+      }
+      setTimeout(() => setToastMessage(null), 3000)
+    }
+  }
+
+  return (
+    <div 
+      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-md border border-white/10 hover:bg-white/[0.12] hover:border-purple-500/35 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_20px_rgba(155,77,224,0.08)] transition-all duration-300 group"
+    >
+      <div className="flex items-center gap-3.5 min-w-0">
+        {/* Thumbnail with Play Overlay */}
+        <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-white/5 border border-white/10 flex items-center justify-center vw-song-art group-hover:scale-[1.03] transition-transform duration-200">
+          {track.albumArt ? (
+            <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover" />
+          ) : (
+            <Music2 size={16} className="text-white/40" />
+          )}
+          {/* Play Overlay */}
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => setTrack(track)}
+              className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center hover:scale-110 active:scale-95 cursor-pointer text-white shadow-md"
+            >
+              <Play size={12} fill="white" className="ml-0.5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <h4
+            className="text-sm font-semibold truncate group-hover:text-purple-300 transition-colors"
+            style={{
+              color: 'var(--vw-text-primary)',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.3px',
+            }}
+          >
+            {track.title}
+          </h4>
+          <p
+            className="text-xs truncate mt-0.5"
+            style={{ color: 'var(--vw-text-secondary)' }}
+          >
+            {track.artist}
+          </p>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Heart/Like Button */}
+        <button
+          onClick={handleLikeClick}
+          aria-label={isLiked ? 'Unlike' : 'Like'}
+          aria-pressed={isLiked}
+          className={cn(
+            "relative flex flex-col items-center justify-center gap-0.5 w-10 h-10 transition-vw cursor-pointer hover:bg-white/5 rounded-full opacity-0 group-hover:opacity-100 shrink-0",
+            isLiked ? "opacity-100" : ""
+          )}
+          style={{
+            color: isLiked ? '#EF4444' : 'var(--vw-text-muted)',
+          }}
+        >
+          <Heart size={18} fill={isLiked ? '#EF4444' : 'none'} />
+          {isLiked && (
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-in scale-in duration-300" />
+          )}
+        </button>
+
+        {/* Add / Added Button */}
+        {isAdded ? (
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <Check size={18} className="stroke-[3]" />
+          </div>
+        ) : (
+          <button
+            onClick={() => onAdd(track)}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-vw cursor-pointer hover:bg-white/5 opacity-0 group-hover:opacity-100 text-white/70 hover:text-white shrink-0"
+            title="Thêm vào playlist"
+          >
+            <Plus size={18} className="stroke-[2.5]" />
+          </button>
+        )}
+
+        {/* 3-Dot Menu */}
+        <DropdownMenu onOpenChange={setIsMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              onClick={(e) => e.stopPropagation()}
+              aria-label="More options"
+              className={cn(
+                "transition-vw cursor-pointer hover:text-white opacity-0 group-hover:opacity-100 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 shrink-0",
+                isMenuOpen ? "opacity-100" : ""
+              )}
+              style={{ color: 'var(--vw-text-muted)' }}
+            >
+              <MoreHorizontal size={18} />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="start"
+            alignOffset={12}
+            side="right"
+            sideOffset={10}
+            className="w-60 rounded-2xl overflow-hidden border-0 p-0 z-50"
+            style={{
+              background: 'linear-gradient(135deg, rgba(26, 20, 36, 0.98) 0%, rgba(15, 10, 22, 0.99) 100%)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            <div className="py-2 px-2 flex flex-col gap-1 text-left">
+              {/* 1. Phát tiếp theo */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  playNext(track)
+                  setToastMessage({ text: `Đã xếp phát tiếp theo "${track.title}"!`, type: 'success' })
+                  setTimeout(() => setToastMessage(null), 3000)
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <SkipForward size={13} className="text-purple-400" />
+                <span>Phát tiếp theo</span>
+              </DropdownMenuItem>
+
+              {/* 2. Thêm vào hàng chờ */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  addToQueue(track)
+                  setToastMessage({ text: `Đã thêm "${track.title}" vào hàng chờ!`, type: 'success' })
+                  setTimeout(() => setToastMessage(null), 3000)
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <ListPlus size={13} className="text-purple-400" />
+                <span>Thêm vào hàng chờ</span>
+              </DropdownMenuItem>
+
+              {/* Divider */}
+              <div className="h-px bg-white/5 my-1 mx-2" />
+
+              {/* 3. Đi đến Nghệ sĩ */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const slug = track.artist.toLowerCase().replace(/\s+/g, '-')
+                  window.location.href = `/artist/${encodeURIComponent(slug)}${track.artistId ? `?id=${track.artistId}` : ''}`
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <User size={13} className="text-purple-400" />
+                <span>Đi đến Nghệ sĩ</span>
+              </DropdownMenuItem>
+
+              {/* 4. Chia sẻ liên kết */}
+              <DropdownMenuItem
+                onClick={handleShare}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+              >
+                <Share2 size={13} className="text-blue-400" />
+                <span>Chia sẻ liên kết</span>
+              </DropdownMenuItem>
+
+              {/* 5. Không phát bài này nữa */}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toggleBlockTrack(track)
+                  setToastMessage({ text: `Đã chặn bài hát "${track.title}"!`, type: 'info' })
+                  setTimeout(() => setToastMessage(null), 3000)
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400/80 hover:text-red-400 transition-all duration-200 cursor-pointer hover:bg-red-500/10 active:scale-98 focus:bg-red-500/10 focus:text-red-400 outline-none"
+              >
+                <Ban size={13} className="text-red-400/80" />
+                <span>Chặn bài hát này</span>
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+}
 
 function slugToTitle(slug: string) {
   try {
@@ -52,7 +290,10 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
 
   const SUGGESTION_KEYWORDS = [
     'Đen Vâu', 'Vũ.', 'Sơn Tùng M-TP', 'tlinh', 'Wren Evans', 
-    'MCK', 'Grey D', 'Obito', 'Pop', 'Indie', 'Chill', 'Lofi'
+    'MCK', 'Grey D', 'Obito', 'Phan Mạnh Quỳnh', 'Hoàng Thùy Linh',
+    'Amee', 'MONO', 'Hà Anh Tuấn', 'Trịnh Công Sơn', 'Soobin Hoàng Sơn',
+    'JustaTee', 'Bích Phương', 'Min', 'Erik', 'Đức Phúc', 'V-Pop',
+    'Nhạc Việt', 'Nhạc trẻ'
   ]
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -633,19 +874,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                       <span>Thêm vào hàng chờ</span>
                     </DropdownMenuItem>
 
-                    {/* 3. Thêm vào Playlist */}
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (tracks.length > 0) {
-                          setIsModalOpen(true)
-                        }
-                      }}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
-                    >
-                      <Plus size={13} className="text-purple-400" />
-                      <span>Thêm vào Playlist</span>
-                    </DropdownMenuItem>
+
 
                     {/* Divider */}
                     <div className="h-px bg-white/5 my-1 mx-2" />
@@ -800,66 +1029,13 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                 {suggestedTracks.map((track) => {
                   const isAdded = tracks.some(t => t.id === track.id)
                   return (
-                    <div 
+                    <SuggestedTrackItem
                       key={track.id}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-md border border-white/10 hover:bg-white/[0.12] hover:border-purple-500/35 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_20px_rgba(155,77,224,0.08)] transition-all duration-300 group"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        {/* Thumbnail with Play Overlay */}
-                        <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-white/5 border border-white/10 flex items-center justify-center vw-song-art group-hover:scale-[1.03] transition-transform duration-200">
-                          {track.albumArt ? (
-                            <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover" />
-                          ) : (
-                            <Music2 size={16} className="text-white/40" />
-                          )}
-                          {/* Play Overlay */}
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => setTrack(track)}
-                              className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center hover:scale-110 active:scale-95 cursor-pointer text-white shadow-md"
-                            >
-                              <Play size={12} fill="white" className="ml-0.5 text-white" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="min-w-0">
-                          <h4
-                            className="text-sm font-semibold truncate group-hover:text-purple-300 transition-colors"
-                            style={{
-                              color: 'var(--vw-text-primary)',
-                              fontFamily: 'var(--font-display)',
-                              letterSpacing: '-0.3px',
-                            }}
-                          >
-                            {track.title}
-                          </h4>
-                          <p
-                            className="text-xs truncate mt-0.5"
-                            style={{ color: 'var(--vw-text-secondary)' }}
-                          >
-                            {track.artist}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Add / Added Button */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        {isAdded ? (
-                          <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                            <Check size={14} className="stroke-[3]" />
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleAddSong(track)}
-                            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-purple-600 hover:border-purple-400 hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm"
-                            title="Thêm vào playlist"
-                          >
-                            <Plus size={14} className="stroke-[2.5]" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      track={track}
+                      isAdded={isAdded}
+                      onAdd={handleAddSong}
+                      setToastMessage={setToastMessage}
+                    />
                   )
                 })}
               </div>
