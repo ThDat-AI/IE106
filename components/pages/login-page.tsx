@@ -74,10 +74,10 @@ function FloatingNotes() {
   )
 }
 
-export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'login' | 'register' }) {
+export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'login' | 'register' | 'forgot' }) {
   const { t } = useTranslation()
   const router = useRouter()
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode)
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -90,6 +90,11 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
   // Register State
   const [regForm, setRegForm] = useState({ name: 'Demo User', email: 'demo@vibewave.test', password: 'Password123' })
   const [regErrors, setRegErrors] = useState<Partial<typeof regForm>>({})
+
+  // Forgot Password State
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotError, setForgotError] = useState('')
+  const [forgotSuccess, setForgotSuccess] = useState(false)
 
   useEffect(() => {
     if (isUserLoggedIn()) {
@@ -139,6 +144,23 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
     }, 700)
   }
 
+  function handleForgotPasswordSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!forgotEmail) {
+      setForgotError(t.emailRequired)
+      return
+    } else if (!/\S+@\S+\.\S+/.test(forgotEmail)) {
+      setForgotError(t.validEmail)
+      return
+    }
+    setForgotError('')
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      setForgotSuccess(true)
+    }, 1000)
+  }
+
   const inputContainerStyle = (fieldName: string, hasError: boolean) => ({
     backgroundColor: focusedField === fieldName ? 'rgba(155, 77, 224, 0.06)' : 'rgba(255, 255, 255, 0.03)',
     border: `1.5px solid ${hasError ? '#ef4444' : focusedField === fieldName ? 'rgba(155, 77, 224, 0.5)' : 'rgba(255, 255, 255, 0.08)'}`,
@@ -176,11 +198,11 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
             </div>
 
             <div className="h-[90px] flex flex-col justify-center">
-              <h1 className="font-display font-bold text-2xl md:text-3xl mb-3 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500 whitespace-nowrap" key={mode === 'login' ? 'title-l' : 'title-r'} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                {mode === 'login' ? t.welcomeBack : t.createAccount}
+              <h1 className="font-display font-bold text-2xl md:text-3xl mb-3 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-500 whitespace-nowrap" key={mode === 'login' ? 'title-l' : mode === 'register' ? 'title-r' : 'title-f'} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
+                {mode === 'login' ? t.welcomeBack : mode === 'register' ? t.createAccount : forgotSuccess ? t.resetLinkSent : t.forgotPasswordTitle}
               </h1>
-              <p className="text-sm md:text-base font-medium text-white/75 animate-in fade-in duration-700" key={mode === 'login' ? 'sub-l' : 'sub-r'}>
-                {mode === 'login' ? t.signInSub : t.createAccountSub}
+              <p className={`text-sm md:text-base font-medium text-white/75 animate-in fade-in duration-700 ${mode === 'forgot' && !forgotSuccess ? 'sm:whitespace-nowrap' : ''}`} key={mode === 'login' ? 'sub-l' : mode === 'register' ? 'sub-r' : 'sub-f'}>
+                {mode === 'login' ? t.signInSub : mode === 'register' ? t.createAccountSub : forgotSuccess ? t.resetLinkSentSub : t.forgotPasswordSub}
               </p>
             </div>
           </div>
@@ -201,7 +223,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                 <div className="space-y-2">
                   <div className="flex items-center justify-between ml-1">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-white/75">{t.password}</label>
-                    <button type="button" className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300">{t.forgotPassword}</button>
+                    <button type="button" onClick={() => { setMode('forgot'); setForgotEmail(loginEmail); setForgotError(''); setForgotSuccess(false); }} className="text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300">{t.forgotPassword}</button>
                   </div>
                   <div className="relative flex items-center group" style={inputContainerStyle('login-password', !!loginErrors.password)}>
                     <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Lock size={18} /></div>
@@ -216,7 +238,7 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 </button>
               </form>
-            ) : (
+            ) : mode === 'register' ? (
               <form onSubmit={handleRegisterSubmit} noValidate className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="space-y-1.5">
                   <label className="block text-[11px] font-bold uppercase tracking-widest ml-1 text-white/75">{t.fullName}</label>
@@ -259,57 +281,155 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 </button>
               </form>
+            ) : (
+              /* Forgot password mode */
+              forgotSuccess ? (
+                <div className="space-y-6 text-center py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-[pulse_2s_infinite]" style={{ boxShadow: '0 0 20px rgba(16, 185, 129, 0.2)' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-sans leading-relaxed text-white/70">
+                      {t.resetLinkSentSub}
+                    </p>
+                  </div>
+
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setForgotSuccess(false)
+                      setForgotEmail('')
+                      setMode('login')
+                    }} 
+                    className="group relative w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-base font-bold transition-all duration-300 mt-4 overflow-hidden text-white" 
+                    style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)', boxShadow: '0 8px 25px -5px rgba(155, 77, 224, 0.5)' }}
+                  >
+                    <span className="relative z-10">{t.backToLogin}</span>
+                    <ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPasswordSubmit} noValidate className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-sans font-bold uppercase tracking-widest ml-1 text-white/75">{t.email}</label>
+                    <div className="relative flex items-center group" style={inputContainerStyle('forgot-email', !!forgotError)}>
+                      <div className="pl-4 text-white/30 group-focus-within:text-purple-400 transition-colors"><Mail size={18} /></div>
+                      <input 
+                        type="email" 
+                        value={forgotEmail} 
+                        onChange={(e) => setForgotEmail(e.target.value)} 
+                        onFocus={() => setFocusedField('forgot-email')} 
+                        onBlur={() => setFocusedField(null)} 
+                        placeholder="you@example.com" 
+                        className="w-full bg-transparent border-none outline-none py-4 px-4 text-[15px] font-sans text-white/90 placeholder:text-white/20" 
+                      />
+                    </div>
+                    {forgotError && <p className="text-xs font-medium mt-2 ml-1 text-red-400 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{forgotError}</p>}
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="group relative w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-base font-bold transition-all duration-300 mt-4 overflow-hidden text-white" 
+                    style={{ background: 'linear-gradient(135deg, #9B4DE0 0%, #7E22CE 100%)', boxShadow: '0 8px 25px -5px rgba(155, 77, 224, 0.5)' }}
+                  >
+                    {loading ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <><span className="relative z-10">{t.sendResetLink}</span><ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" /></>}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setForgotError('')
+                        setMode('login')
+                      }} 
+                      className="text-xs font-sans font-bold uppercase tracking-widest text-purple-300 hover:text-purple-200 transition-colors"
+                    >
+                      {t.backToLogin}
+                    </button>
+                  </div>
+                </form>
+              )
             )}
           </div>
 
           {/* Divider (Shared) */}
-          <div className="flex items-center gap-4 mt-8 mb-6">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/65">
-              {mode === 'login' ? t.orSignInWith : t.orSignUpWith}
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          </div>
+          {mode !== 'forgot' && (
+            <div className="flex items-center gap-4 mt-8 mb-6 animate-in fade-in duration-300">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-white/65">
+                {mode === 'login' ? t.orSignInWith : t.orSignUpWith}
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            </div>
+          )}
 
           {/* Social Login (Shared) - Minimized at the bottom */}
-          <div className="flex items-center justify-center gap-4 mb-2">
-            {[
-              { icon: <GoogleIcon size={20} />, label: 'Google', id: 'google-auth' },
-              { icon: <FacebookIcon size={20} />, label: 'Facebook', id: 'facebook-auth' },
-              { icon: <AppleIcon size={20} />, label: 'Apple', id: 'apple-auth' },
-              { icon: <PhoneIcon size={20} />, label: 'Phone', id: 'phone-auth' },
-            ].map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                aria-label={`Sign in with ${p.label}`}
-                className="w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:scale-110 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-              >
-                {p.icon}
-              </button>
-            ))}
-          </div>
+          {mode !== 'forgot' && (
+            <div className="flex items-center justify-center gap-4 mb-2 animate-in fade-in duration-300">
+              {[
+                { icon: <GoogleIcon size={20} />, label: 'Google', id: 'google-auth' },
+                { icon: <FacebookIcon size={20} />, label: 'Facebook', id: 'facebook-auth' },
+                { icon: <AppleIcon size={20} />, label: 'Apple', id: 'apple-auth' },
+                { icon: <PhoneIcon size={20} />, label: 'Phone', id: 'phone-auth' },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-label={`Sign in with ${p.label}`}
+                  className="w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:scale-110 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                >
+                  {p.icon}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Footer (Shared Toggle) */}
-          <div className="mt-8 pt-6 border-t border-white/5 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-white/75">
-                {mode === 'login' ? t.noAccount : t.alreadyHaveAccount}{' '}
-                <button 
-                  onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                  className="font-bold text-purple-300 hover:text-purple-200 transition-colors"
-                >
-                  {mode === 'login' ? t.createOne : t.signInLink}
-                </button>
-              </p>
-              
-              {mode === 'register' && (
-                <p className="text-[10px] leading-relaxed text-white/70">
-                  {t.termsAgree} <Link href="/legal?tab=terms" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.termsLink}</Link> {t.andText} <Link href="/legal?tab=privacy" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.privacyLink}</Link>.
+          {mode !== 'forgot' ? (
+            <div className="mt-8 pt-6 border-t border-white/5 text-center animate-in fade-in duration-300">
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-white/75">
+                  {mode === 'login' ? t.noAccount : t.alreadyHaveAccount}{' '}
+                  <button 
+                    onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                    className="font-sans font-bold text-purple-300 hover:text-purple-200 transition-colors"
+                  >
+                    {mode === 'login' ? t.createOne : t.signInLink}
+                  </button>
                 </p>
-              )}
+                
+                {mode === 'register' && (
+                  <p className="text-[10px] leading-relaxed text-white/70">
+                    {t.termsAgree} <Link href="/legal?tab=terms" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.termsLink}</Link> {t.andText} <Link href="/legal?tab=privacy" className="underline text-purple-300 hover:text-purple-200 transition-colors whitespace-nowrap">{t.privacyLink}</Link>.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Forgot footer option: Link back to register */
+            !forgotSuccess && (
+              <div className="mt-8 pt-6 border-t border-white/5 text-center animate-in fade-in duration-300 font-sans">
+                <p className="text-sm text-white/75">
+                  {t.noAccount}{' '}
+                  <button 
+                    onClick={() => {
+                      setForgotError('')
+                      setMode('register')
+                    }}
+                    className="font-bold text-purple-300 hover:text-purple-200 transition-colors"
+                  >
+                    {t.createOne}
+                  </button>
+                </p>
+              </div>
+            )
+          )}
         </GlassPanel>
 
 
