@@ -5,7 +5,8 @@ import { Suspense, useState, useEffect, useRef } from 'react'
 import { Search, Play, Music2, Disc3, Mic2, ListMusic, Sparkles, TrendingUp, X, Loader2, Compass } from 'lucide-react'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, type Track } from '@/lib/player-store'
-import { searchMusic } from '@/lib/music-api'
+import { searchMusic, searchAlbums, searchArtists } from '@/lib/music-api'
+import MusicCard from '@/components/music/music-card'
 import { useTranslation } from '@/lib/i18n-store'
 import {
   AmbientOrbs,
@@ -90,7 +91,9 @@ function GenreGrid() {
 
 /* ── Search results component ── */
 function SearchResults({ query, onLoadingChange }: { query: string; onLoadingChange?: (loading: boolean) => void }) {
-  const [results, setResults] = useState<Track[]>([])
+  const [tracks, setTracks] = useState<Track[]>([])
+  const [albums, setAlbums] = useState<any[]>([])
+  const [artists, setArtists] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [activeFilter, setActiveFilter] = useState('all')
   const { setTrack } = usePlayerStore()
@@ -98,7 +101,9 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
 
   useEffect(() => {
     if (!query) {
-      setResults([])
+      setTracks([])
+      setAlbums([])
+      setArtists([])
       onLoadingChange?.(false)
       return
     }
@@ -106,8 +111,27 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
       setIsLoading(true)
       onLoadingChange?.(true)
       try {
-        const data = await searchMusic(query, 24)
-        setResults(data)
+        const tracksData = await searchMusic(query, 30).catch((err) => {
+          console.error('searchMusic error:', err);
+          return [];
+        })
+        
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        
+        const albumsData = await searchAlbums(query, 24).catch((err) => {
+          console.error('searchAlbums error:', err);
+          return [];
+        })
+        
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        
+        const artistsData = await searchArtists(query, 12).catch((err) => {
+          console.error('searchArtists error:', err);
+          return [];
+        })
+        setTracks(tracksData)
+        setAlbums(albumsData)
+        setArtists(artistsData)
       } catch (err) {
         console.error(err)
       } finally {
@@ -123,25 +147,56 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
   if (isLoading) {
     return (
       <div className="space-y-12 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 h-64 rounded-3xl animate-pulse bg-white/5" />
-          <div className="lg:col-span-2 space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 100}ms` }} />
+        {/* Tab-specific loaders */}
+        {activeFilter === 'all' && (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1 h-64 rounded-3xl animate-pulse bg-white/5" />
+              <div className="lg:col-span-2 space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-16 rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 100}ms` }} />
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="aspect-square rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 50}ms` }} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeFilter === 'tracks' && (
+          <div className="space-y-4">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="h-16 rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 80}ms` }} />
             ))}
           </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className="aspect-square rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 50}ms` }} />
-          ))}
-        </div>
+        )}
+
+        {activeFilter === 'albums' && (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="aspect-square rounded-2xl animate-pulse bg-white/5" style={{ animationDelay: `${i * 50}ms` }} />
+            ))}
+          </div>
+        )}
+
+        {activeFilter === 'artists' && (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="aspect-square rounded-full animate-pulse bg-white/5" style={{ animationDelay: `${i * 50}ms` }} />
+            ))}
+          </div>
+        )}
       </div>
     )
   }
 
+  const hasNoResults = tracks.length === 0 && albums.length === 0 && artists.length === 0
+
   /* No results */
-  if (!isLoading && query && results.length === 0) {
+  if (!isLoading && query && hasNoResults) {
     return (
       <div className="py-20 text-center flex flex-col items-center justify-center p-8 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] relative overflow-hidden group/empty transition-all duration-500 hover:border-purple-500/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),0_0_30px_rgba(155,77,224,0.03)] max-w-2xl mx-auto mt-6">
         {/* Backing Ambient Purple Light */}
@@ -163,9 +218,8 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
     )
   }
 
-  const topResult = results[0]
-  const songResults = results.slice(1, 6)
-  const moreResults = results.slice(6)
+  const topResult = tracks[0]
+  const songResults = tracks.slice(1, 6)
 
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -195,87 +249,234 @@ function SearchResults({ query, onLoadingChange }: { query: string; onLoadingCha
         })}
       </div>
 
-      {/* ── Top result + Songs ── */}
-      {topResult && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Top result card */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="flex items-center gap-3">
-              <AccentBar height={6} color="purple" />
-              <h2 className="font-display font-bold text-xl text-white/90">Kết quả hàng đầu</h2>
-            </div>
-
-            <div
-              onClick={() => setTrack(topResult)}
-              className="group/top relative p-8 rounded-[2.5rem] overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 shadow-2xl"
-              style={{
-                background: 'linear-gradient(145deg, rgba(35,27,47,0.6) 0%, rgba(22,17,30,0.85) 100%)',
-                backdropFilter: 'blur(40px)',
-                border: '1px solid rgba(155,77,224,0.2)',
-              }}
-            >
-              {/* Background Glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover/top:bg-purple-500/20 transition-all duration-700" />
-
-              <div className="relative space-y-6">
-                <div className="relative inline-block">
-                  <img
-                    src={topResult.albumArt}
-                    alt={topResult.title}
-                    className="w-40 h-40 rounded-3xl object-cover shadow-2xl transition-transform duration-700 group-hover/top:scale-110"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)' }}
-                  />
-                  <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-purple-500 flex items-center justify-center shadow-lg group-hover/top:scale-110 transition-transform duration-500">
-                    <Play size={20} fill="white" className="text-white ml-1" />
-                  </div>
+      {/* ── Tab Views ── */}
+      {activeFilter === 'all' && (
+        <div className="space-y-16">
+          {/* Top result + Songs */}
+          {topResult && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              {/* Top result card */}
+              <div className="lg:col-span-1 space-y-6">
+                <div className="flex items-center gap-3">
+                  <AccentBar height={6} color="purple" />
+                  <h2 className="font-display font-bold text-xl text-white/90">Kết quả hàng đầu</h2>
                 </div>
 
-                <div className="space-y-1">
-                  <h3 className="font-display font-bold text-3xl tracking-tight text-white line-clamp-1">
-                    {topResult.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-white/80 font-medium">
-                    <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] uppercase tracking-wider">Bài hát</span>
-                    <span>•</span>
-                    <span className="hover:text-purple-400 transition-colors">{topResult.artist}</span>
+                <div
+                  onClick={() => setTrack(topResult)}
+                  className="group/top relative p-8 rounded-[2.5rem] overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 shadow-2xl"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(35,27,47,0.6) 0%, rgba(22,17,30,0.85) 100%)',
+                    backdropFilter: 'blur(40px)',
+                    border: '1px solid rgba(155,77,224,0.2)',
+                  }}
+                >
+                  {/* Background Glow */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none group-hover/top:bg-purple-500/20 transition-all duration-700" />
+
+                  <div className="relative space-y-6">
+                    <div className="relative inline-block">
+                      <img
+                        src={topResult.albumArt}
+                        alt={topResult.title}
+                        className="w-40 h-40 rounded-3xl object-cover shadow-2xl transition-transform duration-700 group-hover/top:scale-110"
+                        style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                      <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-purple-500 flex items-center justify-center shadow-lg group-hover/top:scale-110 transition-transform duration-500">
+                        <Play size={20} fill="white" className="text-white ml-1" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h3 className="font-display font-bold text-3xl tracking-tight text-white line-clamp-1">
+                        {topResult.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-white/80 font-medium">
+                        <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] uppercase tracking-wider">Bài hát</span>
+                        <span>•</span>
+                        <span 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (topResult.artist) {
+                              const slug = encodeURIComponent(topResult.artist.toLowerCase().replace(/\s+/g, '-'))
+                              window.location.href = `/artist/${slug}${topResult.artistId ? `?id=${topResult.artistId}` : ''}`
+                            }
+                          }}
+                          className="hover:text-purple-400 transition-colors"
+                        >
+                          {topResult.artist}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Songs column */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-3">
-              <AccentBar height={6} color="blue" />
-              <h2 className="font-display font-bold text-xl text-white/90">{t.topSongs || "Bài hát"}</h2>
-            </div>
+              {/* Songs column */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AccentBar height={6} color="blue" />
+                    <h2 className="font-display font-bold text-xl text-white/90">{t.topSongs || "Bài hát"}</h2>
+                  </div>
+                  {tracks.length > 5 && (
+                    <button
+                      onClick={() => setActiveFilter('tracks')}
+                      className="text-xs font-bold text-purple-400 hover:text-purple-300 hover:underline transition-colors cursor-pointer"
+                    >
+                      Xem tất cả
+                    </button>
+                  )}
+                </div>
 
-            <GlassPanel variant="dark" className="p-3 border-white/5 bg-white/[0.02]">
-              <div className="space-y-1">
-                {songResults.map((track, i) => (
-                  <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} playlistTracks={songResults} />
+                <GlassPanel variant="dark" className="p-3 border-white/5 bg-white/[0.02]">
+                  <div className="space-y-1">
+                    {songResults.map((track, i) => (
+                      <TrackRow key={track.id} index={i + 1} track={track} showAlbum={false} playlistTracks={songResults} />
+                    ))}
+                  </div>
+                </GlassPanel>
+              </div>
+            </div>
+          )}
+
+          {/* Artists Section */}
+          {artists.length > 0 && (
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AccentBar height={6} color="green" />
+                  <h2 className="font-display font-bold text-xl text-white/90">Nghệ sĩ</h2>
+                </div>
+                {artists.length > 6 && (
+                  <button
+                    onClick={() => setActiveFilter('artists')}
+                    className="text-xs font-bold text-purple-400 hover:text-purple-300 hover:underline transition-colors cursor-pointer"
+                  >
+                    Xem tất cả
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                {artists.slice(0, 6).map((artist) => {
+                  const artistSlug = encodeURIComponent(artist.name.toLowerCase().replace(/\s+/g, '-'))
+                  return (
+                    <MusicCard
+                      key={artist.id}
+                      id={artist.id}
+                      title={artist.name}
+                      subtitle={artist.genre}
+                      image={artist.image}
+                      type="artist"
+                      href={`/artist/${artistSlug}${artist.id ? `?id=${artist.id}` : ''}`}
+                    />
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Albums Section */}
+          {albums.length > 0 && (
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AccentBar height={6} color="pink" />
+                  <h2 className="font-display font-bold text-xl text-white/90">Album</h2>
+                </div>
+                {albums.length > 6 && (
+                  <button
+                    onClick={() => setActiveFilter('albums')}
+                    className="text-xs font-bold text-purple-400 hover:text-purple-300 hover:underline transition-colors cursor-pointer"
+                  >
+                    Xem tất cả
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                {albums.slice(0, 6).map((album) => (
+                  <MusicCard
+                    key={album.id}
+                    id={album.id}
+                    title={album.title}
+                    subtitle={album.artist}
+                    image={album.albumArt}
+                    type="album"
+                    href={`/album/${album.id}`}
+                  />
                 ))}
               </div>
-            </GlassPanel>
+            </section>
+          )}
+        </div>
+      )}
+
+      {/* ── Songs Tab ── */}
+      {activeFilter === 'tracks' && tracks.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <AccentBar height={6} color="blue" />
+            <h2 className="font-display font-bold text-xl text-white/90">Tất cả bài hát</h2>
+          </div>
+          <GlassPanel variant="dark" className="p-4 border-white/5 bg-white/[0.02]">
+            <div className="space-y-1">
+              {tracks.map((track, i) => (
+                <TrackRow key={track.id} index={i + 1} track={track} showAlbum={true} playlistTracks={tracks} />
+              ))}
+            </div>
+          </GlassPanel>
+        </div>
+      )}
+
+      {/* ── Artists Tab ── */}
+      {activeFilter === 'artists' && artists.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <AccentBar height={6} color="green" />
+            <h2 className="font-display font-bold text-xl text-white/90">Tất cả nghệ sĩ</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {artists.map((artist) => {
+              const artistSlug = encodeURIComponent(artist.name.toLowerCase().replace(/\s+/g, '-'))
+              return (
+                <MusicCard
+                  key={artist.id}
+                  id={artist.id}
+                  title={artist.name}
+                  subtitle={artist.genre}
+                  image={artist.image}
+                  type="artist"
+                  href={`/artist/${artistSlug}${artist.id ? `?id=${artist.id}` : ''}`}
+                />
+              )
+            })}
           </div>
         </div>
       )}
 
-      {/* ── More results grid ── */}
-      {moreResults.length > 0 && (
-        <section className="space-y-8">
+      {/* ── Albums Tab ── */}
+      {activeFilter === 'albums' && albums.length > 0 && (
+        <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <AccentBar height={7} color="pink" />
-            <h2 className="font-display font-bold text-2xl tracking-tight text-white/95">Thêm kết quả</h2>
+            <AccentBar height={6} color="pink" />
+            <h2 className="font-display font-bold text-xl text-white/90">Tất cả album</h2>
           </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {moreResults.map((r, i) => (
-              <GlassMusicCard key={r.id} track={r} />
+            {albums.map((album) => (
+              <MusicCard
+                key={album.id}
+                id={album.id}
+                title={album.title}
+                subtitle={album.artist}
+                image={album.albumArt}
+                type="album"
+                href={`/album/${album.id}`}
+              />
             ))}
           </div>
-        </section>
+        </div>
       )}
     </div>
   )

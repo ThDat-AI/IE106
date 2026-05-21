@@ -21,9 +21,18 @@ export interface Track {
   genre?: string
 }
 
+async function itunesFetch(url: string): Promise<Response> {
+  return fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json',
+    }
+  })
+}
+
 export async function searchMusic(term: string, limit = 20, country = 'VN'): Promise<Track[]> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=${limit}&country=${country}`
     )
 
@@ -32,7 +41,16 @@ export async function searchMusic(term: string, limit = 20, country = 'VN'): Pro
       return []
     }
 
+    if (!response.ok) {
+      console.error(`iTunes API searchMusic error: ${response.status} ${response.statusText}`)
+      return []
+    }
+
     const text = await response.text()
+    if (!text || !text.trim()) {
+      return []
+    }
+
     let data
     try {
       data = JSON.parse(text)
@@ -70,7 +88,7 @@ export async function getTrackByTitle(title: string, country = 'VN'): Promise<Tr
 export async function searchAlbums(term: string, limit = 10, country = 'VN'): Promise<any[]> {
   try {
     const fetchLimit = Math.max(limit * 2, 20)
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=album&limit=${fetchLimit}&country=${country}`
     )
 
@@ -79,7 +97,16 @@ export async function searchAlbums(term: string, limit = 10, country = 'VN'): Pr
       return []
     }
 
+    if (!response.ok) {
+      console.error(`iTunes API searchAlbums error: ${response.status} ${response.statusText}`)
+      return []
+    }
+
     const text = await response.text()
+    if (!text || !text.trim()) {
+      return []
+    }
+
     let data
     try {
       data = JSON.parse(text)
@@ -109,7 +136,7 @@ export async function searchAlbums(term: string, limit = 10, country = 'VN'): Pr
 
 export async function getAlbumTracks(collectionId: string): Promise<Track[]> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/lookup?id=${collectionId}&entity=song`
     )
 
@@ -118,7 +145,16 @@ export async function getAlbumTracks(collectionId: string): Promise<Track[]> {
       return []
     }
 
+    if (!response.ok) {
+      console.error(`iTunes API getAlbumTracks error: ${response.status} ${response.statusText}`)
+      return []
+    }
+
     const text = await response.text()
+    if (!text || !text.trim()) {
+      return []
+    }
+
     let data
     try {
       data = JSON.parse(text)
@@ -149,13 +185,14 @@ export async function getAlbumTracks(collectionId: string): Promise<Track[]> {
 
 export async function getAlbumInfo(collectionId: string): Promise<any | null> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/lookup?id=${collectionId}`
     )
 
-    if (response.status === 429) return null
+    if (response.status === 429 || !response.ok) return null
 
     const text = await response.text()
+    if (!text || !text.trim()) return null
     const data = JSON.parse(text)
 
     if (!data.results || data.results.length === 0) return null
@@ -203,11 +240,12 @@ export async function getArtistTracks(artistName: string, limit = 10): Promise<T
 
 export async function getArtistTracksById(artistId: string, limit = 10): Promise<Track[]> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/lookup?id=${artistId}&entity=song&limit=${limit}`
     )
-    if (response.status === 429) return []
+    if (response.status === 429 || !response.ok) return []
     const text = await response.text()
+    if (!text || !text.trim()) return []
     const data = JSON.parse(text)
     if (!data.results) return []
     return data.results.filter((item: any) => item.wrapperType === 'track').map((item: any) => ({
@@ -228,11 +266,12 @@ export async function getArtistTracksById(artistId: string, limit = 10): Promise
 
 export async function getArtistAlbumsById(artistId: string, limit = 10): Promise<any[]> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/lookup?id=${artistId}&entity=album&limit=${limit}`
     )
-    if (response.status === 429) return []
+    if (response.status === 429 || !response.ok) return []
     const text = await response.text()
+    if (!text || !text.trim()) return []
     const data = JSON.parse(text)
     if (!data.results) return []
     return data.results.filter((item: any) => item.collectionType === 'Album').map((item: any) => ({
@@ -251,62 +290,31 @@ export async function getArtistAlbumsById(artistId: string, limit = 10): Promise
 
 export async function searchArtistImage(artistName: string): Promise<string> {
   try {
-    const response = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`
+    const response = await itunesFetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=song&limit=1`
     )
 
-    if (response.status === 429) {
-      console.error('iTunes API rate limit exceeded (429).')
+    if (response.status === 429 || !response.ok) {
       return ''
     }
 
     const text = await response.text()
+    if (!text || !text.trim()) {
+      return ''
+    }
+
     let data
     try {
       data = JSON.parse(text)
     } catch (e) {
-      console.error('Failed to parse iTunes artist response:', text)
       return ''
     }
 
-    if (data.results.length === 0) {
-      const songResponse = await fetch(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=song&limit=1`
-      )
-
-      const songText = await songResponse.text()
-      let songData
-      try {
-        songData = JSON.parse(songText)
-      } catch (e) {
-        console.error('Failed to parse iTunes song response:', songText)
-        return ''
-      }
-
-      if (songData.results.length > 0) {
-        return songData.results[0].artworkUrl100.replace('100x100', '600x600')
-      }
-    } else {
-      const songResponse = await fetch(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=song&limit=1`
-      )
-
-      const songText = await songResponse.text()
-      let songData
-      try {
-        songData = JSON.parse(songText)
-      } catch (e) {
-        console.error('Failed to parse iTunes song response:', songText)
-        return ''
-      }
-
-      if (songData.results.length > 0) {
-        return songData.results[0].artworkUrl100.replace('100x100', '600x600')
-      }
+    if (data.results && data.results.length > 0) {
+      return data.results[0].artworkUrl100.replace('100x100', '600x600')
     }
     return ''
   } catch (error) {
-    console.error('Error fetching artist image:', error)
     return ''
   }
 }
@@ -349,7 +357,7 @@ export function getMockLyrics(title: string, artist: string): string {
 
 export async function searchArtists(term: string, limit = 10, country = 'VN'): Promise<any[]> {
   try {
-    const response = await fetch(
+    const response = await itunesFetch(
       `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=musicArtist&limit=${limit}&country=${country}`
     )
 
@@ -358,7 +366,16 @@ export async function searchArtists(term: string, limit = 10, country = 'VN'): P
       return []
     }
 
+    if (!response.ok) {
+      console.error(`iTunes API searchArtists error: ${response.status} ${response.statusText}`)
+      return []
+    }
+
     const text = await response.text()
+    if (!text || !text.trim()) {
+      return []
+    }
+
     const data = JSON.parse(text)
 
     if (!data.results) return []

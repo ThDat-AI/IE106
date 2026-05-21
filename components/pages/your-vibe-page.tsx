@@ -49,6 +49,84 @@ const ARTIST_POOL = [
   { name: 'Erik', href: '/artist/erik' },
 ]
 
+function getGenreKeywords(genre: string) {
+  switch (genre) {
+    case 'Pop':
+      return {
+        mixes: ['V-Pop Pop', 'V-Pop Hits', 'V-Pop Hot', 'Pop Việt mới'],
+        discovered: ['Nhạc Pop Việt', 'V-Pop Ballad', 'Pop trẻ']
+      }
+    case 'Hip-hop':
+      return {
+        mixes: ['Rap Việt Hot', 'Hip hop Việt', 'Rap Việt mới', 'Underground Việt'],
+        discovered: ['Rap Việt', 'Hip-hop Việt', 'Trap Việt']
+      }
+    case 'EDM':
+      return {
+        mixes: ['EDM Việt', 'Vinahouse Hot', 'Remix Việt', 'Electro Việt'],
+        discovered: ['Vinahouse mới', 'EDM hot', 'Remix hot']
+      }
+    case 'Tập trung':
+      return {
+        mixes: ['Nhạc Không Lời Tập Trung', 'Piano Thư Giãn', 'Lofi Study', 'Deep Focus'],
+        discovered: ['Lofi Work', 'Guitar Không Lời', 'Ambient Việt']
+      }
+    case 'Thư giãn':
+      return {
+        mixes: ['Lofi Chill Việt', 'Acoustic Việt Chill', 'Nhạc Chill Lofi', 'Indie Việt Chill'],
+        discovered: ['Acoustic Việt', 'Indie Việt mới', 'Chill Lofi']
+      }
+    case 'Tất cả':
+    default:
+      return {
+        mixes: ['V-Pop Hits', 'V-Pop Hot', 'Nhạc trẻ HOT', 'Nhạc Chill V-Pop', 'Vietnamese Pop', 'Indie Việt', 'Rap Việt Hot'],
+        discovered: ['Nhạc trẻ mới nhất', 'Nhạc trẻ hot nhất', 'V-Pop mới phát hành', 'Indie Việt mới', 'Rap Việt mới nhất', 'Nhạc Lofi Việt', 'Acoustic Việt']
+      }
+  }
+}
+
+const ARTIST_SLUGS: Record<string, string> = {
+  'sơn tùng m-tp': 'son-tung-mtp',
+  'hoàng thùy linh': 'hoang-thuy-linh',
+  'đen vâu': 'den',
+  'đen': 'den',
+  'grey d': 'grey-d',
+  'mono': 'mono',
+  'tlinh': 'tlinh',
+  'hieuthuhai': 'hieuthuhai',
+  'mỹ tâm': 'my-tam',
+  'vũ.': 'vu',
+  'amee': 'amee',
+  'mck': 'mck',
+  'wren evans': 'wren-evans',
+  'min': 'min',
+  'bích phương': 'bich-phuong',
+  'justatee': 'justatee',
+  'soobin hoàng sơn': 'soobin',
+  'soobin': 'soobin',
+  'karik': 'karik',
+  'phan mạnh quỳnh': 'phan-manh-quynh',
+  'phương ly': 'phuong-ly',
+  'đức phúc': 'duc-phuc',
+  'erik': 'erik',
+}
+
+function getArtistHref(name: string, artistId?: string) {
+  const key = name.toLowerCase().trim()
+  if (ARTIST_SLUGS[key]) {
+    return `/artist/${ARTIST_SLUGS[key]}${artistId ? `?id=${artistId}` : ''}`
+  }
+  const slug = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+  return `/artist/${slug}${artistId ? `?id=${artistId}` : ''}`
+}
+
 export default function YourVibePage() {
   const { t } = useTranslation()
   const [mixes, setMixes] = useState<Track[]>([])
@@ -56,7 +134,7 @@ export default function YourVibePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMixes, setIsLoadingMixes] = useState(false)
   const [isLoadingDiscovered, setIsLoadingDiscovered] = useState(false)
-  const [isLoadingArtists, setIsLoadingArtists] = useState(false)
+  const [isLoadingArtists, setIsLoadingArtists] = useState(true)
   const [activeGenre, setActiveGenre] = useState('Tất cả')
 
   const INITIAL_ARTISTS = [
@@ -72,33 +150,111 @@ export default function YourVibePage() {
 
   const [topArtists, setTopArtists] = useState(INITIAL_ARTISTS)
 
-  async function fetchData() {
-    setIsLoading(true)
-    try {
-      const [mixData, discoveredData, ...artistImages] = await Promise.all([
-        searchMusic('V-Pop Hits', 10),
-        searchMusic('Nhạc trẻ mới nhất', 4),
-        ...INITIAL_ARTISTS.map(a => searchArtistImage(a.title))
-      ])
+  // Load music and top artists when genre changes
+  useEffect(() => {
+    async function fetchGenreMusicAndArtists() {
+      setIsLoadingMixes(true)
+      setIsLoadingDiscovered(true)
+      setIsLoadingArtists(true)
       
-      setMixes(mixData)
-      setDiscovered(discoveredData)
-      setTopArtists(INITIAL_ARTISTS.map((a, i) => ({
-        ...a,
-        image: artistImages[i]
-      })))
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+      const pools = getGenreKeywords(activeGenre)
+      const randomMixKeyword = pools.mixes[Math.floor(Math.random() * pools.mixes.length)]
+      const randomDiscoverKeyword = pools.discovered[Math.floor(Math.random() * pools.discovered.length)]
+      
+      try {
+        const [mixData, discoveredData] = await Promise.all([
+          searchMusic(randomMixKeyword, 15),
+          searchMusic(randomDiscoverKeyword, 8)
+        ])
+        setMixes(mixData.slice(0, 10))
+        setDiscovered(discoveredData.slice(0, 4))
+
+        // Extract top artists from search results
+        const allTracks = [...mixData, ...discoveredData]
+        const uniqueArtistsMap = new Map<string, { title: string; artistId?: string; image: string }>()
+
+        for (const track of allTracks) {
+          if (!track.artist) continue
+          const artistKey = track.artist.toLowerCase().trim()
+          if (!uniqueArtistsMap.has(artistKey)) {
+            uniqueArtistsMap.set(artistKey, {
+              title: track.artist,
+              artistId: track.artistId,
+              image: track.albumArt
+            })
+          }
+          if (uniqueArtistsMap.size >= 8) break
+        }
+
+        // Fill remaining spots from ARTIST_POOL if we have fewer than 8 unique artists
+        let poolIdx = 0
+        while (uniqueArtistsMap.size < 8 && poolIdx < ARTIST_POOL.length) {
+          const candidate = ARTIST_POOL[poolIdx]
+          const artistKey = candidate.name.toLowerCase().trim()
+          if (!uniqueArtistsMap.has(artistKey)) {
+            uniqueArtistsMap.set(artistKey, {
+              title: candidate.name,
+              image: ''
+            })
+          }
+          poolIdx++
+        }
+
+        const top8 = Array.from(uniqueArtistsMap.values())
+
+        // Fetch high-quality artist images sequentially with a small delay to prevent API rate limiting
+        const artistImages: string[] = []
+        for (const artist of top8) {
+          try {
+            const img = await searchArtistImage(artist.title)
+            artistImages.push(img)
+            // 150ms delay between API queries
+            await new Promise(resolve => setTimeout(resolve, 150))
+          } catch (e) {
+            console.error('Error fetching artist image:', e)
+            artistImages.push('')
+          }
+        }
+
+        // Generate play counts
+        const plays = [
+          Math.floor(Math.random() * 10) + 45,
+          Math.floor(Math.random() * 5) + 35,
+          Math.floor(Math.random() * 5) + 30,
+          Math.floor(Math.random() * 5) + 25,
+          Math.floor(Math.random() * 5) + 20,
+          Math.floor(Math.random() * 4) + 16,
+          Math.floor(Math.random() * 4) + 12,
+          Math.floor(Math.random() * 3) + 8,
+        ]
+
+        const formattedArtists = top8.map((artist, idx) => ({
+          id: artist.artistId || `ta-${idx}-${activeGenre.replace(/\s+/g, '-')}`,
+          title: artist.title,
+          subtitle: `${plays[idx]} ${t.playsThisMonth}`,
+          href: getArtistHref(artist.title, artist.artistId),
+          image: artistImages[idx] || artist.image || ''
+        }))
+
+        setTopArtists(formattedArtists)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsLoadingMixes(false)
+        setIsLoadingDiscovered(false)
+        setIsLoadingArtists(false)
+        setIsLoading(false)
+      }
     }
-  }
+    
+    fetchGenreMusicAndArtists()
+  }, [activeGenre, t.playsThisMonth])
 
   async function handleRefreshMixes() {
     setIsLoadingMixes(true)
     try {
-      const keywords = ['V-Pop Hits', 'V-Pop Hot', 'Nhạc trẻ HOT', 'Nhạc Chill V-Pop', 'Vietnamese Pop', 'Indie Việt', 'Rap Việt Hot']
-      const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)]
+      const pools = getGenreKeywords(activeGenre)
+      const randomKeyword = pools.mixes[Math.floor(Math.random() * pools.mixes.length)]
       const mixData = await searchMusic(randomKeyword, 10)
       setMixes(mixData)
     } catch (err) {
@@ -111,16 +267,8 @@ export default function YourVibePage() {
   async function handleRefreshDiscovered() {
     setIsLoadingDiscovered(true)
     try {
-      const keywords = [
-        'Nhạc trẻ mới nhất',
-        'Nhạc trẻ hot nhất',
-        'V-Pop mới phát hành',
-        'Indie Việt mới',
-        'Rap Việt mới nhất',
-        'Nhạc Lofi Việt',
-        'Acoustic Việt'
-      ]
-      const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)]
+      const pools = getGenreKeywords(activeGenre)
+      const randomKeyword = pools.discovered[Math.floor(Math.random() * pools.discovered.length)]
       const discoveredData = await searchMusic(randomKeyword, 4)
       setDiscovered(discoveredData)
     } catch (err) {
@@ -129,46 +277,6 @@ export default function YourVibePage() {
       setIsLoadingDiscovered(false)
     }
   }
-
-  async function handleRefreshArtists() {
-    setIsLoadingArtists(true)
-    try {
-      const shuffled = [...ARTIST_POOL].sort(() => 0.5 - Math.random())
-      const selected = shuffled.slice(0, 8)
-      
-      const withPlays = selected.map((artist, idx) => ({
-        id: `ta-ref-${idx}-${Math.random().toString(36).substr(2, 9)}`,
-        title: artist.name,
-        plays: Math.floor(Math.random() * 40) + 12,
-        href: artist.href,
-        image: ''
-      }))
-      
-      withPlays.sort((a, b) => b.plays - a.plays)
-      
-      const artistImages = await Promise.all(
-        withPlays.map(a => searchArtistImage(a.title))
-      )
-      
-      const formattedArtists = withPlays.map((a, i) => ({
-        id: a.id,
-        title: a.title,
-        subtitle: `${a.plays} ${t.playsThisMonth}`,
-        href: a.href,
-        image: artistImages[i]
-      }))
-
-      setTopArtists(formattedArtists)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsLoadingArtists(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
 
   return (
     <div className="space-y-16">
@@ -217,7 +325,9 @@ export default function YourVibePage() {
           />
           <div className="relative flex items-center gap-8">
             <div className="shrink-0">
-              {mixes[0] ? (
+              {isLoading || isLoadingMixes ? (
+                <div className="w-36 h-36 rounded-2xl bg-white/5 animate-pulse" />
+              ) : mixes[0] ? (
                 <img 
                   src={mixes[0].albumArt} 
                   alt="Daily Mix" 
@@ -233,28 +343,38 @@ export default function YourVibePage() {
               )}
             </div>
             <div className="flex-1">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 text-white" style={{ backgroundColor: 'rgba(155,77,224,0.2)', border: '1px solid rgba(155,77,224,0.3)' }}>
-                ✨ {t.topPickToday}
-              </span>
-              <h2 className="font-display font-bold mt-1 mb-3 text-white" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
-                {mixes[0]?.title || 'V-Pop Daily Mix'}
-              </h2>
-              <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                {mixes[0]?.artist || '...'}
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden relative before:absolute before:inset-0 before:bg-white/20 before:translate-y-full hover:before:translate-y-0 before:transition-transform before:duration-300 before:ease-out"
-                  style={{ 
-                    background: 'linear-gradient(135deg, #9B4DE0 0%, #6B21A8 100%)', 
-                    color: '#ffffff',
-                    boxShadow: '0 10px 25px -5px rgba(155,77,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2)'
-                  }}
-                >
-                  <Play size={16} fill="currentColor" className="relative z-10 drop-shadow-md" />
-                  <span className="relative z-10">{t.listenNow}</span>
-                </button>
-              </div>
+              {isLoading || isLoadingMixes ? (
+                <div className="space-y-3">
+                  <div className="h-4 bg-white/10 rounded w-24 animate-pulse" />
+                  <div className="h-10 bg-white/10 rounded w-2/3 animate-pulse" />
+                  <div className="h-4 bg-white/10 rounded w-1/3 animate-pulse" />
+                </div>
+              ) : (
+                <>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 text-white" style={{ backgroundColor: 'rgba(155,77,224,0.2)', border: '1px solid rgba(155,77,224,0.3)' }}>
+                    ✨ {t.topPickToday}
+                  </span>
+                  <h2 className="font-display font-bold mt-1 mb-3 text-white" style={{ fontSize: 40, letterSpacing: '-0.5px', textShadow: '0 0 30px rgba(155,77,224,0.3)' }}>
+                    {mixes[0]?.title || 'V-Pop Daily Mix'}
+                  </h2>
+                  <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                    {mixes[0]?.artist || '...'}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden relative before:absolute before:inset-0 before:bg-white/20 before:translate-y-full hover:before:translate-y-0 before:transition-transform before:duration-300 before:ease-out"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #9B4DE0 0%, #6B21A8 100%)', 
+                        color: '#ffffff',
+                        boxShadow: '0 10px 25px -5px rgba(155,77,224,0.5), inset 0 1px 0 rgba(255,255,255,0.2)'
+                      }}
+                    >
+                      <Play size={16} fill="currentColor" className="relative z-10 drop-shadow-md" />
+                      <span className="relative z-10">{t.listenNow}</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -285,7 +405,7 @@ export default function YourVibePage() {
           </button>
         </div>
         <MusicShelf>
-          {isLoading ? (
+          {isLoading || isLoadingMixes ? (
             Array(5).fill(0).map((_, i) => (
               <div key={i} className="aspect-square rounded-2xl bg-white/5 animate-pulse" />
             ))
@@ -353,23 +473,9 @@ export default function YourVibePage() {
               <AccentBar height={6} color="blue" />
               {t.topArtists}
             </h2>
-            <button
-              onClick={handleRefreshArtists}
-              disabled={isLoadingArtists || isLoading}
-              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/5 hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/20 text-white/80 hover:text-blue-300 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer"
-            >
-              <RotateCw
-                size={12}
-                className={cn(
-                  "transition-transform duration-700",
-                  isLoadingArtists ? "animate-spin text-blue-400" : "group-hover:rotate-180"
-                )}
-              />
-              <span>Làm mới</span>
-            </button>
           </div>
           <div className="space-y-3">
-            {isLoadingArtists || isLoading ? (
+            {isLoadingArtists ? (
               Array(8).fill(0).map((_, i) => (
                 <div 
                   key={i} 
