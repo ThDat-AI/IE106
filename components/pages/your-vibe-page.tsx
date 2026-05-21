@@ -229,7 +229,7 @@ export default function YourVibePage() {
         ]
 
         const formattedArtists = top8.map((artist, idx) => ({
-          id: artist.artistId || `ta-${idx}-${activeGenre.replace(/\s+/g, '-')}`,
+          id: artist.artistId ? `${artist.artistId}-${idx}` : `ta-${idx}-${activeGenre.replace(/\s+/g, '-')}`,
           title: artist.title,
           subtitle: `${plays[idx]} ${t.playsThisMonth}`,
           href: getArtistHref(artist.title, artist.artistId),
@@ -492,7 +492,7 @@ export default function YourVibePage() {
               ))
             ) : (
               topArtists.map((artist, i) => (
-                <YourVibeArtistRow key={artist.id} artist={artist} index={i} />
+                <YourVibeArtistRow key={`${artist.id}-${i}`} artist={artist} index={i} />
               ))
             )}
           </div>
