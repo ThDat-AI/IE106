@@ -348,7 +348,15 @@ export default function ProfileSettingsPage() {
                     <div className="space-y-4">
                       {/* Current Password */}
                       <div className="space-y-2">
-                        <label htmlFor="current-password" className="text-sm font-bold text-white/75 px-1">{t.currentPassword}</label>
+                        <div className="flex items-center justify-between px-1">
+                          <label htmlFor="current-password" className="text-sm font-bold text-white/75">{t.currentPassword}</label>
+                          <Link
+                            href="/login?mode=forgot"
+                            className="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wider"
+                          >
+                            {t.forgotPassword}
+                          </Link>
+                        </div>
                         <input
                           id="current-password"
                           type="password"

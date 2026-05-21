@@ -61,6 +61,7 @@ export default async function Page() {
     if (results.length > 0) {
       return {
         ...results[0],
+        type: 'track',
         playedAt: recentTracks[idx]?.playedAt || new Date().toISOString(),
       }
     }

@@ -38,6 +38,8 @@ interface PlayerState {
   nextTrack: () => void
   prevTrack: () => void
   setQueue: (queue: Track[]) => void
+  playNext: (trackOrTracks: Track | Track[]) => void
+  addToQueue: (trackOrTracks: Track | Track[]) => void
   toggleShuffle: () => void
   toggleRepeat: () => void
   toggleQueue: () => void
@@ -398,6 +400,55 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       set({ isLiked: isLikedNow })
     },
     setQueue: (queue) => set({ queue }),
+    playNext: (trackOrTracks) => {
+      const { queue, currentTrack } = get()
+      const tracksToAdd = Array.isArray(trackOrTracks) ? trackOrTracks : [trackOrTracks]
+      if (tracksToAdd.length === 0) return
+
+      const trackIdsToAdd = new Set(tracksToAdd.map(t => t.id))
+      const cleanedQueue = queue.filter(t => !trackIdsToAdd.has(t.id))
+
+      if (!currentTrack) {
+        set({
+          queue: tracksToAdd,
+          currentTrack: tracksToAdd[0],
+          isPlaying: true,
+          progress: 0,
+          isLiked: isTrackLiked(tracksToAdd[0].id)
+        })
+        return
+      }
+
+      const currentIndex = cleanedQueue.findIndex(t => t.id === currentTrack.id)
+      const newQueue = [...cleanedQueue]
+      if (currentIndex !== -1) {
+        newQueue.splice(currentIndex + 1, 0, ...tracksToAdd)
+      } else {
+        newQueue.unshift(...tracksToAdd)
+      }
+      set({ queue: newQueue })
+    },
+    addToQueue: (trackOrTracks) => {
+      const { queue, currentTrack } = get()
+      const tracksToAdd = Array.isArray(trackOrTracks) ? trackOrTracks : [trackOrTracks]
+      if (tracksToAdd.length === 0) return
+
+      const trackIdsToAdd = new Set(tracksToAdd.map(t => t.id))
+      const cleanedQueue = queue.filter(t => !trackIdsToAdd.has(t.id))
+
+      if (!currentTrack) {
+        set({
+          queue: tracksToAdd,
+          currentTrack: tracksToAdd[0],
+          isPlaying: true,
+          progress: 0,
+          isLiked: isTrackLiked(tracksToAdd[0].id)
+        })
+        return
+      }
+
+      set({ queue: [...cleanedQueue, ...tracksToAdd] })
+    },
     toggleShuffle: () => set((s) => ({ isShuffle: !s.isShuffle })),
     toggleRepeat: () => set((s) => ({ isRepeat: !s.isRepeat })),
     toggleQueue: () => set((s) => ({ isQueueOpen: !s.isQueueOpen })),

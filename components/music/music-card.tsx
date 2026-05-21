@@ -9,6 +9,7 @@ import { CardHoverOverlay } from './card-hover-overlay'
 import { searchMusic } from '@/lib/music-api'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
+import PlaylistModal from './playlist-modal'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -65,7 +66,9 @@ export default function MusicCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [localTracks, setLocalTracks] = useState<Track[]>([])
-  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalTracks, setModalTracks] = useState<Track | Track[]>([])
+  const { setTrack, currentTrack, isPlaying, togglePlay, playNext, addToQueue } = usePlayerStore()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -343,6 +346,32 @@ export default function MusicCard({
     }
   }
 
+  const getTracks = async (): Promise<Track[]> => {
+    if (type === 'track') {
+      if (track) return [track]
+      return [{
+        id,
+        title,
+        artist: subtitle,
+        album: title,
+        albumArt: image || '',
+        duration: 200,
+        url: ''
+      }]
+    }
+    if (playlistTracks && playlistTracks.length > 0) {
+      return playlistTracks
+    }
+    if (localTracks && localTracks.length > 0) {
+      return localTracks
+    }
+    try {
+      return await searchMusic(title, 15)
+    } catch (e) {
+      return []
+    }
+  }
+
   if (isHidden) return null
 
   const displayImage = track?.albumArt || image
@@ -606,8 +635,16 @@ export default function MusicCard({
                   <>
                     {/* 1. Phát tiếp theo */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          playNext(tracks)
+                          toast({
+                            title: "Đã xếp phát tiếp theo",
+                            description: `Đã xếp phát tiếp theo các bài hát trong album "${title}".`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -617,8 +654,16 @@ export default function MusicCard({
 
                     {/* 2. Thêm vào hàng chờ */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          addToQueue(tracks)
+                          toast({
+                            title: "Đã thêm vào hàng chờ",
+                            description: `Đã thêm các bài hát trong album "${title}" vào hàng chờ phát.`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -628,8 +673,13 @@ export default function MusicCard({
 
                     {/* 3. Thêm vào Playlist */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          setModalTracks(tracks)
+                          setIsModalOpen(true)
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -726,8 +776,16 @@ export default function MusicCard({
                   <>
                     {/* 1. Phát tiếp theo */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          playNext(tracks)
+                          toast({
+                            title: "Đã xếp phát tiếp theo",
+                            description: `Đã xếp phát tiếp theo các bài hát trong danh sách phát "${title}".`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -737,13 +795,37 @@ export default function MusicCard({
 
                     {/* 2. Thêm vào hàng chờ */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          addToQueue(tracks)
+                          toast({
+                            title: "Đã thêm vào hàng chờ",
+                            description: `Đã thêm các bài hát trong danh sách phát "${title}" vào hàng chờ phát.`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
                       <ListPlus size={13} className="text-purple-400" />
                       <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
+
+                    {/* 2.2 Thêm vào Playlist */}
+                    <DropdownMenuItem
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          setModalTracks(tracks)
+                          setIsModalOpen(true)
+                        }
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Plus size={13} className="text-purple-400" />
+                      <span>Thêm vào Playlist</span>
                     </DropdownMenuItem>
 
                     {/* 2.5 Chia sẻ liên kết */}
@@ -776,8 +858,16 @@ export default function MusicCard({
                   <>
                     {/* 1. Phát tiếp theo */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          playNext(tracks[0])
+                          toast({
+                            title: "Đã xếp phát tiếp theo",
+                            description: `Bài hát "${title}" sẽ được phát tiếp theo.`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -787,8 +877,16 @@ export default function MusicCard({
 
                     {/* 2. Thêm vào hàng chờ */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          addToQueue(tracks[0])
+                          toast({
+                            title: "Đã thêm vào hàng chờ",
+                            description: `Đã thêm bài hát "${title}" vào hàng chờ phát.`,
+                          })
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -798,8 +896,13 @@ export default function MusicCard({
 
                     {/* 3. Thêm vào Playlist */}
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        const tracks = await getTracks()
+                        if (tracks.length > 0) {
+                          setModalTracks(tracks[0])
+                          setIsModalOpen(true)
+                        }
                       }}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                     >
@@ -936,9 +1039,15 @@ export default function MusicCard({
     </div>
   )
 
-  if (href) {
-    return <Link href={href}>{card}</Link>
-  }
-
-  return card
+  return (
+    <>
+      {href ? <Link href={href}>{card}</Link> : card}
+      <PlaylistModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        track={modalTracks}
+        toastContext={type === 'track' ? 'bài hát' : type === 'album' ? 'album' : 'danh sách phát'}
+      />
+    </>
+  )
 }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Flame, Sparkles, Radio, Globe, Music2, ChevronRight, Play, Heart, MoreHorizontal, SkipForward, ListPlus, Plus, User, Share2 } from 'lucide-react'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
+import PlaylistModal from '@/components/music/playlist-modal'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { getTopSongsByRegion, searchMusic } from '@/lib/music-api'
 import { useTranslation } from '@/lib/i18n-store'
@@ -71,7 +73,9 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const { currentTrack } = usePlayerStore()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { currentTrack, playNext, addToQueue } = usePlayerStore()
+  const { toast } = useToast()
   const isActive = currentTrack?.id === item.id
   const rc = RANK_COLORS[index] ?? null
   const trend = index % 3 === 0 ? 'up' : index % 5 === 0 ? 'down' : 'same'
@@ -259,6 +263,11 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation()
+                  playNext(item)
+                  toast({
+                    title: "Đã xếp phát tiếp theo",
+                    description: `Bài hát "${item.title}" sẽ được phát tiếp theo.`,
+                  })
                 }}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
               >
@@ -270,6 +279,11 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation()
+                  addToQueue(item)
+                  toast({
+                    title: "Đã thêm vào hàng chờ",
+                    description: `Đã thêm bài hát "${item.title}" vào hàng chờ phát.`,
+                  })
                 }}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
               >
@@ -281,6 +295,7 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation()
+                  setIsModalOpen(true)
                 }}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
               >
@@ -340,6 +355,12 @@ function ChartRow({ item, index, hoveredRow, setHoveredRow, onPlay }: ChartRowPr
           `}} />
         </div>
       )}
+      {/* Playlist Modal */}
+      <PlaylistModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        track={item}
+      />
     </div>
   )
 }

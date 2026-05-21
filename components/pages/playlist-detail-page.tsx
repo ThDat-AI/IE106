@@ -23,6 +23,7 @@ import {
 import { ConfirmDeleteModal } from '@/components/ui/confirm-delete-modal'
 import { cn } from '@/lib/utils'
 import { Portal } from '@/components/ui/portal'
+import PlaylistModal from '@/components/music/playlist-modal'
 
 function slugToTitle(slug: string) {
   try {
@@ -41,6 +42,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
   const [playlist, setPlaylist] = useState<any>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [isLiked, setIsLiked] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null)
 
   // Recommended / Suggested Tracks state
@@ -604,17 +606,7 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         if (tracks.length > 0) {
-                          // Play next logic (add all to queue after current index)
-                          const currentQueue = usePlayerStore.getState().queue
-                          const currentTrack = usePlayerStore.getState().currentTrack
-                          const currentIndex = currentQueue.findIndex(t => t.id === currentTrack?.id)
-                          if (currentIndex !== -1) {
-                            const newQueue = [...currentQueue]
-                            newQueue.splice(currentIndex + 1, 0, ...tracks)
-                            usePlayerStore.getState().setQueue(newQueue)
-                          } else {
-                            usePlayerStore.getState().setQueue([...tracks])
-                          }
+                          usePlayerStore.getState().playNext(tracks)
                           setToastMessage({ text: 'Đã thêm danh sách phát vào hàng chờ phát tiếp theo!', type: 'success' })
                           setTimeout(() => setToastMessage(null), 3000)
                         }
@@ -630,9 +622,8 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         if (tracks.length > 0) {
-                          const currentQueue = usePlayerStore.getState().queue
-                          usePlayerStore.getState().setQueue([...currentQueue, ...tracks])
-                          setToastMessage({ text: 'Đã thêm danh sách phát vào hàng chờ!', type: 'success' })
+                          usePlayerStore.getState().addToQueue(tracks)
+                          setToastMessage({ text: 'Đã thêm danh sách phát vào hàng chờ phát!', type: 'success' })
                           setTimeout(() => setToastMessage(null), 3000)
                         }
                       }}
@@ -640,6 +631,20 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
                     >
                       <ListPlus size={13} className="text-purple-400" />
                       <span>Thêm vào hàng chờ</span>
+                    </DropdownMenuItem>
+
+                    {/* 3. Thêm vào Playlist */}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (tracks.length > 0) {
+                          setIsModalOpen(true)
+                        }
+                      }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                    >
+                      <Plus size={13} className="text-purple-400" />
+                      <span>Thêm vào Playlist</span>
                     </DropdownMenuItem>
 
                     {/* Divider */}
@@ -1221,6 +1226,14 @@ export default function PlaylistDetailPage({ slug }: { slug: string }) {
         itemType="playlist"
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeletePlaylist}
+      />
+
+      {/* Playlist Modal */}
+      <PlaylistModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        track={tracks}
+        toastContext="playlist"
       />
     </div>
   )

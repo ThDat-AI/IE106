@@ -23,6 +23,8 @@ import { ChevronRight, ChevronLeft, Play, Heart, MoreHorizontal, SkipForward, Li
 import { useTranslation } from '@/lib/i18n-store'
 import { CardHoverOverlay } from '@/components/music/card-hover-overlay'
 import { usePlayerStore, type Track, isTrackLiked, toggleLikeTrack } from '@/lib/player-store'
+import PlaylistModal from '@/components/music/playlist-modal'
+import { useToast } from '@/hooks/use-toast'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -397,11 +399,13 @@ interface PodiumCardProps {
 
 export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
   const rc = RANK_COLORS[index] ?? RANK_COLORS[RANK_COLORS.length - 1]
-  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+  const { setTrack, currentTrack, isPlaying, togglePlay, playNext, addToQueue } = usePlayerStore()
   const [isLiked, setIsLiked] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [showToast, setShowToast] = React.useState(false)
   const [toastMessage, setToastMessage] = React.useState('')
+  const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const { toast } = useToast()
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg)
@@ -544,6 +548,11 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    playNext(track)
+                    toast({
+                      title: "Đã xếp phát tiếp theo",
+                      description: `Bài hát "${track.title}" sẽ được phát tiếp theo.`,
+                    })
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -555,6 +564,11 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    addToQueue(track)
+                    toast({
+                      title: "Đã thêm vào hàng chờ",
+                      description: `Đã thêm bài hát "${track.title}" vào hàng chờ phát.`,
+                    })
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -566,6 +580,7 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    setIsModalOpen(true)
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -713,6 +728,12 @@ export function PodiumCard({ track, index, onPlay }: PodiumCardProps) {
           `}} />
         </div>
       )}
+      {/* Playlist Modal */}
+      <PlaylistModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        track={track}
+      />
     </div>
   )
 }
@@ -732,7 +753,9 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
   const [isHidden, setIsHidden] = React.useState(false)
   const [showToast, setShowToast] = React.useState(false)
   const [toastMessage, setToastMessage] = React.useState('')
-  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
+  const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const { setTrack, currentTrack, isPlaying, togglePlay, playNext, addToQueue } = usePlayerStore()
+  const { toast } = useToast()
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg)
@@ -885,6 +908,11 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    playNext(track)
+                    toast({
+                      title: "Đã xếp phát tiếp theo",
+                      description: `Bài hát "${track.title}" sẽ được phát tiếp theo.`,
+                    })
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -896,6 +924,11 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    addToQueue(track)
+                    toast({
+                      title: "Đã thêm vào hàng chờ",
+                      description: `Đã thêm bài hát "${track.title}" vào hàng chờ phát.`,
+                    })
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -907,6 +940,7 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    setIsModalOpen(true)
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
                 >
@@ -1047,6 +1081,12 @@ export function GlassMusicCard({ track, rankIndex }: GlassMusicCardProps) {
           `}} />
         </div>
       )}
+      {/* Playlist Modal */}
+      <PlaylistModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        track={track}
+      />
     </div>
   )
 }

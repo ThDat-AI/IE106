@@ -97,8 +97,15 @@ export default function LoginPage({ initialMode = 'login' }: { initialMode?: 'lo
   const [forgotSuccess, setForgotSuccess] = useState(false)
 
   useEffect(() => {
-    if (isUserLoggedIn()) {
-      router.replace('/')
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const isForgot = params.get('mode') === 'forgot' || params.get('forgot') === 'true'
+      
+      if (isForgot) {
+        setMode('forgot')
+      } else if (isUserLoggedIn()) {
+        router.replace('/')
+      }
     }
   }, [router])
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music, ChevronDown, ChevronUp, Shuffle, Share2, Ban, Trash2, Plus } from 'lucide-react'
+import { Play, Heart, UserPlus, MoreHorizontal, CheckCircle2, Users, Music, ChevronDown, ChevronUp, Shuffle, Share2, Ban, Trash2, Plus, RotateCw } from 'lucide-react'
 import MusicCard from '@/components/music/music-card'
 import TrackRow from '@/components/music/track-row'
 import { usePlayerStore, type Track, isArtistFollowed, toggleFollowArtist } from '@/lib/player-store'
@@ -46,12 +46,24 @@ export default function ArtistPage({
   const [albums, setAlbums] = useState<any[]>(initialAlbums)
   const [artistImage, setArtistImage] = useState<string>(initialImage)
   const [relatedArtists, setRelatedArtists] = useState<any[]>([])
+  const [allRelatedPool, setAllRelatedPool] = useState<any[]>([])
+  const [isRefreshingRelated, setIsRefreshingRelated] = useState(false)
   const [isLoading, setIsLoading] = useState(initialTracks.length === 0)
   const [isFollowing, setIsFollowing] = useState(false)
   const [visibleTracks, setVisibleTracks] = useState(5)
   const [isHeroMenuOpen, setIsHeroMenuOpen] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+
+  function handleRefreshRelated() {
+    if (allRelatedPool.length === 0) return
+    setIsRefreshingRelated(true)
+    setTimeout(() => {
+      const shuffled = [...allRelatedPool].sort(() => Math.random() - 0.5)
+      setRelatedArtists(shuffled.slice(0, 6))
+      setIsRefreshingRelated(false)
+    }, 500)
+  }
 
   function triggerToast(msg: string) {
     setToastMessage(msg)
@@ -123,14 +135,29 @@ export default function ArtistPage({
       }
 
       // Fetch related artists (just search for a related genre or similar artists)
-      const related = await searchMusic('V-Pop', 5)
-      setRelatedArtists(related.map(t => ({
-        id: t.id,
-        title: t.artist,
-        subtitle: t.genre || 'Nghệ sĩ',
-        href: `/artist/${t.artist.toLowerCase().replace(/\s+/g, '-')}${t.artistId ? `?id=${t.artistId}` : ''}`,
-        image: t.albumArt
-      })).filter(a => a.title !== name))
+      const related = await searchMusic('V-Pop', 50)
+      const uniqueArtists: any[] = []
+      const seenNames = new Set<string>()
+      seenNames.add(name.toLowerCase().trim())
+      
+      for (const track of related) {
+        if (!track.artist) continue
+        const artistName = track.artist.trim()
+        const artistKey = artistName.toLowerCase()
+        if (!seenNames.has(artistKey)) {
+          seenNames.add(artistKey)
+          uniqueArtists.push({
+            id: track.id,
+            title: artistName,
+            subtitle: track.genre || 'Nghệ sĩ',
+            href: `/artist/${artistName.toLowerCase().replace(/\s+/g, '-')}${track.artistId ? `?id=${track.artistId}` : ''}`,
+            image: track.albumArt
+          })
+        }
+      }
+      setAllRelatedPool(uniqueArtists)
+      const shuffled = [...uniqueArtists].sort(() => Math.random() - 0.5)
+      setRelatedArtists(shuffled.slice(0, 6))
     }
     loadArtistData()
   }, [name, initialTracks, id])
@@ -423,7 +450,25 @@ export default function ArtistPage({
         {/* Fans Also Like */}
         {relatedArtists.length > 0 && (
           <section>
-            <SectionHeader title={t.fansAlsoLike || 'Fans Also Like'} />
+            <SectionHeader 
+              title={t.fansAlsoLike || 'Fans Also Like'} 
+              rightAction={
+                <button
+                  onClick={handleRefreshRelated}
+                  disabled={isRefreshingRelated}
+                  className="group flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold bg-white/5 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/20 text-white/80 hover:text-purple-300 hover:shadow-[0_0_20px_rgba(155,77,224,0.05)] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-95 cursor-pointer shadow-md"
+                >
+                  <RotateCw
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-700",
+                      isRefreshingRelated ? "animate-spin text-purple-400" : "group-hover:rotate-180"
+                    )}
+                  />
+                  <span>Làm mới</span>
+                </button>
+              }
+            />
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {relatedArtists.map((item) => (
                 <MusicCard 
