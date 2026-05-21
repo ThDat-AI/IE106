@@ -365,7 +365,17 @@ export default function TrackRow({ index, track, showAlbum = true, onRemove, rem
                   <span>Thêm vào hàng chờ</span>
                 </DropdownMenuItem>
   
-
+                {/* 3. Thêm vào playlist */}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsModalOpen(true)
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white transition-all duration-200 cursor-pointer hover:bg-white/5 active:scale-98 focus:bg-white/5 focus:text-white outline-none"
+                >
+                  <Plus size={13} className="text-purple-400" />
+                  <span>Thêm vào playlist</span>
+                </DropdownMenuItem>
   
                 {/* Divider */}
                 <div className="h-px bg-white/5 my-1 mx-2" />

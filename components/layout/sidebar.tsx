@@ -385,9 +385,9 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           <div className="flex items-start justify-between mb-6 relative z-10">
             <div>
               <h2 className="text-2xl font-bold font-display text-white tracking-tight flex items-center gap-2">
-                <span className="text-purple-400">✨</span> Tạo Playlist mới
+                Tạo Playlist mới
               </h2>
-              <p className="text-sm text-white/50 mt-1">
+              <p className="text-sm text-white/80 mt-1">
                 Tạo một danh sách phát của riêng bạn để lưu trữ những giai điệu yêu thích.
               </p>
             </div>
@@ -402,7 +402,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
           {/* Inputs Box */}
           <div className="space-y-4 relative z-10">
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">Tên playlist</label>
+              <label className="text-xs font-semibold text-white/75 uppercase tracking-wider">Tên playlist</label>
               <input
                 type="text"
                 value={newPlaylistTitle}
@@ -414,7 +414,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">Mô tả (Không bắt buộc)</label>
+              <label className="text-xs font-semibold text-white/75 uppercase tracking-wider">Mô tả (Không bắt buộc)</label>
               <textarea
                 value={newPlaylistDesc}
                 onChange={(e) => setNewPlaylistDesc(e.target.value)}
@@ -429,7 +429,7 @@ export default function Sidebar({ collapsed: externalCollapsed, onToggle }: Side
               <button
                 type="button"
                 onClick={() => setIsAddPlaylistOpen(false)}
-                className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 cursor-pointer text-center"
+                className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white/80 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 cursor-pointer text-center"
               >
                 Hủy
               </button>

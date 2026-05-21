@@ -620,9 +620,9 @@ export default function LibraryPage({
             <div className="flex items-start justify-between mb-6 relative z-10">
               <div>
                 <h2 className="text-2xl font-bold font-display text-white tracking-tight flex items-center gap-2">
-                  <span className="text-purple-400">✨</span> Thêm Album mới
+                  Thêm Album mới
                 </h2>
-                <p className="text-sm text-white/50 mt-1">
+                <p className="text-sm text-white/80 mt-1">
                   Tìm kiếm album từ thư viện để thêm vào bộ sưu tập cá nhân.
                 </p>
               </div>
@@ -658,7 +658,7 @@ export default function LibraryPage({
               
               {/* Popular Search Suggestions */}
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-white/45 flex items-center gap-1 font-medium select-none">
+                <span className="text-white/80 flex items-center gap-1 font-medium select-none">
                   <TrendingUp size={12} className="text-purple-400 animate-pulse" />
                   Xu hướng:
                 </span>
@@ -771,7 +771,7 @@ export default function LibraryPage({
                   <h5 className="relative z-10 text-sm font-display font-bold text-white/90 tracking-wide">
                     Nhập từ khóa tìm kiếm
                   </h5>
-                  <p className="relative z-10 text-xs text-white/50 max-w-xs mt-1.5 px-4 leading-relaxed">
+                  <p className="relative z-10 text-xs text-white/80 max-w-xs mt-1.5 px-4 leading-relaxed">
                     Nhập tên album hoặc nghệ sĩ để bắt đầu tìm kiếm những tác phẩm âm nhạc đỉnh cao.
                   </p>
                 </div>
@@ -806,9 +806,9 @@ export default function LibraryPage({
             <div className="flex items-start justify-between mb-6 relative z-10">
               <div>
                 <h2 className="text-2xl font-bold font-display text-white tracking-tight flex items-center gap-2">
-                  <span className="text-purple-400">✨</span> Tạo Playlist mới
+                  Tạo Playlist mới
                 </h2>
-                <p className="text-sm text-white/50 mt-1">
+                <p className="text-sm text-white/80 mt-1">
                   Tạo một danh sách phát của riêng bạn để lưu trữ những giai điệu yêu thích.
                 </p>
               </div>
@@ -823,7 +823,7 @@ export default function LibraryPage({
             {/* Inputs Box */}
             <div className="space-y-4 relative z-10">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">Tên playlist</label>
+                <label className="text-xs font-semibold text-white/75 uppercase tracking-wider">Tên playlist</label>
                 <input
                   type="text"
                   value={newPlaylistTitle}
@@ -835,7 +835,7 @@ export default function LibraryPage({
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">Mô tả (Không bắt buộc)</label>
+                <label className="text-xs font-semibold text-white/75 uppercase tracking-wider">Mô tả (Không bắt buộc)</label>
                 <textarea
                   value={newPlaylistDesc}
                   onChange={(e) => setNewPlaylistDesc(e.target.value)}
@@ -850,7 +850,7 @@ export default function LibraryPage({
                 <button
                   type="button"
                   onClick={() => setIsAddPlaylistOpen(false)}
-                  className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 cursor-pointer text-center"
+                  className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white/80 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200 cursor-pointer text-center"
                 >
                   Hủy
                 </button>

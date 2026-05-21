@@ -219,7 +219,7 @@ export default function AboutContactPage() {
                       <Mail size={20} />
                     </div>
                     <div>
-                      <div className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">{t.emailUs}</div>
+                      <div className="text-xs text-white/70 font-bold uppercase tracking-widest mb-1">{t.emailUs}</div>
                       <div className="text-white font-medium">support@vibewave.fm</div>
                     </div>
                     <ChevronRight size={16} className="ml-auto text-white/20" />
@@ -230,7 +230,7 @@ export default function AboutContactPage() {
                       <MapPin size={20} />
                     </div>
                     <div>
-                      <div className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">{t.visitUs}</div>
+                      <div className="text-xs text-white/70 font-bold uppercase tracking-widest mb-1">{t.visitUs}</div>
                       <div className="text-white font-medium">San Francisco, CA</div>
                     </div>
                     <ChevronRight size={16} className="ml-auto text-white/20" />
@@ -241,7 +241,7 @@ export default function AboutContactPage() {
                       <Phone size={20} />
                     </div>
                     <div>
-                      <div className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">{t.callUs}</div>
+                      <div className="text-xs text-white/70 font-bold uppercase tracking-widest mb-1">{t.callUs}</div>
                       <div className="text-white font-medium">+1 (555) VIBE-WAVE</div>
                     </div>
                     <ChevronRight size={16} className="ml-auto text-white/20" />
@@ -253,7 +253,7 @@ export default function AboutContactPage() {
                     <ExternalLink size={16} className="text-purple-400" />
                     {t.helpCenter}
                   </h4>
-                  <p className="text-sm text-white/50 mb-4">{t.checkFaq}</p>
+                  <p className="text-sm text-white/75 mb-4">{t.checkFaq}</p>
                   <button className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
                     {t.viewFaq} <ChevronRight size={14} />
                   </button>
@@ -283,7 +283,7 @@ export default function AboutContactPage() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-white/40 uppercase tracking-widest ml-1">{t.fullName}</label>
+                          <label className="text-xs font-bold text-white/70 uppercase tracking-widest ml-1">{t.fullName}</label>
                           <input 
                             required
                             type="text" 
@@ -292,7 +292,7 @@ export default function AboutContactPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-white/40 uppercase tracking-widest ml-1">{t.emailAddress}</label>
+                          <label className="text-xs font-bold text-white/70 uppercase tracking-widest ml-1">{t.emailAddress}</label>
                           <input 
                             required
                             type="email" 
@@ -303,7 +303,7 @@ export default function AboutContactPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest ml-1">{t.subject}</label>
+                        <label className="text-xs font-bold text-white/70 uppercase tracking-widest ml-1">{t.subject}</label>
                         <select className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all appearance-none">
                           <option className="bg-[#1a1425]">General Inquiry</option>
                           <option className="bg-[#1a1425]">Technical Support</option>
@@ -313,7 +313,7 @@ export default function AboutContactPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest ml-1">{t.message}</label>
+                        <label className="text-xs font-bold text-white/70 uppercase tracking-widest ml-1">{t.message}</label>
                         <textarea 
                           required
                           rows={5}

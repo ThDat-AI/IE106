@@ -12,6 +12,7 @@ export default function GlobalAudioEngine() {
     isMuted,
     setProgress,
     nextTrack,
+    isRepeat,
   } = usePlayerStore()
 
   // Sync isPlaying & source
@@ -54,6 +55,17 @@ export default function GlobalAudioEngine() {
     }
   }
 
+  const handleEnded = () => {
+    if (!audioRef.current) return
+    if (isRepeat === 'one') {
+      audioRef.current.currentTime = 0
+      audioRef.current.play().catch(() => {})
+      setProgress(0)
+    } else {
+      nextTrack()
+    }
+  }
+
   if (!currentTrack) return null
 
   return (
@@ -61,7 +73,7 @@ export default function GlobalAudioEngine() {
       ref={audioRef}
       src={currentTrack.url}
       onTimeUpdate={handleTimeUpdate}
-      onEnded={nextTrack}
+      onEnded={handleEnded}
     />
   )
 }

@@ -174,7 +174,7 @@ export default function PlaylistModal({ isOpen, onClose, track, toastContext = "
                 <>Thêm vào Danh sách phát</>
               )}
             </h2>
-            <p className="text-xs text-white/50 mt-1 max-w-[280px]">
+            <p className="text-xs text-white/75 mt-1 max-w-[280px]">
               {isCreatingNew ? (
                 <>Tạo một danh sách phát của riêng bạn để thêm âm nhạc.</>
               ) : (
@@ -300,7 +300,7 @@ export default function PlaylistModal({ isOpen, onClose, track, toastContext = "
                   e.stopPropagation()
                   setIsCreatingNew(false)
                 }}
-                className="flex-1 py-3 px-4 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-xs font-bold transition-all duration-200 cursor-pointer text-center"
+                className="flex-1 py-3 px-4 rounded-2xl bg-white/10 border border-white/20 text-white/85 hover:text-white hover:bg-white/15 hover:border-white/30 text-xs font-bold transition-all duration-200 cursor-pointer text-center"
               >
                 Hủy bỏ
               </button>

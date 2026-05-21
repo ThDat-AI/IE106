@@ -444,13 +444,20 @@ export default function FullPlayer() {
               onClick={toggleRepeat}
               className={cn(
                 "relative flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-300 border border-white/0 hover:bg-white/5 cursor-pointer active:scale-95",
-                isRepeat ? "text-[#8B5CF6] border-white/5 bg-[#8B5CF6]/5" : "text-white/40 hover:text-white/70"
+                isRepeat !== 'none' ? "text-[#8B5CF6] border-white/5 bg-[#8B5CF6]/5" : "text-white/40 hover:text-white/70"
               )}
               aria-label={t.repeat}
             >
-              <Repeat size={18} />
-              {isRepeat && (
-                <span className="absolute bottom-[4px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#8B5CF6] shadow-[0_0_6px_rgba(139,92,246,0.6)] animate-in scale-in duration-300" />
+              <div className="relative">
+                <Repeat size={18} />
+                {isRepeat === 'one' && (
+                  <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#8B5CF6] text-[9px] font-extrabold text-white flex items-center justify-center select-none shadow-[0_2px_4px_rgba(0,0,0,0.3)] border border-[#070709]">
+                    1
+                  </span>
+                )}
+              </div>
+              {isRepeat !== 'none' && (
+                <span className="absolute bottom-[4px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#8B5CF6] shadow-[0_0_6px_rgba(139,92,246,0.6)] animate-in scale-in duration-300" />
               )}
             </button>
           </div>

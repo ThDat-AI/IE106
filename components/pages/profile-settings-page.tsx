@@ -47,7 +47,7 @@ function SettingRow({
         <div>
           <div className="text-[15px] font-semibold text-white/90">{label}</div>
           {description && (
-            <div className="text-sm mt-0.5 text-white/40 font-light">{description}</div>
+            <div className="text-sm mt-0.5 text-white/60 font-normal">{description}</div>
           )}
         </div>
       </div>

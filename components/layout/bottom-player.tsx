@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import FullPlayer from './full-player'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 function formatTime(secs: number) {
   const m = Math.floor(secs / 60)
@@ -39,6 +40,8 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
   if (!currentTrack) return null
 
   const elapsed = Math.round((progress / 100) * currentTrack.duration)
+  const artistSlug = currentTrack.artist.toLowerCase().replace(/\s+/g, '-')
+  const artistUrl = `/artist/${encodeURIComponent(artistSlug)}${currentTrack.artistId ? `?id=${currentTrack.artistId}` : ''}`
 
   return (
     <>
@@ -56,7 +59,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
         <div
           className={cn(
             "relative mx-auto max-w-7xl h-24 flex items-center px-6 rounded-2xl transition-all duration-500 overflow-hidden",
-            "bg-white/[0.03] backdrop-blur-2xl border border-white/10",
+            "bg-[#120E18]/90 backdrop-blur-3xl border border-white/10",
             "shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_48px_rgba(155,77,224,0.15)]",
             isHovered && "border-white/20"
           )}
@@ -97,9 +100,12 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
               <h3 className="font-display font-semibold text-[15px] text-white/95 truncate leading-tight tracking-wide">
                 {currentTrack.title}
               </h3>
-              <p className="font-sans font-medium text-[13px] text-white/50 truncate mt-0.5 tracking-tight">
+              <Link 
+                href={artistUrl}
+                className="inline-block font-sans font-semibold text-[13px] text-white/75 hover:text-purple-400 hover:underline truncate mt-0.5 tracking-tight transition-colors duration-200"
+              >
                 {currentTrack.artist}
-              </p>
+              </Link>
             </div>
 
             <button
@@ -169,12 +175,19 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
                 onClick={toggleRepeat}
                 className={cn(
                   "relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-90",
-                  isRepeat ? "text-[#9B4DE0]" : "text-white/40 hover:text-white/90"
+                  isRepeat !== 'none' ? "text-[#9B4DE0]" : "text-white/40 hover:text-white/90"
                 )}
                 aria-label={t.repeat}
               >
-                <Repeat size={18} strokeWidth={2} />
-                {isRepeat && (
+                <div className="relative">
+                  <Repeat size={18} strokeWidth={2} />
+                  {isRepeat === 'one' && (
+                    <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#9B4DE0] text-[9px] font-extrabold text-white flex items-center justify-center select-none shadow-[0_2px_4px_rgba(0,0,0,0.3)] border border-[#120E18]">
+                      1
+                    </span>
+                  )}
+                </div>
+                {isRepeat !== 'none' && (
                   <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#9B4DE0] shadow-[0_0_8px_rgba(155,77,224,0.6)] animate-in scale-in duration-300" />
                 )}
               </button>
@@ -182,7 +195,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
 
             {/* Progress bar */}
             <div className="flex items-center gap-3 w-full max-w-xl group/progress">
-              <span className="text-[11px] font-medium text-white/30 tabular-nums w-10 text-right">
+              <span className="text-[11px] font-medium text-white/60 tabular-nums w-10 text-right">
                 {formatTime(elapsed)}
               </span>
 
@@ -214,7 +227,7 @@ export default function BottomPlayer({ sidebarCollapsed = false }: BottomPlayerP
                 />
               </div>
 
-              <span className="text-[11px] font-medium text-white/30 tabular-nums w-10">
+              <span className="text-[11px] font-medium text-white/60 tabular-nums w-10">
                 {formatTime(currentTrack.duration)}
               </span>
             </div>

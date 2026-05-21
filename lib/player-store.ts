@@ -27,7 +27,7 @@ interface PlayerState {
   isQueueOpen: boolean
   isLiked: boolean
   isShuffle: boolean
-  isRepeat: boolean
+  isRepeat: 'none' | 'all' | 'one'
   setTrack: (track: Track) => void
   togglePlay: () => void
   setProgress: (progress: number) => void
@@ -380,7 +380,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     isQueueOpen: false,
     isLiked: initialLiked,
     isShuffle: false,
-    isRepeat: false,
+    isRepeat: 'none',
 
     setTrack: (track) => set({
       currentTrack: track,
@@ -450,7 +450,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       set({ queue: [...cleanedQueue, ...tracksToAdd] })
     },
     toggleShuffle: () => set((s) => ({ isShuffle: !s.isShuffle })),
-    toggleRepeat: () => set((s) => ({ isRepeat: !s.isRepeat })),
+    toggleRepeat: () => set((s) => ({
+      isRepeat: s.isRepeat === 'none' ? 'all' : s.isRepeat === 'all' ? 'one' : 'none'
+    })),
     toggleQueue: () => set((s) => ({ isQueueOpen: !s.isQueueOpen })),
     setIsQueueOpen: (isQueueOpen) => set({ isQueueOpen }),
 
@@ -474,6 +476,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         }
       } else {
         const origIdx = queue.findIndex((t) => t.id === currentTrack.id)
+        if (get().isRepeat === 'none' && origIdx === queue.length - 1) {
+          set({ isPlaying: false, progress: 0 })
+          return
+        }
         let foundNext = false
         let nextIdx = origIdx
         for (let i = 1; i <= queue.length; i++) {
